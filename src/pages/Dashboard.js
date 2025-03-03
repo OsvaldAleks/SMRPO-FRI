@@ -19,10 +19,10 @@ const Dashboard = () => {
   }, [auth]);
 
   const handleLogout = () => {
-    // Sign the user out
     signOut(auth).then(() => {
       console.log("User signed out!");
       setUser(null);
+      navigate("/login"); // Redirect to login page after logout
     });
   };
 
@@ -32,7 +32,9 @@ const Dashboard = () => {
       {user ? (
         <div>
           <p>Welcome, {user.email}!</p> {/* Display the logged-in user's email */}
+          <p>Your user ID is: {user.uid}</p> {/* Display the user's unique ID */}
           <button onClick={handleLogout}>Logout</button>
+          <button onClick={() => navigate("/EditAccount")}>Edit Account</button> {/* Redirect to Edit Account */}
         </div>
       ) : (
         <div>
