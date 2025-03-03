@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import EditAccount from "./pages/EditAccount";
 import Navbar from './components/Navbar';
+import CreateProject from './pages/CreateProject';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/EditAccount" element={<EditAccount />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/newProject" element={<CreateProject />} />
         </Routes>
       </main>
       </Router>

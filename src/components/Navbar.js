@@ -31,29 +31,34 @@ const Navbar = () => {
 
   return (
     <nav>
-      <ul>
-        <div className="nav-left">
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-        </div>
+    <ul>
+      <li className="nav-left">
+        <Link to="/">Home</Link>
+      </li>
+      {user && (
+        <li className="dropdown">
+          My projects
+          <ul>
+            {/* TODO: MAKE LIST OF USERS PROJECTS */}
+            {/* TODO: Check if user is admin - if they are, let them create a new project */}
+            <li><Link to="/newProject">+ Create Project</Link></li>
+          </ul>
+        </li>
+      )}
+      <li className="nav-right">
+        {!user ? (
+          <Link to="/login" className="login-btn">Login</Link>
+        ) : (
+          <>
+            <Link to="/EditAccount">Edit Account</Link>
+            <button className="logout-btn" onClick={handleLogout}>Logout</button>
+          </>
+        )}
+      </li>
+    </ul>
+  </nav>
+  
 
-        <div className="nav-right">
-          {!user ? (
-            <li><Link to="/login" className="login-btn">Login</Link></li>
-          ) : (
-            <>
-              <li>
-                <Link to="/EditAccount">Edit Account</Link>
-              </li>
-              <li>
-              <button className="logout-btn" onClick={handleLogout}>Logout</button>
-              </li>
-            </>
-          )}
-        </div>
-      </ul>
-    </nav>
   );
 };
 

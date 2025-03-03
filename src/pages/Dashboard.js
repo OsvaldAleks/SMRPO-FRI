@@ -18,14 +18,6 @@ const Dashboard = () => {
     return () => unsubscribe();
   }, [auth]);
 
-  const handleLogout = () => {
-    signOut(auth).then(() => {
-      console.log("User signed out!");
-      setUser(null);
-      navigate("/login"); // Redirect to login page after logout
-    });
-  };
-
   return (
     <div>
       <h1>Dashboard</h1>
@@ -33,14 +25,9 @@ const Dashboard = () => {
         <div>
           <p>Welcome, {user.email}!</p> {/* Display the logged-in user's email */}
           <p>Your user ID is: {user.uid}</p> {/* Display the user's unique ID */}
-          <button onClick={handleLogout}>Logout</button>
-          <button onClick={() => navigate("/EditAccount")}>Edit Account</button> {/* Redirect to Edit Account */}
         </div>
       ) : (
-        <div>
-          <p>To log in, click the button below:</p>
-          <button onClick={() => navigate("/login")}>Go to Login</button>
-        </div>
+        <p>homepage</p>
       )}
     </div>
   );
