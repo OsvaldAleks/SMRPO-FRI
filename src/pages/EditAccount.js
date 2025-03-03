@@ -150,7 +150,6 @@ const EditAccount = () => {
           {loading ? "Updating..." : "Change Password"}
         </button>
       </form>
-      <button onClick={() => navigate("/")}>Back to HOME</button>
     </div>
   );
 };

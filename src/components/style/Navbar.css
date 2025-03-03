@@ -1,0 +1,64 @@
+/* src/components/Navbar.css */
+
+nav {
+  background-color: #333;
+  padding: 1rem;
+}
+
+nav ul {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-left {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-right {
+  display: flex;
+  gap: 20px;
+  margin-left: auto;
+}
+
+nav ul li {
+  margin: 0;
+}
+
+nav ul li a,
+nav ul li button {
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  padding: 0;
+}
+
+nav ul li a:visited {
+  color: white; /* Same as normal link */
+}
+
+
+/* Light blue text for Login button */
+nav ul li a.login-btn {
+  color: #ADD8E6;
+}
+
+nav ul li a.login-btn:hover {
+  text-decoration: underline;
+}
+
+/* Red text for Logout button */
+nav ul li button.logout-btn {
+  color: red;
+}
+
+nav ul li button.logout-btn:hover {
+  text-decoration: underline;
+}
