@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "firebase/auth"; 
+import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-
+import zxcvbn from "zxcvbn"; // Password strength checker library
 
 const EditAccount = () => {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -10,11 +10,23 @@ const EditAccount = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0); // Track password strength
+  const [passwordStrengthLabel, setPasswordStrengthLabel] = useState(""); // Display strength level
+  const [touchedFields, setTouchedFields] = useState({
+    newPassword: false,
+    confirmNewPassword: false,
+  });
 
   const auth = getAuth();
   const user = auth.currentUser;
   const navigate = useNavigate();
 
+  const handleFieldFocus = (field) => {
+    setTouchedFields((prev) => ({
+      ...prev,
+      [field]: true,
+    }));
+  };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -24,8 +36,14 @@ const EditAccount = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters long.");
+    if (newPassword.length < 12 || newPassword.length > 128) {
+      setError("Password must be between 12 and 128 characters.");
+      return;
+    }
+
+    // Block weak passwords (score below 2)
+    if (passwordStrength < 1) {
+      setError("Password is too weak. Please choose a stronger password.");
       return;
     }
 
@@ -47,6 +65,33 @@ const EditAccount = () => {
     }
   };
 
+  const handlePasswordChangeInput = (e) => {
+    const passwordInput = e.target.value;
+    setNewPassword(passwordInput);
+    
+    // Reset success message when user is typing
+    setSuccessMessage("");
+
+    // Check password strength with zxcvbn
+    const result = zxcvbn(passwordInput);
+    setPasswordStrength(result.score); // Get strength score (0-4)
+    setPasswordStrengthLabel(result.feedback.suggestions.join(" ")); // Show suggestions for weak password
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    setConfirmNewPassword(e.target.value);
+
+    // Reset success message when user is typing
+    setSuccessMessage("");
+  };
+
+  const handleCurrentPasswordChange = (e) => {
+    setCurrentPassword(e.target.value);
+
+    // Reset success message when user is typing
+    setSuccessMessage("");
+  };
+
   return (
     <div>
       <h1>Edit Account</h1>
@@ -56,7 +101,8 @@ const EditAccount = () => {
           <input
             type="password"
             value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
+            onChange={handleCurrentPasswordChange}
+            onFocus={() => handleFieldFocus("currentPassword")}
             required
           />
         </div>
@@ -65,26 +111,46 @@ const EditAccount = () => {
           <input
             type="password"
             value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+            onChange={handlePasswordChangeInput} // Handle password input change
+            onFocus={() => handleFieldFocus("newPassword")} // Set touched when field is focused
             required
           />
+          {touchedFields.newPassword && newPassword.length < 12 && (
+            <p style={{ color: "red" }}>Password must be at least 12 characters long.</p>
+          )}
+          {touchedFields.newPassword && newPassword.length > 128 && (
+            <p style={{ color: "red" }}>Password must be no more than 128 characters.</p>
+          )}
+          {touchedFields.newPassword && passwordStrength < 1 && (
+            <p style={{ color: "red" }}>Password is too weak. Please choose a stronger password.</p>
+          )}
+          {touchedFields.newPassword && (
+            <>
+              <p>Password Strength: {["Weak", "Fair", "Good", "Strong", "Very Strong"][passwordStrength]}</p>
+              <p>{passwordStrengthLabel}</p>
+            </>
+          )}
         </div>
         <div>
           <label>Confirm New Password</label>
           <input
             type="password"
             value={confirmNewPassword}
-            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            onChange={handleConfirmPasswordChange}
+            onFocus={() => handleFieldFocus("confirmNewPassword")}
             required
           />
+          {touchedFields.confirmNewPassword && newPassword !== confirmNewPassword && (
+            <p style={{ color: "red" }}>Passwords do not match.</p>
+          )}
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
         <button type="submit" disabled={loading}>
           {loading ? "Updating..." : "Change Password"}
         </button>
-        </form>
-        <button onClick={() => navigate("/")}>back to HOME</button>
+      </form>
+      <button onClick={() => navigate("/")}>Back to HOME</button>
     </div>
   );
 };

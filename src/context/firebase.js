@@ -12,7 +12,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-console.log('Firebase auth initialized:',firebaseConfig);
 const auth = getAuth(app);
 
 setPersistence(auth, browserLocalPersistence)
