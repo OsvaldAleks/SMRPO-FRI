@@ -1,26 +1,42 @@
 import React, { useState } from "react";
-import "./App.css";
 
 const AddUserForm = () => {
-  const [user, setUser] = useState({ firstName: "",secondName:"", email: "",userName:"",password: "", role: ""});
+  const [user, setUser] = useState({
+    firstName: "",
+    secondName: "",
+    email: "",
+    userName: "",
+    password: "",
+    role: "User", // Default role is "User"
+  });
+
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
+    const { name, type, checked, value } = e.target;
+
+    setUser((prevUser) => ({
+      ...prevUser,
+      [name]: type === "checkbox" ? (checked ? "Manager" : "User") : value,
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!user.firstName || !user.secondName || !user.email || !user.userName || !user.password|| !user.role) {
+    if (!user.firstName || !user.secondName || !user.email || !user.userName || !user.password) {
       setError("All fields are required");
       return;
     }
     console.log("User Added:", user);
-    setUser({ firstName: "", email: "", password:"", role: "" });
+    setUser({
+      firstName: "",
+      secondName: "",
+      email: "",
+      userName: "",
+      password: "",
+      role: "User", // Reset to default after submission
+    });
     setError("");
-  };
-  const openNewWindow = () => {
-    window.open("", "_blank", "width=600,height=400");
   };
 
   return (
@@ -28,9 +44,8 @@ const AddUserForm = () => {
       <h1>Add User</h1>
       {error && <p className="error">{error}</p>}
       <form onSubmit={handleSubmit}>
-        <h2>
-          Personal information
-        </h2>
+        <h2>Personal Information</h2>
+        
         <input
           type="text"
           name="firstName"
@@ -38,7 +53,7 @@ const AddUserForm = () => {
           value={user.firstName}
           onChange={handleChange}
         />
-         <input
+        <input
           type="text"
           name="secondName"
           placeholder="Enter Second Name"
@@ -52,33 +67,32 @@ const AddUserForm = () => {
           value={user.email}
           onChange={handleChange}
         />
-         <input
-          type="Text"
-          name="Username"
+        <input
+          type="text"
+          name="userName"
           placeholder="Enter Username"
           value={user.userName}
           onChange={handleChange}
         />
-         <input
+        <input
           type="password"
-          name="pasaword"
+          name="password"
           placeholder="Enter User Password"
           value={user.password}
           onChange={handleChange}
         />
        
-       <h2>
-         User Role 
-        </h2>
-
-        <input 
-          type="checkbox" 
-          checked={isChecked} 
-          onChange={() => setIsChecked(!isChecked)} 
-        />
-        <span style={{ color: isChecked ? "green" : "white", marginLeft: "8px" }}>
-          Accept Terms and Conditions
-        </span>
+        <h2>User Role</h2>
+        <label>
+          <input
+            type="checkbox"
+            name="role"
+            checked={user.role === "Manager"}
+            onChange={handleChange}
+          />
+          Register as Manager
+        </label>
+        <p>Selected Role: <strong>{user.role}</strong></p>
 
         <button type="submit">Add User</button>
       </form>

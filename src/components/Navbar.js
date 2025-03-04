@@ -50,6 +50,7 @@ const Navbar = () => {
           <Link to="/login" className="login-btn">Login</Link>
         ) : (
           <>
+          <Link to="/Add user">Add User</Link>
             <Link to="/EditAccount">Edit Account</Link>
             <button className="logout-btn" onClick={handleLogout}>Logout</button>
           </>

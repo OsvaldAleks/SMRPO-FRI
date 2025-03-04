@@ -6,7 +6,7 @@ import Login from "./pages/Login";
 import EditAccount from "./pages/EditAccount";
 import Navbar from './components/Navbar';
 import CreateProject from './pages/CreateProject';
-import AddUserForm from "./components/AddUserForm";
+import AddUserForm from "./pages/AddUserForm";
 
 
 function App() {
