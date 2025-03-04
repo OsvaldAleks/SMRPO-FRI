@@ -25,9 +25,13 @@ const Dashboard = () => {
         <div>
           <p>Welcome, {user.email}!</p> {/* Display the logged-in user's email */}
           <p>Your user ID is: {user.uid}</p> {/* Display the user's unique ID */}
+          <div>
+      
+    </div>
         </div>
       ) : (
         <p>homepage</p>
+
       )}
     </div>
   );
