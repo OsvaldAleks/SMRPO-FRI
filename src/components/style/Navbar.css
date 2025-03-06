@@ -1,3 +1,4 @@
+/* General Navbar Styling */
 nav {
   background-color: #333;
   padding: 0;
@@ -6,7 +7,7 @@ nav {
 nav ul {
   display: flex;
   justify-content: space-between;
-  align-items: center;  /* Ensures vertical centering */
+  align-items: center;
   list-style-type: none;
   padding: 0;
   margin: 0;
@@ -15,21 +16,24 @@ nav ul {
 
 .nav-left, .nav-right {
   display: flex;
-  align-items: center; /* Ensures vertical centering */
+  align-items: center;
   gap: 20px;
 }
 
 .nav-left {
-  margin-right: 20px; /* Adds a slight margin between Home and My projects */
+  margin-right: 20px;
 }
 
 .nav-right {
   margin-left: auto;
 }
-nav ul li{
+
+/* Navbar items */
+nav ul li {
   padding: 1rem;
 }
-/* Styles for links and buttons */
+
+/* Links and buttons */
 nav ul li a,
 nav ul li button {
   text-decoration: none;
@@ -42,40 +46,65 @@ nav ul li button {
   padding: 0;
 }
 
-/* Keep Home aligned properly */
-.nav-left a {
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
 /* Dropdown Styling */
 .dropdown {
   position: relative;
   cursor: pointer;
-  color:white;
+  color: white;
 }
 
+/* Hidden by default */
 .dropdown ul {
   position: absolute;
   top: 100%;
-  width:150%;
   left: 0;
   background-color: #444;
   list-style: none;
   display: none;
+  visibility: hidden;
   padding: 0;
-}
-.dropdown span {
-  height: 100%;
-}
-.dropdown:hover ul {
-  display: block;
-}
-.dropdown ul li {
-  padding: 0.2 rem;
+  margin: 0;
+  min-height: 160px; /* Ensures at least 4 items are visible */
+  max-height: 200px; /* Allows overflow to occur after 4 items */
+  overflow-y: auto; /* Enables scrolling if more than 4 items */
+  overflow-x: hidden; /* 🔥 Removes horizontal scroll */
+  flex-direction: column;
+  z-index: 1000;
+  width: 200px; /* Ensures consistent width */
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
 }
 
+/* Show when hovered */
+.dropdown:hover ul {
+  display: flex;
+  visibility: visible;
+}
+
+/* Ensure dropdown items display correctly */
+.dropdown ul li {
+  width: 100%; /* Ensures items fit within dropdown */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%; /* 🔥 Prevents exceeding dropdown width */
+  display: block;
+  box-sizing: border-box;
+}
+
+.dropdown ul li Link{
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+
+.dropdown ul li:hover {
+  background-color: #555;
+}
+
+/* Logout/Login button styles */
 .logout-btn {
   color: red;
 }

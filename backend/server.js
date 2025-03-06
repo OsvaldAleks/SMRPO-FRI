@@ -1,6 +1,9 @@
+
 const express = require("express");
 const cors = require("cors");
 const { db, auth } = require("./firebase");
+const { getUsers } = require("./services/userService");
+const { createProject, getUserProjects } = require("./services/projectService");
 
 const app = express();
 app.use(cors()); // Allow frontend to access API
@@ -8,7 +11,6 @@ app.use(express.json()); // Enable JSON body parsing
 
 const PORT = process.env.PORT || 5000;
 
-// Admin Registers a User
 app.post("/register", async (req, res) => {
   const { name, surname, email, password, username, system_rights, status } = req.body;
 
@@ -135,7 +137,45 @@ app.post("/sprints", async (req, res) => {
     }
   });
 
-// Start backend server
+  app.get('/getUsers', async (req, res) => {
+    try {
+      const users = await getUsers();
+      if (users.length === 0) {
+        return res.status(404).json({ message: 'No users found' });
+      }
+      res.json(users);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post("/createProject", async (req, res) => {
+    try {
+      const { name, devs, scrumMasters, productManagers } = req.body;
+      const project = await createProject(name, devs, scrumMasters, productManagers);
+      res.status(201).json({ message: "Project created successfully", project });
+    } catch (error) {
+      console.error("Error creating project:", error);
+      res.status(500).json({ error: error.message || "Internal server error" });
+    }
+  });
+
+  app.get('/getUserProjects/:userId', async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+      const users = await getUserProjects(userId);
+      if (users.length === 0) {
+        return res.status(404).json({ message: 'No projects found' });
+      }
+      res.json(users);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
 app.listen(PORT, () => {
   console.log(`✅ Backend running at http://localhost:${PORT}`);
 });

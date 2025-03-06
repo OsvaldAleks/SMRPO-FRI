@@ -5,6 +5,8 @@ logs
 **/*.back.*
 
 .env
+smrpo-project-firebase-adminsdk-*.json
+backend/node_modules
 
 node_modules
 bower_components

@@ -7,6 +7,7 @@ import EditAccount from "./pages/EditAccount";
 import Navbar from './components/Navbar';
 import CreateProject from './pages/CreateProject';
 import AddUserForm from "./pages/AddUserForm";
+import ManageUsers from "./pages/ManageUsers";
 
 
 function App() {
@@ -21,7 +22,8 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/newProject" element={<CreateProject />} />
-          <Route path="/Add user" element={<AddUserForm />} />
+          <Route path="/manageUsers" element={<ManageUsers />} />
+          <Route path="/addUser" element={<AddUserForm />} />
         </Routes>
       </main>
       </Router>

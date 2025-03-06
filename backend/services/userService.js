@@ -1,4 +1,4 @@
-const { db, auth } = require("./firebase");
+const { db, auth } = require("../firebase"); // Import Firestore and Firebase Auth
 
 async function addUser(userData) {
   try {
@@ -42,13 +42,42 @@ async function addUser(userData) {
   }
 }
 
-// Example usage
-addUser({
-  email: "janez.novak@email.com",
-  password: "securepassword123",
-  name: "Janez",
-  surname: "Novak",
-  username: "janez123",
-  system_rights: "Developer",
-  status: "active",
-});
+async function getUser(userId) {
+  const userRef = db.collection("users").doc(userId);
+  const doc = await userRef.get();
+
+  if (!doc.exists) {
+    console.log("Uporabnik ne obstaja.");
+  } else {
+    console.log("Podatki o uporabniku:", doc.data());
+  }
+}
+
+async function getUsers() {
+  // Check if Firestore is initialized
+  if (!db) {
+      console.error('Firestore is not initialized!');
+      return [];
+  }
+
+  const usersRef = db.collection("users");
+  const snapshot = await usersRef.get();
+
+  if (snapshot.empty) {
+      console.log("No users found.");
+      return [];
+  }
+
+  const users = [];
+  snapshot.forEach((doc) => {
+      const userData = doc.data();
+      userData.id = doc.id;
+      users.push(userData);
+  });
+
+  return users;
+}
+
+module.exports = {getUser,
+    getUsers,
+    addUser};
