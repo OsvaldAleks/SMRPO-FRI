@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { getUsers } from "../api";  // Import the getAllUsers function
 
 const CreateProject = () => {
   const [input1, setInput1] = useState("");
   const [users, setUsers] = useState([]);
   const [checkedUsers, setCheckedUsers] = useState({});
+  const [loading, setLoading] = useState(true);
   const [roleAssignments, setRoleAssignments] = useState({
     devs: [],
     scrumMasters: [],
@@ -12,13 +13,23 @@ const CreateProject = () => {
   });
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/users")
-      .then((response) => setUsers(response.data))
-      .catch((error) =>
-        console.error("Napaka pri pridobivanju uporabnikov:", error)
-      );
-  }, []);
+      const fetchUsers = async () => {
+        try {
+          const data = await getUsers();
+          if (!data.error) {
+            setUsers(data);
+          } else {
+            console.error('Error fetching users:', data.message);
+          }
+          setLoading(false);
+        } catch (error) {
+          console.error('Network error:', error);
+          setLoading(false);
+        }
+      };
+  
+      fetchUsers();
+    }, []);
 
   const handleCheckboxChange = (userId) => {
     setCheckedUsers((prev) => ({
@@ -42,30 +53,6 @@ const CreateProject = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const selectedUsers = {
-      devs: roleAssignments.devs,
-      scrumMasters: roleAssignments.scrumMasters,
-      productManagers: roleAssignments.productManagers,
-    };
-
-    const projectData = {
-      name: input1,
-      developers: selectedUsers.devs,
-      scrumMasters: selectedUsers.scrumMasters,
-      productManagers: selectedUsers.productManagers,
-    };
-
-    try {
-      const response = await axios.post("http://localhost:5000/projects", projectData);
-      console.log("Project created successfully:", response.data);
-    } catch (error) {
-      console.error("Error creating project:", error);
-    }
-  };
-
   return (
     <div>
       <h1>Create new project</h1>
@@ -77,7 +64,7 @@ const CreateProject = () => {
             value={input1}
             onChange={(e) => setInput1(e.target.value)}
           />
-          <button onClick={handleSubmit}>Create project</button>
+          <button>Create project</button>
         </div>
         <table>
           <thead>
@@ -93,7 +80,7 @@ const CreateProject = () => {
           <tbody>
             {Array.isArray(users) &&
               users.map((user) => (
-                <tr key={user.id}> {/* Set key on the <tr> */}
+                <tr key={user.id}>
                   <td>
                     <input
                       type="checkbox"

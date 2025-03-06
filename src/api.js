@@ -14,3 +14,21 @@ export const registerUser = async (userData) => {
     return { message: "Network error", error };
   }
 };
+
+export const getUsers = async () => {
+  try {
+    const response = await fetch(`${API_URL}/getUsers`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (response.ok) {
+      return response.json();
+    } else {
+      const errorData = await response.json();
+      return { message: errorData.message || "Failed to fetch users", error: true };
+    }
+  } catch (error) {
+    return { message: "Network error", error };
+  }
+};
+
