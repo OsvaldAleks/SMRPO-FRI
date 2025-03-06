@@ -42,7 +42,6 @@ async function getUserProjects(userId) {
     const { devs, productManagers, scrumMasters } = projectData;
     
     let userRole = '';
-    console.log(userId, devs, productManagers, scrumMasters);
     
     // Determine the user's role
     if (devs.includes(userId)) {
