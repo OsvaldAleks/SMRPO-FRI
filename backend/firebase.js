@@ -1,7 +1,7 @@
 const admin = require("firebase-admin");
 
 // Ensure correct path to service account key
-const serviceAccount = require("../smrpo-project-firebase-adminsdk-fbsvc-05eb93516b.json");
+const serviceAccount = require("../smrpo-project-firebase-adminsdk-fbsvc-f5d63459ad.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

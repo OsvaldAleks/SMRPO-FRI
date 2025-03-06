@@ -45,12 +45,14 @@ const Navbar = () => {
           </ul>
         </li>
       )}
+      {user && (
+        <li><Link to="/manageUsers">Manage users</Link></li>
+      )}
       <li className="nav-right">
         {!user ? (
           <Link to="/login" className="login-btn">Login</Link>
         ) : (
           <>
-          <Link to="/Add user">Add User</Link>
             <Link to="/EditAccount">Edit Account</Link>
             <button className="logout-btn" onClick={handleLogout}>Logout</button>
           </>
