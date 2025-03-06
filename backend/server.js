@@ -50,20 +50,64 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.get('/getUsers', async (req, res) => {
-  console.log(db);
-  try {
-    const users = await getUsers();
-    if (users.length === 0) {
-      return res.status(404).json({ message: 'No users found' });
+// Create a New Sprint
+app.post("/sprints", async (req, res) => {
+    try {
+      const { name, start_date, end_date, velocity } = req.body;
+  
+      // Validate required fields
+      if (!name || !start_date || !end_date || velocity === undefined) {
+        return res.status(400).json({ message: "All fields are required!" });
+      }
+  
+      // Generate a unique sprint ID
+      const sprintRef = db.collection("sprints").doc();
+      const sprintId = sprintRef.id;
+  
+      // Save sprint in Firestore
+      await sprintRef.set({
+        id: sprintId,
+        name,
+        start_date,
+        end_date,
+        velocity,
+      });
+  
+      res.status(201).json({ message: "Sprint successfully created!", sprintId });
+    } catch (error) {
+      res.status(500).json({ message: "Error creating sprint", error: error.message });
     }
-    res.json(users);
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
+  });
+  
+  // Get All Sprints
+  app.get("/sprints", async (req, res) => {
+    try {
+      const sprintSnapshot = await db.collection("sprints").get();
+      const sprints = sprintSnapshot.docs.map(doc => doc.data());
+  
+      res.status(200).json(sprints);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching sprints", error: error.message });
+    }
+  });
+  
+  // Get Sprint by ID
+  app.get("/sprints/:id", async (req, res) => {
+    const sprintId = req.params.id;
+  
+    try {
+      const sprintRef = db.collection("sprints").doc(sprintId);
+      const doc = await sprintRef.get();
+  
+      if (!doc.exists) {
+        return res.status(404).json({ message: "Sprint not found!" });
+      }
+  
+      res.status(200).json(doc.data());
+    } catch (error) {
+      res.status(500).json({ message: "Error retrieving sprint", error: error.message });
+    }
+  });
 
 app.listen(PORT, () => {
   console.log(`✅ Backend running at http://localhost:${PORT}`);
