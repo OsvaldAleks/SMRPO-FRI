@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const { db, auth } = require("./firebase");
 const { getUsers } = require("./services/userService");
-const { createProject } = require("./services/projectService");
+const { createProject, getUserProjects } = require("./services/projectService");
 
 const app = express();
 app.use(cors()); // Allow frontend to access API
@@ -111,7 +111,6 @@ app.post("/sprints", async (req, res) => {
   });
 
   app.get('/getUsers', async (req, res) => {
-    console.log(db);
     try {
       const users = await getUsers();
       if (users.length === 0) {
@@ -134,8 +133,21 @@ app.post("/sprints", async (req, res) => {
       res.status(500).json({ error: error.message || "Internal server error" });
     }
   });
-  
-  
+
+  app.get('/getUserProjects/:userId', async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+      const users = await getUserProjects(userId);
+      if (users.length === 0) {
+        return res.status(404).json({ message: 'No projects found' });
+      }
+      res.json(users);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
 app.listen(PORT, () => {
   console.log(`✅ Backend running at http://localhost:${PORT}`);

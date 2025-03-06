@@ -11,8 +11,8 @@ const CreateProject = () => {
     scrumMasters: [],
     productManagers: [],
   });
-  const [error, setError] = useState("");  // State to store the error message
-  const [success, setSuccess] = useState("");  // State to store the success message
+  const [error, setError] = useState(""); 
+  const [success, setSuccess] = useState(""); 
 
   useEffect(() => {
     const fetchUsers = async () => {

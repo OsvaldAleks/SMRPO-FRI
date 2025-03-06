@@ -27,5 +27,45 @@ async function createProject(name, devs, scrumMasters, productManagers) {
   return newProject;
 }
 
+async function getUserProjects(userId) {
+  const projectsRef = db.collection('projects');
+  const projectsSnapshot = await projectsRef.get();
 
-module.exports = { createProject };
+  if (projectsSnapshot.empty) {
+    return { status: 404, message: "No projects found!" };
+  }
+
+  const userProjects = [];
+
+  projectsSnapshot.forEach((doc) => {
+    const projectData = doc.data();
+    const { devs, productManagers, scrumMasters } = projectData;
+    
+    let userRole = '';
+    console.log(userId, devs, productManagers, scrumMasters);
+    
+    // Determine the user's role
+    if (devs.includes(userId)) {
+      userRole = 'devs';
+    } else if (productManagers.includes(userId)) {
+      userRole = 'productManagers';
+      console.log('isMan')
+
+    } else if (scrumMasters.includes(userId)) {
+      userRole = 'scrumMasters';
+      console.log('MAster')
+
+    }
+      if (userRole != '') {
+        userProjects.push({
+          projectId: doc.id,
+          projectName: projectData.name,
+          userRole: userRole,
+        });
+      }
+  });
+
+  return userProjects;
+}
+
+module.exports = { createProject, getUserProjects };

@@ -50,3 +50,20 @@ export const createProject = async (projectData) => {
     return { message: "Network error", error };
   }
 };
+
+export const getUserProjects = async (userId) => {
+  try {
+    const response = await fetch(`${API_URL}/getUserProjects/${userId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (response.ok) {
+      return response.json();
+    } else {
+      const errorData = await response.json();
+      return { message: errorData.message || "Failed to fetch projects", error: true };
+    }
+  } catch (error) {
+    return { message: "Network error", error };
+  }
+};
