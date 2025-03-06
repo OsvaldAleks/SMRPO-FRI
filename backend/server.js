@@ -54,9 +54,36 @@ app.post("/sprints", async (req, res) => {
     try {
       const { name, start_date, end_date, velocity } = req.body;
   
-      // Validate required fields
+      // Check if all required fields are present
       if (!name || !start_date || !end_date || velocity === undefined) {
         return res.status(400).json({ message: "All fields are required!" });
+      }
+  
+      // Validate date format and order
+      const startDate = new Date(start_date);
+      const endDate = new Date(end_date);
+      
+      if (isNaN(startDate) || isNaN(endDate)) {
+        return res.status(400).json({ message: "Invalid date format!" });
+      }
+      
+      if (startDate >= endDate) {
+        return res.status(400).json({ message: "Start date must be before end date!" });
+      }
+  
+      // Validate sprint velocity
+      if (velocity < 1 || velocity > 100) {
+        return res.status(400).json({ message: "Sprint velocity must be between 1 and 100!" });
+      }
+  
+      // Check for overlapping sprints
+      const overlappingSprints = await db.collection("sprints")
+        .where("start_date", "<=", end_date)
+        .where("end_date", ">=", start_date)
+        .get();
+  
+      if (!overlappingSprints.empty) {
+        return res.status(400).json({ message: "Sprint dates overlap with an existing sprint!" });
       }
   
       // Generate a unique sprint ID
