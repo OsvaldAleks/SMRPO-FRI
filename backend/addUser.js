@@ -1,31 +1,54 @@
-const { db, auth } = require("./firebase"); // Import Firestore and Firebase Auth
+const { db, auth } = require("./firebase");
 
-async function addUser() {
+async function addUser(userData) {
   try {
-    // Adding a user to Firebase Authentication
+    const { email, password, name, surname, username, system_rights, status } = userData;
+
+    // Backend validation: Check for missing fields
+    if (!email || !password || !name || !surname || !username || !system_rights || !status) {
+      console.log("Error: All fields are required.");
+      return;
+    }
+
+    // Check if username already exists
+    const usernameQuery = await db.collection("users").where("username", "==", username).get();
+    if (!usernameQuery.empty) {
+      console.log("Error: Username already exists.");
+      return;
+    }
+
+    // Create user in Firebase Authentication
     const userRecord = await auth.createUser({
-      email: "janez.novak@email.com",
-      password: "securepassword123",
-      displayName: "Janez Novak",
+      email,
+      password,
+      displayName: `${name} ${surname}`,
     });
 
-    // Link to firestore base
-    const userRef = db.collection("users").doc(userRecord.uid);
-    await userRef.set({
+    // Save user to Firestore
+    await db.collection("users").doc(userRecord.uid).set({
       id: userRecord.uid,
-      name: "Janez",
-      surname: "Novak",
-      email: "janez.novak@email.com",
-      username: "janez123",
-      system_rights: "Developer",
-      status: "active",
-      last_online: null, // update on login
+      name,
+      surname,
+      email,
+      username,
+      system_rights,
+      status,
+      last_online: null, // Update on login
     });
 
-    console.log("User successfully created in Firebase Authentication & Firestore:", userRecord.uid);
+    console.log("User successfully created:", userRecord.uid);
   } catch (error) {
     console.error("Error adding user:", error);
   }
 }
 
-addUser();
+// Example usage
+addUser({
+  email: "janez.novak@email.com",
+  password: "securepassword123",
+  name: "Janez",
+  surname: "Novak",
+  username: "janez123",
+  system_rights: "Developer",
+  status: "active",
+});
