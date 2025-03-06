@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getUsers } from "../api";  // Import the getAllUsers function
+import { getUsers, createProject } from "../api";  // Import the getAllUsers function
 
 const CreateProject = () => {
   const [input1, setInput1] = useState("");
@@ -11,52 +11,90 @@ const CreateProject = () => {
     scrumMasters: [],
     productManagers: [],
   });
+  const [error, setError] = useState("");  // State to store the error message
+  const [success, setSuccess] = useState("");  // State to store the success message
 
   useEffect(() => {
-      const fetchUsers = async () => {
-        try {
-          const data = await getUsers();
-          if (!data.error) {
-            setUsers(data);
-          } else {
-            console.error('Error fetching users:', data.message);
-          }
-          setLoading(false);
-        } catch (error) {
-          console.error('Network error:', error);
-          setLoading(false);
+    const fetchUsers = async () => {
+      try {
+        const data = await getUsers();
+        if (!data.error) {
+          setUsers(data);
+        } else {
+          console.error('Error fetching users:', data.message);
         }
-      };
-  
-      fetchUsers();
-    }, []);
+        setLoading(false);
+      } catch (error) {
+        console.error('Network error:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleCheckboxChange = (userId) => {
     setCheckedUsers((prev) => ({
       ...prev,
       [userId]: !prev[userId],
     }));
+    handleRoleChange(userId, 'devs');
   };
 
   const handleRoleChange = (userId, role) => {
     setRoleAssignments((prev) => {
       const updatedAssignments = { ...prev };
-      // Remove the user from all roles
+
+      if (!Array.isArray(updatedAssignments[role])) {
+        updatedAssignments[role] = [];
+      }
+
       Object.keys(updatedAssignments).forEach((key) => {
-        updatedAssignments[key] = updatedAssignments[key].filter(
-          (id) => id !== userId
-        );
+        updatedAssignments[key] = updatedAssignments[key].filter((id) => id !== userId);
       });
-      // Add the user to the new role
+
       updatedAssignments[role] = [...updatedAssignments[role], userId];
+
       return updatedAssignments;
     });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();  // Prevent default form submission behavior
+
+    // Extract users from roleAssignments based on the selected roles
+    const devs = roleAssignments.devs;
+    const scrumMasters = roleAssignments.scrumMasters;
+    const productManagers = roleAssignments.productManagers;
+
+    // Create the project data object with the proper structure
+    const projectData = {
+      name: input1, // project name
+      devs, // list of devs
+      scrumMasters, // list of scrumMasters
+      productManagers, // list of productManagers
+    };
+
+    try {
+      const result = await createProject(projectData);
+
+      if (result.error) {
+        setError(result.error);  // Set the error message from server
+        setSuccess("");  // Clear any previous success message
+      } else {
+        setSuccess("Project created successfully!");  // Set success message
+        setError("");  // Clear any previous error message
+      }
+    } catch (err) {
+      setError(err.message || "Error creating project");
+      setSuccess("");  // Clear any previous success message
+    }
   };
 
   return (
     <div>
       <h1>Create new project</h1>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div>
           <label>Ime projekta:</label>
           <input
@@ -64,8 +102,10 @@ const CreateProject = () => {
             value={input1}
             onChange={(e) => setInput1(e.target.value)}
           />
-          <button>Create project</button>
+          <button type="submit">Create project</button>
         </div>
+        {error && <p style={{ color: "red" }}>{error}</p>}  {/* Display the error message */}
+        {success && <p style={{ color: "green" }}>{success}</p>}  {/* Display success message */}
         <table>
           <thead>
             <tr>

@@ -1,16 +1,31 @@
-const { db, auth } = require("../firebase"); // Import Firestore and Firebase Auth
+const { db } = require("../firebase");
 
-async function addProject() {
-  try {  
-    const userRef = db.collection("users").doc(userRecord.uid);
-    await userRef.set({
-      name: "testName",
-    });
-  
-    console.log("Project successfully created in Firestore:", userRecord.uid);
-    } catch (error) {
-      console.error("Error adding project:", error);
-    }
+async function createProject(name, devs, scrumMasters, productManagers) {
+  if (!name || !devs || !scrumMasters || !productManagers) {
+    throw new Error("All fields are required");
   }
-  
-  module.exports = {addProject};
+
+  // Check if a project with the same name already exists
+  const existingProject = await db.collection("projects").where("name", "==", name).get();
+  if (!existingProject.empty) {
+    throw new Error("Project name already exists. Please choose another name.");
+  }
+
+  const projectId = db.collection("projects").doc().id; // Generate unique ID
+
+  const newProject = {
+    id: projectId,
+    name,
+    devs,
+    scrumMasters,
+    productManagers,
+    createdAt: new Date(),
+  };
+
+  await db.collection("projects").doc(projectId).set(newProject);
+
+  return newProject;
+}
+
+
+module.exports = { createProject };

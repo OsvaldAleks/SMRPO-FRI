@@ -32,3 +32,21 @@ export const getUsers = async () => {
   }
 };
 
+export const createProject = async (projectData) => {
+  console.log("Sending project data:", projectData); // Debugging line
+
+  try {
+    const response = await fetch(`${API_URL}/createProject`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(projectData),
+    });
+
+    const result = await response.json();
+    console.log("Response from server:", result); // Debugging line
+    return result;
+  } catch (error) {
+    console.error("Network error:", error);
+    return { message: "Network error", error };
+  }
+};
