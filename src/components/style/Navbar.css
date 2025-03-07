@@ -53,7 +53,7 @@ nav ul li button {
   color: white;
 }
 
-/* Hidden by default */
+/* Dropdown Menu */
 .dropdown ul {
   position: absolute;
   top: 100%;
@@ -61,44 +61,28 @@ nav ul li button {
   background-color: #444;
   list-style: none;
   display: none;
-  visibility: hidden;
   padding: 0;
   margin: 0;
-  min-height: 160px; /* Ensures at least 4 items are visible */
-  max-height: 200px; /* Allows overflow to occur after 4 items */
-  overflow-y: auto; /* Enables scrolling if more than 4 items */
-  overflow-x: hidden; /* 🔥 Removes horizontal scroll */
-  flex-direction: column;
-  z-index: 1000;
-  width: 200px; /* Ensures consistent width */
-  box-sizing: border-box; /* Ensures padding doesn't affect width */
+  width: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Remove any fixed height */
+  height: auto;
 }
 
-/* Show when hovered */
+/* Show dropdown when hovered */
 .dropdown:hover ul {
-  display: flex;
-  visibility: visible;
+  display: block;
 }
 
-/* Ensure dropdown items display correctly */
+/* Dropdown List Items */
 .dropdown ul li {
-  width: 100%; /* Ensures items fit within dropdown */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%; /* 🔥 Prevents exceeding dropdown width */
-  display: block;
-  box-sizing: border-box;
-}
-
-.dropdown ul li Link{
-  display: block;
   width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
+  padding: 0.5rem 1rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
 }
-
 
 .dropdown ul li:hover {
   background-color: #555;

@@ -18,12 +18,12 @@ function App() {
       <main>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/EditAccount" element={<EditAccount />} />
+          <Route path="/EditAccount" element={<PrivateRoute><EditAccount /></PrivateRoute>} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/newProject" element={<CreateProject />} />
-          <Route path="/manageUsers" element={<ManageUsers />} />
-          <Route path="/addUser" element={<AddUserForm />} />
+          <Route path="/newProject" element={<PrivateRoute><CreateProject /></PrivateRoute>} />
+          <Route path="/manageUsers" element={<PrivateRoute><ManageUsers /></PrivateRoute>} />
+          <Route path="/addUser" element={<PrivateRoute><AddUserForm /></PrivateRoute>} />
         </Routes>
       </main>
       </Router>
