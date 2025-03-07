@@ -6,13 +6,46 @@ async function createProject(name, devs, scrumMasters, productManagers) {
     throw new Error("All fields are required");
   }
 
-  // Check if a project with the same name already exists
+  let valid = true;
+  let err = "At least one";
+  
+  if (devs.length === 0) {
+    valid = false;
+    err += " developer";
+  }
+  
+  if (scrumMasters.length === 0) {
+    valid = false;
+    if (!err.endsWith("one")) {
+      err += ",";
+    }
+    err += " scrum master";
+  }
+  
+  if (productManagers.length === 0) {
+    valid = false;
+    if (!err.endsWith("one")) {
+      err += ",";
+    }
+    err += " product manager";
+  }
+  
+  if (!valid) {
+    const lastCommaIndex = err.lastIndexOf(",");
+    if (lastCommaIndex !== -1) {
+      err = err.substring(0, lastCommaIndex) + " and" + err.substring(lastCommaIndex + 1);
+    }
+  
+    throw new Error(err + " must be assigned to the project.");
+  }
+
   const existingProject = await db.collection("projects").where("name", "==", name).get();
   if (!existingProject.empty) {
     throw new Error("Project name already exists. Please choose another name.");
   }
+  throw new Error("At least one developer must be assigned to the project.");
 
-  const projectId = db.collection("projects").doc().id; // Generate unique ID
+  const projectId = db.collection("projects").doc().id;
 
   const newProject = {
     id: projectId,
@@ -49,11 +82,9 @@ async function getUserProjects(userId) {
       userRole = 'devs';
     } else if (productManagers.includes(userId)) {
       userRole = 'productManagers';
-      console.log('isMan')
 
     } else if (scrumMasters.includes(userId)) {
       userRole = 'scrumMasters';
-      console.log('MAster')
 
     }
       if (userRole != '') {

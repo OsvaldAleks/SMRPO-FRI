@@ -10,10 +10,12 @@ import AddUserForm from "./pages/AddUserForm";
 import ManageUsers from "./pages/ManageUsers";
 import UserProjects from "./pages/UserProjects";
 import ProjectDetails from "./pages/ProjectDetails";
+import { ProjectsProvider } from "./context/ProjectsContext";
 
 function App() {
   return (
     <AuthProvider>
+      <ProjectsProvider>
       <Router>
       <Navbar />
       <main>
@@ -30,6 +32,7 @@ function App() {
         </Routes>
       </main>
       </Router>
+      </ProjectsProvider>
     </AuthProvider>
   );
 }
