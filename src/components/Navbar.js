@@ -20,8 +20,7 @@ const Navbar = () => {
       setUser(currentUser);
 
     });
-    console.log(projects)
-
+    
     return () => unsubscribe();
   }, []);
 
