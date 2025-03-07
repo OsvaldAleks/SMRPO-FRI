@@ -8,7 +8,8 @@ import Navbar from './components/Navbar';
 import CreateProject from './pages/CreateProject';
 import AddUserForm from "./pages/AddUserForm";
 import ManageUsers from "./pages/ManageUsers";
-
+import UserProjects from "./pages/UserProjects";
+import ProjectDetails from "./pages/ProjectDetails";
 
 function App() {
   return (
@@ -24,6 +25,8 @@ function App() {
           <Route path="/newProject" element={<PrivateRoute><CreateProject /></PrivateRoute>} />
           <Route path="/manageUsers" element={<PrivateRoute><ManageUsers /></PrivateRoute>} />
           <Route path="/addUser" element={<PrivateRoute><AddUserForm /></PrivateRoute>} />
+          <Route path="/userProjects" element={<PrivateRoute><UserProjects /></PrivateRoute>} />
+          <Route path="/project/:projectName" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
         </Routes>
       </main>
       </Router>

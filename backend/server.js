@@ -2,8 +2,8 @@
 const express = require("express");
 const cors = require("cors");
 const { db, auth } = require("./firebase");
-const { getUsers } = require("./services/userService");
-const { createProject, getUserProjects } = require("./services/projectService");
+const { getUsers, getUser} = require("./services/userService");
+const { createProject, getUserProjects, getProject } = require("./services/projectService");
 
 const app = express();
 app.use(cors()); // Allow frontend to access API
@@ -150,6 +150,21 @@ app.post("/sprints", async (req, res) => {
     }
   });
 
+  app.get('/getUser/:userId', async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+      const user = await getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' }); // User does not exist
+      }  
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   app.post("/createProject", async (req, res) => {
     try {
       const { name, devs, scrumMasters, productManagers } = req.body;
@@ -172,6 +187,27 @@ app.post("/sprints", async (req, res) => {
       res.json(users);
     } catch (error) {
       console.error('Error fetching projects:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.get('/getProject/:projectName', async (req, res) => {
+    const projectName = req.params.projectName;
+    const userId = req.query.userId;
+
+    console.log(projectName)
+    console.log(userId)
+
+    try {
+      const project = await getProject(projectName, userId);
+  
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+  
+      res.json(project);
+    } catch (error) {
+      console.error('Error fetching project:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });

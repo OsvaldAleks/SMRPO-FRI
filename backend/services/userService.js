@@ -43,23 +43,25 @@ async function addUser(userData) {
 }
 
 async function getUser(userId) {
-  const userRef = db.collection("users").doc(userId);
-  const doc = await userRef.get();
+  try {
+    const userRef = db.collection("users").doc(userId);
+    const doc = await userRef.get();
 
-  if (!doc.exists) {
-    console.log("Uporabnik ne obstaja.");
-  } else {
-    console.log("Podatki o uporabniku:", doc.data());
+    if (!doc.exists) {
+      console.log("Uporabnik ne obstaja.");
+      return null;
+    } else {
+      const userData = doc.data();
+      console.log("Podatki o uporabniku:", userData);
+      return userData;
+    }
+  } catch (error) {
+    console.error("Napaka pri pridobivanju podatkov o uporabniku:", error);
+    throw error;
   }
 }
 
 async function getUsers() {
-  // Check if Firestore is initialized
-  if (!db) {
-      console.error('Firestore is not initialized!');
-      return [];
-  }
-
   const usersRef = db.collection("users");
   const snapshot = await usersRef.get();
 

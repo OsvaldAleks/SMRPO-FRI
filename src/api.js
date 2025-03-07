@@ -67,3 +67,26 @@ export const getUserProjects = async (userId) => {
     return { message: "Network error", error };
   }
 };
+
+export const getProject = async (projectName, userId) => {
+  if (!projectName || !userId) {
+    throw new Error("Project name and user ID are required.");
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/getProject/${projectName}?userId=${userId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to fetch project");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    throw new Error(error.message || "Network error");
+  }
+};

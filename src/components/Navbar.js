@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import './style/Navbar.css';
 import { useNavigate } from "react-router-dom";
-import { getUserProjects } from "../api";  // Import the getAllUsers function
+import { getUserProjects } from "../api"; 
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
@@ -51,12 +51,12 @@ const Navbar = () => {
       </li>
       {user && (
         <li className="dropdown">
-          My projects
+          <Link to="/userProjects">My projects</Link>
           <ul>
            {userProjects.length > 0 ? (
                 userProjects.map((project) => (
                   <li key={project.projectId}>
-                    <Link to={`/`}>{project.projectName}</Link>
+                    <Link to={`project/`+project.projectName}>{project.projectName}</Link>
                   </li>
                 ))
               ) : (

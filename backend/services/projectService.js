@@ -1,4 +1,5 @@
 const { db } = require("../firebase");
+const userService = require('./userService');
 
 async function createProject(name, devs, scrumMasters, productManagers) {
   if (!name || !devs || !scrumMasters || !productManagers) {
@@ -67,4 +68,49 @@ async function getUserProjects(userId) {
   return userProjects;
 }
 
-module.exports = { createProject, getUserProjects };
+async function getProject(projectName, userId) {
+    const projectsRef = db.collection('projects');
+    const querySnapshot = await projectsRef.where('name', '==', projectName).get();
+        
+    if (querySnapshot.empty) {
+      return { status: 404, message: "No project found!" };
+    }
+
+    const projectDoc = querySnapshot.docs[0];
+    const projectData = projectDoc.data();
+
+    const enrichedProject = await replaceUserIdsWithData(projectData);
+
+    return { status: 200, project: enrichedProject };
+}
+
+
+async function replaceUserIdsWithData(projectData) {
+  if (projectData.devs && projectData.devs.length > 0) {
+    projectData.devs = await Promise.all(
+      projectData.devs.map(async (userId) => {
+        return await userService.getUser(userId);
+      })
+    );
+  }
+
+  if (projectData.productManagers && projectData.productManagers.length > 0) {
+    projectData.productManagers = await Promise.all(
+      projectData.productManagers.map(async (userId) => {
+        return await userService.getUser(userId);
+      })
+    );
+  }
+
+  if (projectData.scrumMasters && projectData.scrumMasters.length > 0) {
+    projectData.scrumMasters = await Promise.all(
+      projectData.scrumMasters.map(async (userId) => {
+        return await userService.getUser(userId);
+      })
+    );
+  }
+
+  return projectData;
+}
+
+module.exports = { createProject, getUserProjects, getProject };
