@@ -51,12 +51,24 @@ const CreateProject = () => {
   }, []);
 
   const handleCheckboxChange = (userId) => {
-    setCheckedUsers((prev) => ({
-      ...prev,
-      [userId]: !prev[userId],
-    }));
-    handleRoleChange(userId, "devs");
+    setCheckedUsers((prev) => {
+      const isChecked = !prev[userId]; // Toggle the checkbox state
+      const updatedCheckedUsers = { ...prev, [userId]: isChecked };
+
+      if (!isChecked) {
+        setRoleAssignments((prevRoles) => {
+          const updatedRoles = { ...prevRoles };
+          Object.keys(updatedRoles).forEach((role) => {
+            updatedRoles[role] = updatedRoles[role].filter((id) => id !== userId);
+          });
+          return updatedRoles;
+        });
+      }
+
+      return updatedCheckedUsers;
+    });
   };
+
 
   const handleRoleChange = (userId, role) => {
     setRoleAssignments((prev) => {

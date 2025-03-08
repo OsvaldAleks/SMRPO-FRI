@@ -26,6 +26,7 @@ nav ul {
 
 .nav-right {
   margin-left: auto;
+  white-space: nowrap; /* Prevents text from breaking into multiple lines */
 }
 
 /* Navbar items */

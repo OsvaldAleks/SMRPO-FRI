@@ -12,6 +12,7 @@ import ManageUsers from "./pages/ManageUsers";
 import UserProjects from "./pages/UserProjects";
 import ProjectDetails from "./pages/ProjectDetails";
 import { ProjectsProvider } from "./context/ProjectsContext";
+import './App.css'
 
 function App() {
   return (
