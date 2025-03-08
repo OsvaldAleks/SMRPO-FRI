@@ -20,6 +20,17 @@ app.use("/projects", projectRoutes);
 app.use("/sprints", sprintRoutes);
 app.use("/userStories", userStoryRoutes);
 
+// Catch-all for unhandled routes
+app.use('*', (req, res) => {
+    res.status(404).json({ message: "Not Found" });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send({ error: 'Something broke!' });
+});
+
 app.listen(PORT, () => {
   console.log(`Backend running at http://localhost:${PORT}`);
 });

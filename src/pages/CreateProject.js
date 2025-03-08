@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { getUsers, createProject, getUserProjects } from "../api";
+import { getUser, createProject, getUserProjects, getUsers } from "../api"; // Ensure getUsers is imported
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ProjectsContext } from "../context/ProjectsContext";
 
@@ -20,31 +20,29 @@ const CreateProject = () => {
 
   const auth = getAuth();
 
+  // Listen for authentication state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-      } else {
-        setUser(null);
-      }
+      setUser(currentUser);
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Fetch users
+  // Fetch users from the API
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const data = await getUsers();
-        if (!data.error) {
+
+        if (data && !data.error) {
           setUsers(data);
         } else {
-          console.error("Error fetching users:", data.message);
+          console.error("Error fetching users:", data ? data.message : "No data received");
         }
-        setLoading(false);
       } catch (error) {
         console.error("Network error:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -52,14 +50,12 @@ const CreateProject = () => {
     fetchUsers();
   }, []);
 
-
-
   const handleCheckboxChange = (userId) => {
     setCheckedUsers((prev) => ({
       ...prev,
       [userId]: !prev[userId],
     }));
-    handleRoleChange(userId, 'devs');
+    handleRoleChange(userId, "devs");
   };
 
   const handleRoleChange = (userId, role) => {
@@ -70,6 +66,7 @@ const CreateProject = () => {
         updatedAssignments[role] = [];
       }
 
+      // Ensure a user is only in one role
       Object.keys(updatedAssignments).forEach((key) => {
         updatedAssignments[key] = updatedAssignments[key].filter((id) => id !== userId);
       });
@@ -82,71 +79,70 @@ const CreateProject = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!input1) {
       setError("Project name is required.");
       return;
     }
-  
-    const devs = roleAssignments.devs;
-    const scrumMasters = roleAssignments.scrumMasters;
-    const productManagers = roleAssignments.productManagers;
-  
+
+    if (!user || !user.uid) {
+      setError("User is not authenticated.");
+      return;
+    }
+
     const projectData = {
       name: input1,
-      devs,
-      scrumMasters,
-      productManagers,
+      devs: roleAssignments.devs,
+      scrumMasters: roleAssignments.scrumMasters,
+      productManagers: roleAssignments.productManagers,
+      owner: user.uid, // Include user ID of the creator
     };
-  
+
     try {
+      console.log("Submitting project data:", projectData);
       const result = await createProject(projectData);
-  
+
       if (result.error) {
-        setError(result.error);
+        setError(result.message || "An error occurred while creating the project.");
         setSuccess("");
       } else {
         setSuccess("Project created successfully!");
         setError("");
-  
+
+        console.log("Fetching updated projects for user:", user.uid);
         const updatedProjects = await getUserProjects(user.uid);
         setProjects(updatedProjects);
-        console.log(updatedProjects);
 
+        // Reset form
         setInput1("");
         setCheckedUsers({});
-        setRoleAssignments({
-          devs: [],
-          scrumMasters: [],
-          productManagers: [],
-        });
+        setRoleAssignments({ devs: [], scrumMasters: [], productManagers: [] });
       }
     } catch (err) {
-      setError(err.message || "Error creating project");
+      setError(err.message || "Network error occurred while creating project.");
       setSuccess("");
     }
   };
 
-
   return (
     <div>
-      <h1>Create new project</h1>
+      <h1>Create New Project</h1>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Ime projekta:</label>
+          <label>Project Name:</label>
           <input
             type="text"
             value={input1}
             onChange={(e) => setInput1(e.target.value)}
           />
-          <button type="submit">Create project</button>
+          <button type="submit">Create Project</button>
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {success && <p style={{ color: "green" }}>{success}</p>}
         <table>
           <thead>
             <tr>
-              <th>Include user</th>
+              <th>Include User</th>
               <th>Username</th>
               <th>First Name</th>
               <th>Last Name</th>
@@ -177,7 +173,7 @@ const CreateProject = () => {
                       >
                         <option value="devs">Developer</option>
                         <option value="productManagers">Product Manager</option>
-                        <option value="scrumMasters">SCRUM master</option>
+                        <option value="scrumMasters">SCRUM Master</option>
                       </select>
                     ) : (
                       <span>Select user to assign a role</span>

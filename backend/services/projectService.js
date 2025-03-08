@@ -1,19 +1,19 @@
 const { db } = require("../firebase");
 const userService = require('./userService');
 
-async function createProject(name, devs, scrumMasters, productManagers) {
+async function createProject(name, devs, scrumMasters, productManagers, owner) {
   if (!name || !devs || !scrumMasters || !productManagers) {
     throw new Error("All fields are required");
   }
 
   let valid = true;
   let err = "At least one";
-  
+
   if (devs.length === 0) {
     valid = false;
     err += " developer";
   }
-  
+
   if (scrumMasters.length === 0) {
     valid = false;
     if (!err.endsWith("one")) {
@@ -21,7 +21,7 @@ async function createProject(name, devs, scrumMasters, productManagers) {
     }
     err += " scrum master";
   }
-  
+
   if (productManagers.length === 0) {
     valid = false;
     if (!err.endsWith("one")) {
@@ -29,13 +29,13 @@ async function createProject(name, devs, scrumMasters, productManagers) {
     }
     err += " product manager";
   }
-  
+
   if (!valid) {
     const lastCommaIndex = err.lastIndexOf(",");
     if (lastCommaIndex !== -1) {
       err = err.substring(0, lastCommaIndex) + " and" + err.substring(lastCommaIndex + 1);
     }
-  
+
     throw new Error(err + " must be assigned to the project.");
   }
 
@@ -43,7 +43,6 @@ async function createProject(name, devs, scrumMasters, productManagers) {
   if (!existingProject.empty) {
     throw new Error("Project name already exists. Please choose another name.");
   }
-  throw new Error("At least one developer must be assigned to the project.");
 
   const projectId = db.collection("projects").doc().id;
 
@@ -53,12 +52,17 @@ async function createProject(name, devs, scrumMasters, productManagers) {
     devs,
     scrumMasters,
     productManagers,
+    owner,  // <-- Store owner in database
     createdAt: new Date(),
   };
 
-  await db.collection("projects").doc(projectId).set(newProject);
+  try {
+    await db.collection("projects").doc(projectId).set(newProject);
+    return newProject;
+  } catch (error) {
+    throw new Error("Error saving project to database: " + error.message);
+  }
 
-  return newProject;
 }
 
 async function getUserProjects(userId) {
@@ -74,9 +78,9 @@ async function getUserProjects(userId) {
   projectsSnapshot.forEach((doc) => {
     const projectData = doc.data();
     const { devs, productManagers, scrumMasters } = projectData;
-    
+
     let userRole = '';
-    
+
     // Determine the user's role
     if (devs.includes(userId)) {
       userRole = 'devs';
@@ -87,32 +91,32 @@ async function getUserProjects(userId) {
       userRole = 'scrumMasters';
 
     }
-      if (userRole != '') {
-        userProjects.push({
-          projectId: doc.id,
-          projectName: projectData.name,
-          userRole: userRole,
-        });
-      }
+    if (userRole != '') {
+      userProjects.push({
+        projectId: doc.id,
+        projectName: projectData.name,
+        userRole: userRole,
+      });
+    }
   });
 
   return userProjects;
 }
 
 async function getProject(projectName, userId) {
-    const projectsRef = db.collection('projects');
-    const querySnapshot = await projectsRef.where('name', '==', projectName).get();
-        
-    if (querySnapshot.empty) {
-      return { status: 404, message: "No project found!" };
-    }
+  const projectsRef = db.collection('projects');
+  const querySnapshot = await projectsRef.where('name', '==', projectName).get();
 
-    const projectDoc = querySnapshot.docs[0];
-    const projectData = projectDoc.data();
+  if (querySnapshot.empty) {
+    return { status: 404, message: "No project found!" };
+  }
 
-    const enrichedProject = await replaceUserIdsWithData(projectData);
+  const projectDoc = querySnapshot.docs[0];
+  const projectData = projectDoc.data();
 
-    return { status: 200, project: enrichedProject };
+  const enrichedProject = await replaceUserIdsWithData(projectData);
+
+  return { status: 200, project: enrichedProject };
 }
 
 

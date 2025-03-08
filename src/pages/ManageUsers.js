@@ -1,6 +1,7 @@
+// manageUsers.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getUsers } from "../api";  // Import the getAllUsers function
+import { getUsers } from "../api";  // Correctly import the getUsers function
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
@@ -15,9 +16,9 @@ const ManageUsers = () => {
         } else {
           console.error('Error fetching users:', data.message);
         }
-        setLoading(false);
       } catch (error) {
         console.error('Network error:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -28,9 +29,8 @@ const ManageUsers = () => {
   return (
     <div>
       <h1>Manage Users</h1>
-      <Link to="/addUser">+</Link>
+      <Link to="/addUser">Add User</Link>
 
-      {/* Conditional rendering based on loading state */}
       {loading ? (
         <p>Loading...</p>
       ) : (
