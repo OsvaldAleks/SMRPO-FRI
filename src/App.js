@@ -11,6 +11,7 @@ import AddUserForm from "./pages/AddUserForm";
 import ManageUsers from "./pages/ManageUsers";
 import UserProjects from "./pages/UserProjects";
 import ProjectDetails from "./pages/ProjectDetails";
+import AddSprintForm from "./pages/AddSprintForm";
 import { ProjectsProvider } from "./context/ProjectsContext";
 import './App.css'
 
@@ -31,6 +32,7 @@ function App() {
           <Route path="/addUser" element={<AdminRoute><AddUserForm /></AdminRoute>} />
           <Route path="/userProjects" element={<PrivateRoute><UserProjects /></PrivateRoute>} />
           <Route path="/project/:projectName" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
+          <Route path="/addSprint" element={<PrivateRoute><AddSprintForm /></PrivateRoute>} />
         </Routes>
       </main>
       </Router>

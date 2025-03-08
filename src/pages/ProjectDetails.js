@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getProject } from "../api";
+import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const ProjectDetails = () => {
@@ -9,6 +10,7 @@ const ProjectDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const auth = getAuth();
@@ -92,6 +94,12 @@ const ProjectDetails = () => {
       ) : (
         <></>
       )}
+
+      <button
+        onClick={() => navigate("/addSprint")}
+      >
+      Add Sprint
+      </button>
     </div>
   );
 };
