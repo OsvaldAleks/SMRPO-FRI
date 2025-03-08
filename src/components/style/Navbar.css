@@ -1,10 +1,4 @@
 /* General Navbar Styling */
-nav {
-  background-color: #333;
-  padding: 0;
-}
-
-nav ul {}
 .nav {
   background-color: var(--color-primary);
   display: flex;

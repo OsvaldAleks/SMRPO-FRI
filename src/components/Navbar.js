@@ -10,8 +10,8 @@ import { ProjectsContext } from "../context/ProjectsContext";
 
 // import { Link, useNavigate } from "react-router-dom";
 
-// import Button from "../components/Button";
-// import List from "../components/Lists";
+import Button from "../components/Button";
+import List from "../components/Lists";
 
 const Navbar = () => {
   const { user, loading } = useAuth();
@@ -35,80 +35,80 @@ const Navbar = () => {
   };
 
   return (
-    <nav>
-      <ul>
-        <li className="nav-left">
-          <Link to="/">Home</Link>
-        </li>
+    // <nav>
+    //   <ul>
+    //     <li className="nav-left">
+    //       <Link to="/">Home</Link>
+    //     </li>
 
-        {/* Only show projects if user is logged in */}
-        {user && (
-          <li className="dropdown">
-            <Link to="/userProjects">My projects</Link>
-            <ul>
-              {projectList.length > 0 ? (
-                projectList.map((project) => (
-                  <li key={project.projectId}>
-                    <Link to={`/project/${project.projectName}`}>{project.projectName}</Link>
-                  </li>
-                ))
-              ) : (
-                <li>No projects available</li> // Prevents map() error
-              )}
+    //     {/* Only show projects if user is logged in */}
+    //     {user && (
+    //       <li className="dropdown">
+    //         <Link to="/userProjects">My projects</Link>
+    //         <ul>
+    //           {projectList.length > 0 ? (
+    //             projectList.map((project) => (
+    //               <li key={project.projectId}>
+    //                 <Link to={`/project/${project.projectName}`}>{project.projectName}</Link>
+    //               </li>
+    //             ))
+    //           ) : (
+    //             <li>No projects available</li> // Prevents map() error
+    //           )}
               
-              {user.system_rights == 'Admin' &&
-                <li><Link to="/newProject">+ Create Project</Link></li>
-              }
-            </ul>
-          </li>
-        )}
+    //           {user.system_rights == 'Admin' &&
+    //             <li><Link to="/newProject">+ Create Project</Link></li>
+    //           }
+    //         </ul>
+    //       </li>
+    //     )}
 
-        {user && user.system_rights == 'Admin' && (
-          <li><Link to="/manageUsers">Manage users</Link></li>
-        )}
+    //     {user && user.system_rights == 'Admin' && (
+    //       <li><Link to="/manageUsers">Manage users</Link></li>
+    //     )}
 
-        <li className="nav-right">
-          {!user ? (
-            <Link to="/login" className="login-btn">Login</Link>
-          ) : (
-            <>
-              <Link to="/EditAccount">Edit Account</Link>
-              <button className="logout-btn" onClick={handleLogout}>Logout</button>
-            </>
-          )}
-        </li>
-      </ul>
-    </nav>
-    // <nav className="nav">
-    //   <span className="nav-tittle">Sprintly</span>
-    //   {!user ? (
-    //     <>
-
-    //       <List className="nav-left" items={[{ label: "Home", path: "/" }]} variant="inline" />
-    //       <Button className="nav-right" variant="outline" to="/login">
-    //         Login
-    //       </Button>
-    //     </>
-    //   ) : (
-    //     <>
-    //       <List
-    //         className="nav-left"
-    //         items={[
-    //           { label: "Home", path: "/" },
-    //           { label: "Dashboard", path: "/dashboard" },
-    //           { label: "Add User", path: "/Adduser" },
-    //           { label: "New Project", path: "/newProject" }, 
-    //           { label: "Edit Account", path: "/EditAccount" },
-    //         ]}
-    //         variant="inline"
-    //       />
-
-    //         <Button className="nav-right" variant="secondary" onClick={handleLogout}>
-    //           Logout
-    //         </Button>
-    //     </>
-    //   )}
+    //     <li className="nav-right">
+    //       {!user ? (
+    //         <Link to="/login" className="login-btn">Login</Link>
+    //       ) : (
+    //         <>
+    //           <Link to="/EditAccount">Edit Account</Link>
+    //           <button className="logout-btn" onClick={handleLogout}>Logout</button>
+    //         </>
+    //       )}
+    //     </li>
+    //   </ul>
     // </nav>
+    <nav className="nav">
+      <span className="nav-tittle">Sprintly</span>
+      {!user ? (
+        <>
+
+          <List className="nav-left" items={[{ label: "Home", path: "/" }]} variant="inline" />
+          <Button className="nav-right" variant="outline" to="/login">
+            Login
+          </Button>
+        </>
+      ) : (
+        <>
+          <List
+            className="nav-left"
+            items={[
+              { label: "Home", path: "/" },
+              { label: "Dashboard", path: "/dashboard" },
+              { label: "Add User", path:"/addUser" },
+              { label: "New Project", path: "/newProject" }, 
+              { label: "Edit Account", path: "/EditAccount" },
+            ]}
+            variant="inline"
+          />
+
+            <Button className="nav-right" variant="secondary" onClick={handleLogout}>
+              Logout
+            </Button>
+        </>
+      )}
+    </nav>
   );
 };
 
