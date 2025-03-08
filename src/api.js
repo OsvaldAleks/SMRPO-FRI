@@ -50,8 +50,6 @@ export const getUsers = async () => {
 };
 
 export const createProject = async (projectData) => {
-  console.log("Sending project data:", projectData); // Debugging log
-
   try {
     const response = await fetch(`${API_URL}/projects`, {
       method: "POST",
@@ -59,9 +57,7 @@ export const createProject = async (projectData) => {
       body: JSON.stringify(projectData),
     });
 
-    const responseBody = await response.text(); // Read raw response first
-    console.log("Raw response from server:", responseBody);
-
+    const responseBody = await response.text();
     let result;
     try {
       result = JSON.parse(responseBody); // Attempt to parse JSON
@@ -73,7 +69,6 @@ export const createProject = async (projectData) => {
       throw new Error(result.error || "Failed to create project");
     }
 
-    console.log("Response from server:", result);
     return result;
   } catch (error) {
     console.error("Network error:", error.message);
@@ -102,7 +97,7 @@ export const getProject = async (projectName, userId) => {
   }
 
   try {
-    const response = await fetch(`${API_URL}/getProject/${projectName}?userId=${userId}`, {
+    const response = await fetch(`${API_URL}/projects/details/${projectName}?userId=${userId}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });

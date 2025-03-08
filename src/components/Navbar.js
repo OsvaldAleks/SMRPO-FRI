@@ -3,27 +3,19 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
+import { useAuth } from "../context/AuthContext";
 import './style/Navbar.css';
 import { useNavigate } from "react-router-dom";
 import { ProjectsContext } from "../context/ProjectsContext";
 
 const Navbar = () => {
-  const [user, setUser] = useState(null);
+  const { user, loading } = useAuth();
   const { projects } = useContext(ProjectsContext) || { projects: [] };
   
   // Ensure projects is always an array
   const projectList = Array.isArray(projects) ? projects : [];
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      setUser(currentUser);
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   const handleLogout = () => {
     const auth = getAuth();
@@ -57,14 +49,14 @@ const Navbar = () => {
                 <li>No projects available</li> // Prevents map() error
               )}
               
-              {/* Only show project creation if user is logged in */}
-              <li><Link to="/newProject">+ Create Project</Link></li>
+              {user.system_rights == 'Admin' &&
+                <li><Link to="/newProject">+ Create Project</Link></li>
+              }
             </ul>
           </li>
         )}
 
-        {/* Only show manage users if user is logged in */}
-        {user && (
+        {user && user.system_rights == 'Admin' && (
           <li><Link to="/manageUsers">Manage users</Link></li>
         )}
 

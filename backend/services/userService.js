@@ -66,7 +66,6 @@ async function getUsers() {
   const snapshot = await usersRef.get();
 
   if (snapshot.empty) {
-      console.log("No users found.");
       return [];
   }
 

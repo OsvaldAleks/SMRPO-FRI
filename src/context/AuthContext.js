@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "./firebase";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getUser } from "../api"
 
 const AuthContext = createContext();
 
@@ -9,21 +10,27 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check sessionStorage for user data on initial load
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
       setLoading(false);
     }
 
-    // Subscribe to Firebase auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        setUser(currentUser);
-        sessionStorage.setItem("user", JSON.stringify(currentUser)); // Store user data in sessionStorage
+        const userData = await getUser(currentUser.uid);
+
+        const userWithPrivileges = {
+          ...currentUser,
+          system_rights: userData?.system_rights || null,
+        };
+
+        setUser(userWithPrivileges);
+        sessionStorage.setItem("user", JSON.stringify(userWithPrivileges));
       } else {
+
         setUser(null);
-        sessionStorage.removeItem("user"); // Clear user data from sessionStorage
+        sessionStorage.removeItem("user");
       }
       setLoading(false);
     });
@@ -31,20 +38,31 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  const login = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        setUser(user);
-        sessionStorage.setItem("user", JSON.stringify(user)); // Store user data in sessionStorage
-      });
+  const login = async (email, password) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const userData = await getUser(user.uid)
+
+      const userWithPrivileges = {
+        ...user,
+        system_rights: userData?.system_rights || null,
+      };
+
+      setUser(userWithPrivileges);
+      sessionStorage.setItem("user", JSON.stringify(userWithPrivileges));
+    } catch (error) {
+      console.error("Login failed:", error.message);
+      throw error;
+    }
   };
 
   const logout = () => {
     return signOut(auth)
       .then(() => {
         setUser(null);
-        sessionStorage.removeItem("user"); // Clear user data from sessionStorage
+        sessionStorage.removeItem("user");
       });
   };
 

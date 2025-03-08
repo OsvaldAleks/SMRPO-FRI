@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import AdminRoute from "./components/AdminRoute";
 import PrivateRoute from "./components/PrivateRoute";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
@@ -24,9 +25,9 @@ function App() {
           <Route path="/EditAccount" element={<PrivateRoute><EditAccount /></PrivateRoute>} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/newProject" element={<PrivateRoute><CreateProject /></PrivateRoute>} />
-          <Route path="/manageUsers" element={<PrivateRoute><ManageUsers /></PrivateRoute>} />
-          <Route path="/addUser" element={<PrivateRoute><AddUserForm /></PrivateRoute>} />
+          <Route path="/newProject" element={<AdminRoute><CreateProject /></AdminRoute>} />
+          <Route path="/manageUsers" element={<AdminRoute><ManageUsers /></AdminRoute>} />
+          <Route path="/addUser" element={<AdminRoute><AddUserForm /></AdminRoute>} />
           <Route path="/userProjects" element={<PrivateRoute><UserProjects /></PrivateRoute>} />
           <Route path="/project/:projectName" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
         </Routes>
