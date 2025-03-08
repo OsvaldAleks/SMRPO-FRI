@@ -84,7 +84,7 @@ export const createProject = async (projectData) => {
 
 export const getUserProjects = async (userId) => {
   try {
-    const response = await fetch(`${API_URL}/users/${userId}/projects`, { method: "GET", headers: { "Content-Type": "application/json" } });
+    const response = await fetch(`${API_URL}/projects/user/${userId}`, { method: "GET", headers: { "Content-Type": "application/json" } });
     if (response.ok) {
       return response.json();
     } else {
