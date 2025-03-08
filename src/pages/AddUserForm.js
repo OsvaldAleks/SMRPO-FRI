@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import { registerUser } from "../api"; // Import API function
+import { useNavigate } from 'react-router-dom';
+import Button from "../components/Button";
+import Input from "../components/Input";
+
 
 const AddUserForm = () => {
   const [user, setUser] = useState({
@@ -8,8 +12,7 @@ const AddUserForm = () => {
     email: "",
     username: "",
     password: "",
-    system_rights: "User", // Default role
-    status: "active", // Default status
+    role: "User", 
   });
 
   const [error, setError] = useState("");
@@ -31,53 +34,128 @@ const AddUserForm = () => {
       setError("All fields are required");
       return;
     }
-
+    console.log("User Added:", user);
+    setUser({
+      firstName: "",
+      secondName: "",
+      email: "",
+      userName: "",
+      password: "",
+      role: "User", // Reset to default after submission
+    });
     setError("");
-    setSuccess("");
+  };
+  const navigate = useNavigate();
 
-    // Send user data to backend API
-    const response = await registerUser(user);
-
-    if (response.error) {
-      setError(response.message);
-    } else {
-      setSuccess(response.message);
-      // Reset form after successful registration
-      setUser({
-        name: "",
-        surname: "",
-        email: "",
-        username: "",
-        password: "",
-        system_rights: "User",
-        status: "active",
-      });
-    }
+  const goBackHandler = () => {
+    navigate(-1); // This will navigate back to the previous page
   };
 
+
   return (
-    <div className="form-container">
-      <h1>Add User</h1>
-      {error && <p className="error">{error}</p>}
-      {success && <p className="success">{success}</p>}
-      <form onSubmit={handleSubmit}>
-        <h2>Personal Information</h2>
 
-        <input type="text" name="name" placeholder="Enter First Name" value={user.name} onChange={handleChange} required />
-        <input type="text" name="surname" placeholder="Enter Last Name" value={user.surname} onChange={handleChange} required />
-        <input type="email" name="email" placeholder="Enter Email" value={user.email} onChange={handleChange} required />
-        <input type="text" name="username" placeholder="Enter Username" value={user.username} onChange={handleChange} required />
-        <input type="password" name="password" placeholder="Enter Password" value={user.password} onChange={handleChange} required />
+    <div className="center--container">
+      <div className="center--box wide--box">
 
-        <h2>User Role</h2>
-        <select name="system_rights" value={user.system_rights} onChange={handleChange}>
-          <option value="User">User</option>
-          <option value="Manager">Manager</option>
-          <option value="Admin">Admin</option>
-        </select>
+     <Button variant="goback" onClick={goBackHandler} />
 
-        <button type="submit">Add User</button>
-      </form>
+          <h1>Add New User</h1>
+        {error && <p className="p--alert">{error}</p>}
+
+        <form onSubmit={handleSubmit}>
+
+          <div className={"block--element"}>
+           <label className={"block--element"}>
+            Username
+           </label>
+          <Input
+          className={"block--element"}
+            type="text"
+            name="userName"
+            placeholder="Enter Username"
+            value={user.userName}
+            onChange={handleChange}
+          />
+          </div>
+          <div className={"block--element"}>
+           <label className={"block--element"}>
+            Email
+           </label>
+           <Input
+           className={"block--element"}
+            type="email"
+            name="email"
+            placeholder="Enter Email"
+            value={user.email}
+            onChange={handleChange}
+          />
+          </div>
+          <div className={"block--element grid"}>
+            <div className="grid--leftdiv">
+             <label className={"block--element"}>
+             First Name
+             </label>
+            <Input
+              className={"block--element"}
+              type="text"
+              name="firstName"
+              placeholder="Enter First Name"
+              value={user.firstName}
+              onChange={handleChange}
+            />
+             </div>
+             <div className="grid--rightdiv">
+             <label className={"block--element"}>
+             Second Name
+             </label>
+            <Input
+            className={"block--element"}
+              type="text"
+              name="secondName"
+              placeholder="Enter Second Name"
+              value={user.secondName}
+              onChange={handleChange}
+            />
+            </div>
+          </div>
+
+
+           <div className={"block--element"}>
+           <label className={"block--element"}>
+           Password
+           </label>
+          <Input
+          className={"block--element"}
+            type="password"
+            name="password"
+            placeholder="Enter Password"
+            value={user.password}
+            onChange={handleChange}
+          />
+         </div>
+         <div className="block--element">
+           
+           <label className={"block--element"}>
+              Role
+               </label>
+            <span className={"checkbox-container"}>
+                <Input
+                 className={"input--checkbox"}
+                type="checkbox"
+                name="role"
+                checked={user.role === "Manager"}
+                onChange={handleChange}
+              />
+              Register as Manager
+           
+           </span>
+            <p className="p--note">Default role is <strong>User</strong></p>
+         </div>
+
+          
+          <Button className={"btn--block"} variant={"primery"} type="submit">Add User</Button>
+        </form>
+      </div>
     </div>
   );
 };

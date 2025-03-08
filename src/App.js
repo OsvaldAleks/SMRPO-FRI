@@ -34,6 +34,8 @@ function App() {
           <Route path="/project/:projectName" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
           <Route path="/addSprint" element={<PrivateRoute><AddSprintForm /></PrivateRoute>} />
         </Routes>
+
+        
       </main>
       </Router>
       </ProjectsProvider>

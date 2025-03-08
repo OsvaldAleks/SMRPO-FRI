@@ -1,77 +1,68 @@
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.center--container{
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  margin-top: 3rem;
 }
 
-.App-link {
-  color: #61dafb;
-}
+.center--box{
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  border:1px solid var(--color-borders); 
+  width: 350px;
+  height: 390px;
+  text-align: center;
+  margin-top: 3rem;
+ } 
 
-input {
-  display:block;
-  width:100%;
-}
-button{
+ .block--element{
   display: block;
   width: 100%;
-  margin:0;
+  text-align: left;
+  box-sizing: border-box;
+ } 
+
+ div.block--element{
+  padding: 0 2rem 2rem 2rem;
+ }
+
+ label{
+  margin: 1rem;
+  color: var(--color-heading);
+ }
+
+
+.wide--box{
+  width: 500px;
+  position: relative;
+  height: 650px;
+  margin-top: 3rem;
+ } 
+
+ /* grid */
+
+ .grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
 }
 
-.login-form{
-  width: 300px;
+.grid--leftdiv{
+  margin-right: 1rem;
+}
+.grid--rightdiv{
+  margin-left: 1rem;
+}
+/* notification */
+.p--note{
+  font-size: 1.2rem;
+  text-align: left;
+  color: var(--color-accent);
+  margin-left: 2rem;
+  margin-bottom: 0;
 }
 
-
-
-.form-container {
-  width: 350px;
-  margin: 50px auto;
-  padding: 20px;
-  background: #f4f4f4;
-  border-radius: 8px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-h1{
-  color: #633;
-  font-size: 30px;
-}
-
-
-h1, h2{
-  text-align: center;
-  color: #333;
-}
-
-input,
-select {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #0056b3;
-}
-
-.error {
-  color: red;
-  text-align: center;
+.p--alert{
+  color: var(--color-accent);
+  padding: 0;
+  margin: 0;
 }

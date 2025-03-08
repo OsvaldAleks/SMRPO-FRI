@@ -1,0 +1,86 @@
+
+/* button */
+
+.btn{
+    border-radius: var(--border-radius);
+    border: 0;
+    cursor: pointer;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 600;
+    padding: 1rem 3.5rem 1rem 3.5rem;
+    width:300px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-decoration: none;
+    margin: 1rem;
+    
+}
+
+.btn--primery{
+    background: var(--color-primary);
+    color: #fff;
+}
+.btn--primery:hover{
+    background: #115877;
+}
+.btn--secondary{
+    background: var(--color-secondary);
+    color: #fff;
+}
+.btn--secondary:hover{
+    background: #205E57;
+}
+.btn--accent{
+    background: var(--color-accent);
+    color: #fff;
+}
+.btn--accent:hover{
+    background: #B68887;
+}
+.btn--block{
+    width: 95%;
+    display: block;
+   
+}
+.btn--outline{
+    background: #fff;
+    color: var(--color-secondary);
+    border: 2px solid var(--color-secondary); 
+
+}
+.btn--outline:hover{
+    background: var(--color-secondary);
+    color: #fff;
+ }
+
+ .btn--goback{
+    position: absolute;
+    width: 15px;
+    height: 30px;
+    padding: 2rem;
+    color: var(--color-bg-dark);
+    left:20px;
+    display: flex;
+    align-items: center;  
+    justify-content: center;
+    background-color: transparent;
+    margin-top: 2rem;
+ }
+ .btn--goback::before{
+    content: "←"; 
+    font-size: 20px;
+    transition: margin 0.15s;
+  }
+
+  .btn--goback:hover::before{
+    background-color: transparent;
+    color: var(--color-accent);
+     margin-right: 20px;
+  }
+@media screen and (max-width:1024px) {
+    .btn {
+        font-size: 2rem; 
+
+    }
+}

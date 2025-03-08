@@ -1,12 +1,17 @@
 // src/components/Navbar.js
 
 import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate} from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import { useAuth } from "../context/AuthContext";
 import './style/Navbar.css';
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { ProjectsContext } from "../context/ProjectsContext";
+
+// import { Link, useNavigate } from "react-router-dom";
+
+// import Button from "../components/Button";
+// import List from "../components/Lists";
 
 const Navbar = () => {
   const { user, loading } = useAuth();
@@ -19,12 +24,14 @@ const Navbar = () => {
 
   const handleLogout = () => {
     const auth = getAuth();
-    auth.signOut().then(() => {
-      console.log("User signed out!");
-      navigate("/");
-    }).catch((error) => {
-      console.error("Error signing out:", error);
-    });
+    auth.signOut()
+      .then(() => {
+        console.log("User signed out!");
+        navigate("/");
+      })
+      .catch((error) => {
+        console.error("Error signing out:", error);
+      });
   };
 
   return (
@@ -72,6 +79,36 @@ const Navbar = () => {
         </li>
       </ul>
     </nav>
+    // <nav className="nav">
+    //   <span className="nav-tittle">Sprintly</span>
+    //   {!user ? (
+    //     <>
+
+    //       <List className="nav-left" items={[{ label: "Home", path: "/" }]} variant="inline" />
+    //       <Button className="nav-right" variant="outline" to="/login">
+    //         Login
+    //       </Button>
+    //     </>
+    //   ) : (
+    //     <>
+    //       <List
+    //         className="nav-left"
+    //         items={[
+    //           { label: "Home", path: "/" },
+    //           { label: "Dashboard", path: "/dashboard" },
+    //           { label: "Add User", path: "/Adduser" },
+    //           { label: "New Project", path: "/newProject" }, 
+    //           { label: "Edit Account", path: "/EditAccount" },
+    //         ]}
+    //         variant="inline"
+    //       />
+
+    //         <Button className="nav-right" variant="secondary" onClick={handleLogout}>
+    //           Logout
+    //         </Button>
+    //     </>
+    //   )}
+    // </nav>
   );
 };
 

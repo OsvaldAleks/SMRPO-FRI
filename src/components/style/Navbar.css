@@ -4,10 +4,12 @@ nav {
   padding: 0;
 }
 
-nav ul {
+nav ul {}
+.nav {
+  background-color: var(--color-primary);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: center;  /* Ensures vertical centering */
   list-style-type: none;
   padding: 0;
   margin: 0;
@@ -16,25 +18,21 @@ nav ul {
 
 .nav-left, .nav-right {
   display: flex;
-  align-items: center;
+  align-items: center; /* Ensures vertical centering */
   gap: 20px;
 }
 
 .nav-left {
-  margin-right: 20px;
+  margin-right: 20px; /* Adds a slight margin between Home and My projects */
 }
 
 .nav-right {
   margin-left: auto;
-  white-space: nowrap; /* Prevents text from breaking into multiple lines */
 }
-
-/* Navbar items */
-nav ul li {
+nav ul li{
   padding: 1rem;
 }
-
-/* Links and buttons */
+/* Styles for links and buttons */
 nav ul li a,
 nav ul li button {
   text-decoration: none;
@@ -47,11 +45,18 @@ nav ul li button {
   padding: 0;
 }
 
+/* Keep Home aligned properly */
+.nav-left a {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
 /* Dropdown Styling */
 .dropdown {
   position: relative;
   cursor: pointer;
-  color: white;
+  color:white;
 }
 
 /* Dropdown Menu */
@@ -59,7 +64,7 @@ nav ul li button {
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: #444;
+  background-color: var(--color-primary);
   list-style: none;
   display: none;
   padding: 0;
@@ -91,7 +96,7 @@ nav ul li button {
 
 /* Logout/Login button styles */
 .logout-btn {
-  color: red;
+  color: var(--color-accent);
 }
 
 .login-btn {

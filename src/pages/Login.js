@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-
+import Input from "../components/Input";
+import Button from "../components/Button";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const [showPassword, setShowPassword] = useState(false); 
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -20,33 +21,61 @@ const Login = () => {
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        placeholder="Email"
-      />
-      <div>
-        <input
-          type={showPassword ? "text" : "password"} // Toggle input type based on showPassword state
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          placeholder="Password"
-        />
-        <label>
-          <input
-            type="checkbox"
-            checked={showPassword}
-            onChange={() => setShowPassword(!showPassword)} // Toggle showPassword state on checkbox change
-          />
-          Show Password
-        </label>
+    <div className="center--container">
+      <div className="center--box">
+        
+        <form onSubmit={handleLogin}>
+        <h1>
+          Login
+        </h1>
+
+       <div className={"block--element"}>
+         <label className={"block--element"}>
+          Username
+         </label>
+            <Input
+              className={"block--element"}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="Enter your username or email"
+            />
+       </div>
+
+
+          <div className={"block--element"} >
+          <label className={"block--element"}>
+        Password
+       </label>
+            <Input
+              className={"block--element"}
+              type={showPassword ? "text" : "password"} 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="Enter your password"
+            />
+            <span className={"checkbox-container"}>
+              <Input
+               className={"input--checkbox"}
+                type="checkbox"
+                checked={showPassword}
+                onChange={() => setShowPassword(!showPassword)}
+              />
+             
+              Show Password
+            
+              
+            </span>
+          </div>
+          <div className={"block--element"} >
+          <Button variant="primery" type="submit">Login</Button>
+          </div>
+        </form>
       </div>
-      <button type="submit">Login</button>
-    </form>
+    </div>
+   
   );
 };
 
