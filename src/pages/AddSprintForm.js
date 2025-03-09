@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createSprint } from "../api";
+import Button from "../components/Button";
+import Input from "../components/Input";
+
 
 const AddSprintForm = () => {
   const { projectName } = useParams(); // Get projectId from URL
@@ -94,7 +97,7 @@ const AddSprintForm = () => {
         setError("");
   
         // Navigate to the new sprint's page
-        navigate(`/`);
+        navigate(`/project/${projectName}/sprint/${response.sprint.id}`);
       }
     } catch (err) {
       setError("An error occurred while adding the sprint.");
@@ -110,33 +113,36 @@ const AddSprintForm = () => {
   };
 
   return (
-    <div className="add-sprint-form">
+    <div className="center--box">
       <h1>Add New Sprint</h1>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Start Date</label>
-          <input
+      <div className={"block--element"}>
+          <label className={"block--element"}>Start Date</label>
+          <Input
             type="date"
+            className={"block--element"}
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]} // Prevent past dates
             required
           />
         </div>
-        <div>
-          <label>End Date</label>
-          <input
+        <div className={"block--element"}>
+          <label className={"block--element"}>End Date</label>
+          <Input
             type="date"
+            className={"block--element"}
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             min={startDate} // End date cannot be before start date
             required
           />
         </div>
-        <div>
-          <label>Velocity</label>
-          <input
+        <div className={"block--element"}>
+          <label className={"block--element"}>Velocity</label>
+          <Input
             type="number"
+            className={"block--element"}
             value={velocity}
             onChange={handleVelocityChange}
             placeholder="Enter velocity"
@@ -146,7 +152,7 @@ const AddSprintForm = () => {
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-        <button type="submit">Add Sprint</button>
+        <Button type="submit">Add Sprint</Button>
       </form>
     </div>
   );
