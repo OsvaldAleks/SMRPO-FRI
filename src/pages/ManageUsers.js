@@ -1,7 +1,7 @@
-// manageUsers.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getUsers } from "../api";  // Correctly import the getUsers function
+import Button from '../components/Button';
+import { getUsers } from "../api";
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
@@ -27,22 +27,46 @@ const ManageUsers = () => {
   }, []);
 
   return (
-    <div>
+    <div className="center--box">
       <h1>Manage Users</h1>
-      <Link to="/addUser">Add User</Link>
+      
+      {/* Add User Button */}
+      <Link to="/addUser">
+        <Button className="add-user-btn">Add User</Button>
+      </Link>
 
+      {/* Loading or table display */}
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <ul>
-          {users.length > 0 ? (
-            users.map((user) => (
-              <li key={user.id}>{user.name} ({user.email})</li>
-            ))
-          ) : (
-            <p>No users found</p>
-          )}
-        </ul>
+        <div className="responsive-table-container">
+          <table className="responsive-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Last name</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.username}</td>
+                    <td>{user.name}</td>
+                    <td>{user.surname}</td>
+                    <td>{user.email}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="2">No users found</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
