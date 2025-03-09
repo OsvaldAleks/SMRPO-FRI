@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
-import { getUser, createProject, getUserProjects, getUsers } from "../api"; // Ensure getUsers is imported
+import { getUser, createProject, getUserProjects, getUsers } from "../api";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import Button from '../components/Button';
+import Input from '../components/Input';
 import { ProjectsContext } from "../context/ProjectsContext";
 
 const CreateProject = () => {
@@ -13,9 +15,9 @@ const CreateProject = () => {
     scrumMasters: [],
     productManagers: [],
   });
-  const [error, setError] = useState(""); 
+  const [error, setError] = useState("");
   const [user, setUser] = useState(null);
-  const [success, setSuccess] = useState(""); 
+  const [success, setSuccess] = useState("");
   const { projects, setProjects } = useContext(ProjectsContext);
 
   const auth = getAuth();
@@ -69,7 +71,6 @@ const CreateProject = () => {
     });
   };
 
-
   const handleRoleChange = (userId, role) => {
     setRoleAssignments((prev) => {
       const updatedAssignments = { ...prev };
@@ -107,7 +108,7 @@ const CreateProject = () => {
       devs: roleAssignments.devs,
       scrumMasters: roleAssignments.scrumMasters,
       productManagers: roleAssignments.productManagers,
-      owner: user.uid, // Include user ID of the creator
+      owner: user.uid,
     };
 
     try {
@@ -137,65 +138,67 @@ const CreateProject = () => {
   };
 
   return (
-    <div>
-      <h1>Create New Project</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Project Name:</label>
-          <input
-            type="text"
-            value={input1}
-            onChange={(e) => setInput1(e.target.value)}
-          />
-          <button type="submit">Create Project</button>
-        </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {success && <p style={{ color: "green" }}>{success}</p>}
-        <table>
-          <thead>
-            <tr>
-              <th>Include User</th>
-              <th>Username</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Email</th>
-              <th>Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.isArray(users) &&
-              users.map((user) => (
-                <tr key={user.id}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={checkedUsers[user.id] || false}
-                      onChange={() => handleCheckboxChange(user.id)}
-                    />
-                  </td>
-                  <td>{user.username}</td>
-                  <td>{user.name}</td>
-                  <td>{user.surname}</td>
-                  <td>{user.email}</td>
-                  <td>
-                    {checkedUsers[user.id] ? (
-                      <select
-                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                        defaultValue="devs"
-                      >
-                        <option value="devs">Developer</option>
-                        <option value="productManagers">Product Manager</option>
-                        <option value="scrumMasters">SCRUM Master</option>
-                      </select>
-                    ) : (
-                      <span>Select user to assign a role</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </form>
+    <div className="center--container">
+      <div className="center--box">
+        <h1>Create New Project</h1>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label>Project Name:</label>
+            <Input
+              type="text"
+              value={input1}
+              onChange={(e) => setInput1(e.target.value)}
+            />
+            <Button type="submit">Create Project</Button>
+          </div>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          {success && <p style={{ color: "green" }}>{success}</p>}
+          <table>
+            <thead>
+              <tr>
+                <th>Include</th>
+                <th>Username</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.isArray(users) &&
+                users.map((user) => (
+                  <tr key={user.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={checkedUsers[user.id] || false}
+                        onChange={() => handleCheckboxChange(user.id)}
+                      />
+                    </td>
+                    <td>{user.username}</td>
+                    <td>{user.name}</td>
+                    <td>{user.surname}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      {checkedUsers[user.id] ? (
+                        <select
+                          onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                          defaultValue="devs"
+                        >
+                          <option value="devs">Developer</option>
+                          <option value="productManagers">Product Manager</option>
+                          <option value="scrumMasters">SCRUM Master</option>
+                        </select>
+                      ) : (
+                        <span>Select to assign role</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </form>
+      </div>
     </div>
   );
 };

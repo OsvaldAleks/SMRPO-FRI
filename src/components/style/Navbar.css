@@ -13,16 +13,21 @@
 /* Navbar title */
 .nav-title {
   text-decoration: none;
-  color: inherit;
-  font-size: 1.5rem; 
+  color: var(--color-primary);
+  font-weight: bold;
+  font-size: 2rem; 
   height: 100%;
   display: flex;
   align-items: center;
-  padding: 0 1rem;
+  padding: 0 3rem 0 2rem;
+  background-color:rgba(255, 255, 255);
+  border: 0.5px solid gray;
+  border-radius: 0 30px 30px 0;
 }
 
 .nav-title:hover {
-  background-color: rgba(255, 255, 255, 0.1); 
+  background-color: rgba(255, 255, 255, 0.7); 
+  transition: 0.25s;
 }
 
 /* Navbar left and right sections */
@@ -58,7 +63,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem; 
+  font-size: 1.4rem; 
   font-family: inherit;
   color: white;
   padding: 0 1.5rem; 
@@ -71,6 +76,7 @@
 .nav ul li a:hover,
 .nav ul li button:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  transition: 0.25s;
 }
 
 /* Dropdown Styling */
@@ -88,14 +94,14 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: var(--color-primary);
+  background-color: var(--color-secondary);
   list-style: none;
   display: none;
   padding: 0;
   margin: 0;
   width: 200px;
   z-index: 1000;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 0 0 10px 10px;
 }
 
 /* Show dropdown when hovered */
@@ -103,6 +109,7 @@
   display: flex;
   flex-direction: column;
   height: auto;
+  transition: 0.25s;
 }
 
 /* Dropdown List Items */
@@ -130,6 +137,7 @@
 /* Hover effect */
 .dropdown ul li:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  transition: 0.25s;
 }
 
 
@@ -137,7 +145,7 @@
 .login-link, .edit-account-link, .logout-link {
   color: white;
   text-decoration: none;
-  font-size: 1.2rem; 
+  font-size: 1.4rem; 
   cursor: pointer;
   display: flex;
   align-items: center; 
@@ -147,6 +155,7 @@
 
 .login-link:hover, .edit-account-link:hover {
   background-color: rgba(255, 255, 255, 0.1); 
+  transition: 0.25s;
 }
 
 /* Specific styles for logout link */
@@ -155,5 +164,7 @@
 }
 
 .logout-link:hover {
-  background-color: rgba(255, 0, 0, 0.1);
+  color:#fff;
+  background-color: rgba(255, 0, 0, 0.6);
+  transition: 0.25s;
 }

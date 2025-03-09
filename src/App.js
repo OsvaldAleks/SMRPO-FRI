@@ -22,6 +22,8 @@ function App() {
       <Router>
       <Navbar />
       <main>
+      <div className="center--container">
+
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/EditAccount" element={<PrivateRoute><EditAccount /></PrivateRoute>} />
@@ -34,8 +36,7 @@ function App() {
           <Route path="/project/:projectName" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
           <Route path="/addSprint" element={<PrivateRoute><AddSprintForm /></PrivateRoute>} />
         </Routes>
-
-        
+      </div> 
       </main>
       </Router>
       </ProjectsProvider>
