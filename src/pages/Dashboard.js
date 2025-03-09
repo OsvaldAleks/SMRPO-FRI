@@ -9,9 +9,9 @@ const Dashboard = () => {
       <h1>Dashboard</h1>
       {user ? (
         <div>
-          <p>Welcome, {user.email}!</p> {/* Display the logged-in user's email */}
-          <p>Your user ID is: {user.uid}</p> {/* Display the user's unique ID */}
-          <p>Your system rights: {user.system_rights}</p> {/* Display the user's unique ID */}
+          <p>Welcome, {user.email}!</p>
+          <p>Your user ID is: {user.uid}</p>
+          <p>Your system rights: {user.system_rights}</p>
         </div>
       ) : (
         <p>homepage</p>

@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { getProject } from "../api";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import Button from '../components/Button';
+import './style/ProjectDetails.css'
 
 const ProjectDetails = () => {
   const { projectName } = useParams();
@@ -62,46 +64,58 @@ const ProjectDetails = () => {
   }
 
   return (
-    <div>
+    <div className="center--box">
       <h1>{project.name}</h1>
-      <h2>Project managers</h2>
-      {project.productManagers && project.productManagers.length > 0 ? (
-        <ul>
-          {project.productManagers.map((user, index) => (
-            <li key={user.id}>{user.username}</li>
-          ))}
-        </ul>
-      ) : (
-        <></>
-      )}
-      <h2>SCRUM masters</h2>
-      {project.scrumMasters && project.scrumMasters.length > 0 ? (
-        <ul>
-          {project.scrumMasters.map((user, index) => (
-            <li key={user.id}>{user.username}</li>
-          ))}
-        </ul>
-      ) : (
-        <></>
-      )}
-      <h2>Developers</h2>
-      {project.devs && project.devs.length > 0 ? (
-        <ul>
-          {project.devs.map((user, index) => (
-            <li key={user.id}>{user.username}</li>
-          ))}
-        </ul>
-      ) : (
-        <></>
-      )}
-
-      <button
-        onClick={() => navigate("/addSprint")}
-      >
-      Add Sprint
-      </button>
+      
+      <div className="roles-grid">
+        {/* Product Managers */}
+        <div>
+          <h2>Project Managers</h2>
+          <ul>
+            {project.productManagers && project.productManagers.length > 0 ? (
+              project.productManagers.map((user) => (
+                <li key={user.id}>{user.username}</li>
+              ))
+            ) : (
+              <li>No managers assigned</li>
+            )}
+          </ul>
+        </div>
+  
+        {/* SCRUM Masters */}
+        <div>
+          <h2>SCRUM Masters</h2>
+          <ul>
+            {project.scrumMasters && project.scrumMasters.length > 0 ? (
+              project.scrumMasters.map((user) => (
+                <li key={user.id}>{user.username}</li>
+              ))
+            ) : (
+              <li>No SCRUM Masters assigned</li>
+            )}
+          </ul>
+        </div>
+  
+        {/* Developers */}
+        <div>
+          <h2>Developers</h2>
+          <ul>
+            {project.devs && project.devs.length > 0 ? (
+              project.devs.map((user) => (
+                <li key={user.id}>{user.username}</li>
+              ))
+            ) : (
+              <li>No developers assigned</li>
+            )}
+          </ul>
+        </div>
+      </div>
+      <h2>Sprints</h2>
+      <div>
+        <Button onClick={() => navigate("/addSprint")}>Add Sprint</Button>
+      </div>
     </div>
   );
-};
-
+  
+}
 export default ProjectDetails;

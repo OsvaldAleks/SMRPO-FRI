@@ -81,11 +81,10 @@ const EditAccount = () => {
   };
 
   if (authLoading) {
-    return <p>Loading...</p>; // Show loading until Firebase authentication state is known
+    return <p>Loading...</p>;
   }
 
   return (
-    <div className="center--container">
       <div className="center--box wide--box">
       <form onSubmit={handlePasswordChange}>
       <h1>Edit Account</h1>
@@ -125,7 +124,6 @@ const EditAccount = () => {
         </div>
         <Button type="submit" disabled={loading}>{loading ? "Updating..." : "Change Password"}</Button>
       </form>
-    </div>
     </div>
   );
 };

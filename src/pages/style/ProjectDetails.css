@@ -1,0 +1,28 @@
+.roles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    text-align: center; 
+    margin: 2rem 2rem;
+  }
+  
+  .roles-grid div {
+    background-color: #f4f4f4;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  .roles-grid ul {
+    list-style-type: none; 
+    padding: 0;
+  }
+  
+  .roles-grid li {
+    padding: 0.5rem;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .roles-grid li:last-child {
+    border-bottom: none;
+  }
+  

@@ -3,7 +3,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getUserProjects } from "../api"; 
 import { Link } from 'react-router-dom';
 
-const ProjectDetails = () => {
+const UserProjects = () => {
     const [user, setUser] = useState(null);
     const [userProjects, setUserProjects] = useState([]); // State to store user projects
 
@@ -41,7 +41,7 @@ const ProjectDetails = () => {
 */
 
   return (
-    <div>
+    <div className="center--box">
       <h1>Your projects</h1>
       {userProjects.length > 0 ? (
                 userProjects.map((project) => (
@@ -56,4 +56,4 @@ const ProjectDetails = () => {
   );
 };
 
-export default ProjectDetails;
+export default UserProjects;

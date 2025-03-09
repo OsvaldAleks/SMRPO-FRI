@@ -9,7 +9,7 @@ const List = ({ items = [], variant = "", className }) => {
     <ul className={clsx("list", `list--${variant}`, className)}>
       {items.map((item, index) => (
         <li key={index} className="list__item">
-          {item.items ? ( // If dropdown, pass path for navigation
+          {item.items ? (
             <Dropdown label={item.label} items={item.items} path={item.path} />
           ) : (
             <Link to={item.path} className="list__link">

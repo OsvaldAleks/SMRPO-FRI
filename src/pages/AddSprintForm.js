@@ -70,17 +70,20 @@ const AddSprintForm = () => {
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-
+  
     if (!validateForm()) {
       return;
     }
-
-    // Simulate form submission (replace with API call)
+  
+    // Set success message before navigating
     setSuccessMessage("Sprint added successfully!");
+  
+    // Delay navigation to allow user to see success message
     setTimeout(() => {
-      navigate("/sprints"); // Redirect to sprints page after success
+      navigate("/sprints");
     }, 2000);
   };
+  
 
   // Handle velocity input change
   const handleVelocityChange = (e) => {
