@@ -143,10 +143,10 @@ const AddUserForm = () => {
                  className={"input--checkbox"}
                 type="checkbox"
                 name="role"
-                checked={user.role === "Manager"}
+                checked={user.role === "Admin"}
                 onChange={handleChange}
               />
-              Register as Manager
+              Register as Admin
            
            </span>
             <p className="p--note">Default role is <strong>User</strong></p>
