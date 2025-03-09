@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { createSprint } from "../api";
 
 const AddSprintForm = () => {
+  const { projectName } = useParams(); // Get projectId from URL
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [velocity, setVelocity] = useState("");
@@ -68,23 +70,36 @@ const AddSprintForm = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
   
     if (!validateForm()) {
       return;
     }
   
-    // Set success message before navigating
-    setSuccessMessage("Sprint added successfully!");
+    try {
+      const sprintData = {
+        projectName: projectName,
+        start_date: startDate,
+        end_date: endDate,
+        velocity: parseFloat(velocity),
+      };
   
-    // Delay navigation to allow user to see success message
-    setTimeout(() => {
-      navigate("/sprints");
-    }, 2000);
+      const response = await createSprint(sprintData);
+  
+      if (response.error) {
+        setError(response.message || "Failed to add sprint.");
+      } else {
+        setSuccessMessage("Sprint added successfully!");
+        setError("");
+  
+        // Navigate to the new sprint's page
+        navigate(`/`);
+      }
+    } catch (err) {
+      setError("An error occurred while adding the sprint.");
+    }
   };
-  
-
   // Handle velocity input change
   const handleVelocityChange = (e) => {
     const value = e.target.value;

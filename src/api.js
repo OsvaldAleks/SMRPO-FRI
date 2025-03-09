@@ -113,3 +113,77 @@ export const getProject = async (projectName, userId) => {
     throw new Error(error.message || "Network error");
   }
 };
+
+export const createSprint = async (sprintData) => {
+  try {
+    console.log(sprintData)
+    const response = await fetch(`${API_URL}/sprints/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(sprintData),
+    });
+
+    const responseBody = await response.text();
+    let result;
+    try {
+      result = JSON.parse(responseBody); // Attempt to parse JSON
+    } catch (error) {
+      throw new Error("Invalid JSON response from server");
+    }
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to create sprint");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Network error:", error.message);
+    return { error: true, message: error.message || "Network error" };
+  }
+};
+
+export const getSprintData = async (sprintId) => {
+  if (!sprintId) {
+    throw new Error("Project name and user ID are required.");
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/sprints/${sprintId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to fetch sprint");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    throw new Error(error.message || "Network error");
+  }
+};
+
+export const getSprintsForProject = async (projectId) => {
+  if (!projectId) {
+    throw new Error("Project name and user ID are required.");
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/sprints/project/${projectId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to fetch sprint");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    throw new Error(error.message || "Network error");
+  }
+};
