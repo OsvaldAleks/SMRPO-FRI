@@ -54,10 +54,23 @@ const CreateProject = () => {
 
   const handleCheckboxChange = (userId) => {
     setCheckedUsers((prev) => {
-      const isChecked = !prev[userId]; // Toggle the checkbox state
+      const isChecked = !prev[userId];
       const updatedCheckedUsers = { ...prev, [userId]: isChecked };
 
-      if (!isChecked) {
+      // Initialize the role to "devs" when the user is first checked
+      if (isChecked && !roleAssignments.devs.includes(userId)) {
+        setRoleAssignments((prevRoles) => {
+          // Add to devs if not already included in any other role
+          if (!prevRoles.devs.includes(userId) && !prevRoles.scrumMasters.includes(userId) && !prevRoles.productManagers.includes(userId)) {
+            return {
+              ...prevRoles,
+              devs: [...prevRoles.devs, userId]
+            };
+          }
+          return prevRoles;
+        });
+      } else if (!isChecked) {
+        // Remove the user from all roles if unchecked
         setRoleAssignments((prevRoles) => {
           const updatedRoles = { ...prevRoles };
           Object.keys(updatedRoles).forEach((role) => {
@@ -71,24 +84,23 @@ const CreateProject = () => {
     });
   };
 
+
   const handleRoleChange = (userId, role) => {
     setRoleAssignments((prev) => {
       const updatedAssignments = { ...prev };
 
-      if (!Array.isArray(updatedAssignments[role])) {
-        updatedAssignments[role] = [];
-      }
-
-      // Ensure a user is only in one role
+      // Remove user from all roles before adding to the new role
       Object.keys(updatedAssignments).forEach((key) => {
         updatedAssignments[key] = updatedAssignments[key].filter((id) => id !== userId);
       });
 
       updatedAssignments[role] = [...updatedAssignments[role], userId];
 
+      console.log("Role change:", role, updatedAssignments[role]);
       return updatedAssignments;
     });
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -138,9 +150,9 @@ const CreateProject = () => {
   };
 
   return (
-      <div className="center--box">
-        <h1>Create New Project</h1>
-        <form onSubmit={handleSubmit}>
+    <div className="center--box">
+      <h1>Create New Project</h1>
+      <form onSubmit={handleSubmit}>
         <div className="block--element grid">
           <label className="block--element">Project Name:</label>
           <Input
@@ -151,10 +163,10 @@ const CreateProject = () => {
           />
           <Button type="submit">Create Project</Button>
         </div>
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          {success && <p style={{ color: "green" }}>{success}</p>}
-          <div className="responsive-table-container">
-            <table className="responsive-table">
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {success && <p style={{ color: "green" }}>{success}</p>}
+        <div className="responsive-table-container">
+          <table className="responsive-table">
             <thead>
               <tr>
                 <th>Include</th>
@@ -198,9 +210,9 @@ const CreateProject = () => {
                 ))}
             </tbody>
           </table>
-          </div>
-        </form>
-      </div>
+        </div>
+      </form>
+    </div>
   );
 };
 
