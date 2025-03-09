@@ -79,7 +79,6 @@ const AddUserForm = () => {
   };
 
   return (
-    <div className="center--container">
       <div className="center--box wide--box">
         <Button variant="goback" onClick={goBackHandler} />
         <h1>Add New User</h1>
@@ -162,7 +161,6 @@ const AddUserForm = () => {
           </Button>
         </form>
       </div>
-    </div>
   );
 };
 

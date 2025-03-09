@@ -1,3 +1,7 @@
+body{
+  background: rgb(223, 228, 230);
+}
+
 .center--container{
   display: flex;
   justify-content: center;
@@ -8,7 +12,6 @@
 .center--box{
   background-color: #fff;
   border-radius: var(--border-radius);
-  border:1px solid var(--color-borders); 
   min-width: 350px;
   text-align: center;
   margin-top: 3rem;
@@ -72,7 +75,6 @@
   width: 100%;
   max-width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
   overflow-x: auto;
   display: block;
 }
@@ -91,13 +93,23 @@
 }
 .responsive-table th,
 .responsive-table td {
-  border: 1px solid var(--color-borders);
+  border: 0;
   padding: 0.75rem;
   text-align: left;
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
 }
+
+.responsive-table td select {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  background-color: #fff;
+  color: #333;
+}
+
 
 .responsive-table th {
   background-color: var(--color-light);
@@ -107,7 +119,7 @@
 .responsive-table-container {
   width: 100%;
   overflow-x: auto;
-  margin-top: 1rem;
+  margin: 0.5rem 0 0 0;
 }
 
 /* Ensuring it doesn't break layout in smaller screens */
