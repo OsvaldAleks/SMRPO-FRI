@@ -12,13 +12,13 @@ const ProjectDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [isScrumMaster, setIsScrumMaster] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const auth = getAuth();
-
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser && projectName) { // Check if projectName is defined
+      if (currentUser && projectName) {
         setUser(currentUser);
         fetchProject(currentUser.uid);
       } else {
@@ -28,7 +28,12 @@ const ProjectDetails = () => {
     });
 
     return () => unsubscribe();
-  }, [projectName]); // Add projectName to the dependency array
+  }, [projectName]);
+  
+  useEffect(() => {
+    setIsScrumMaster(false);
+  }, [projectName]);
+
 
   const fetchProject = async (uid) => {
     try {
@@ -37,6 +42,10 @@ const ProjectDetails = () => {
       }
 
       const projectData = await getProject(projectName, uid);
+
+      if (projectData.project.scrumMasters?.some((sm) => sm.id === uid)) {
+        setIsScrumMaster(true);
+      }
 
       setProject(projectData.project);
     } catch (error) {
@@ -111,9 +120,15 @@ const ProjectDetails = () => {
         </div>
       </div>
       <h2>Sprints</h2>
-      <div>
-        <Button onClick={() => navigate("/addSprint")}>Add Sprint</Button>
-      </div>
+      {/* Show Add Sprint button only if user is a Scrum Master */}
+      {isScrumMaster && (
+        <div>
+          <Button onClick={() => navigate(`${window.location.pathname}/addSprint`)}>
+            Add Sprint
+          </Button>
+        </div>
+      )}
+
     </div>
   );
   
