@@ -138,22 +138,23 @@ const CreateProject = () => {
   };
 
   return (
-    <div className="center--container">
       <div className="center--box">
         <h1>Create New Project</h1>
         <form onSubmit={handleSubmit}>
-          <div>
-            <label>Project Name:</label>
-            <Input
-              type="text"
-              value={input1}
-              onChange={(e) => setInput1(e.target.value)}
-            />
-            <Button type="submit">Create Project</Button>
-          </div>
+        <div className="block--element grid">
+          <label className="block--element">Project Name:</label>
+          <Input
+            type="text"
+            className="block--element"
+            value={input1}
+            onChange={(e) => setInput1(e.target.value)}
+          />
+          <Button type="submit">Create Project</Button>
+        </div>
           {error && <p style={{ color: "red" }}>{error}</p>}
           {success && <p style={{ color: "green" }}>{success}</p>}
-          <table>
+          <div className="responsive-table-container">
+            <table className="responsive-table">
             <thead>
               <tr>
                 <th>Include</th>
@@ -197,9 +198,9 @@ const CreateProject = () => {
                 ))}
             </tbody>
           </table>
+          </div>
         </form>
       </div>
-    </div>
   );
 };
 

@@ -2,17 +2,17 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 3rem;
+  margin-top: 1rem;
 }
 
 .center--box{
   background-color: #fff;
   border-radius: var(--border-radius);
   border:1px solid var(--color-borders); 
-  width: 350px;
-  height: 390px;
+  min-width: 350px;
   text-align: center;
   margin-top: 3rem;
+  padding-bottom: 2rem;
  } 
 
  .block--element{
@@ -33,9 +33,8 @@
 
 
 .wide--box{
-  width: 500px;
+  min-width: 500px;
   position: relative;
-  height: 650px;
   margin-top: 3rem;
  } 
 
@@ -43,7 +42,9 @@
 
  .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: auto 1fr auto; /* Adjust grid structure */
+  align-items: center; /* Align vertically */
+  gap: 1rem; /* Add space between elements */
 }
 
 .grid--leftdiv{
@@ -65,4 +66,59 @@
   color: var(--color-accent);
   padding: 0;
   margin: 0;
+}
+
+.responsive-table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  overflow-x: auto;
+  display: block;
+}
+.responsive-table td:first-child, 
+.responsive-table th:first-child {
+  text-align: center;
+  vertical-align: middle;
+}
+.responsive-table tbody tr:nth-child(2n-1) {
+  background-color: #e8f2f8 !important;
+}
+.responsive-table th{
+  background-color: var(--color-primary) !important;
+  color: #fff;
+  font-weight: bold;
+}
+.responsive-table th,
+.responsive-table td {
+  border: 1px solid var(--color-borders);
+  padding: 0.75rem;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.responsive-table th {
+  background-color: var(--color-light);
+  font-weight: bold;
+}
+
+.responsive-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+/* Ensuring it doesn't break layout in smaller screens */
+@media (max-width: 768px) {
+  .responsive-table-container {
+    overflow-x: scroll;
+  }
+
+  .responsive-table th,
+  .responsive-table td {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
 }

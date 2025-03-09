@@ -94,14 +94,17 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: var(--color-secondary);
+  background-color: #fff;
+  color: var(--color-primary);
   list-style: none;
   display: none;
   padding: 0;
   margin: 0;
   width: 200px;
   z-index: 1000;
-  border-radius: 0 0 10px 10px;
+  border-radius: 0 0 5px 5px;
+  border: 0.5px solid gray;
+  border-top: 0;
 }
 
 /* Show dropdown when hovered */
@@ -131,12 +134,12 @@
   align-items: center;
   justify-content: flex-start; 
   text-decoration: none;
-  color: white;
+  color: var(--color-primary);
 }
 
 /* Hover effect */
 .dropdown ul li:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 92, 133, 0.4);
   transition: 0.25s;
 }
 
@@ -160,11 +163,13 @@
 
 /* Specific styles for logout link */
 .logout-link {
-  color: var(--color-accent);
+  font-weight: bold;
+  color: #fff;
+  background-color: rgba(157, 61, 61, 0.613);
 }
 
 .logout-link:hover {
   color:#fff;
-  background-color: rgba(255, 0, 0, 0.6);
+  background-color: rgba(255, 0, 0, 0.8);
   transition: 0.25s;
 }
