@@ -28,8 +28,8 @@ const Navbar = () => {
 
   // Generate dropdown items for "My Projects"
   const myProjectsItems = projectList.map((project) => ({
-    label: project.projectName, // Use project name as the label
-    path: `/project/${project.projectName}`, // Use project ID in the path
+    label: project.projectName, 
+    path: `/project/${project.projectName}`, 
   }));
 
   // Add "Create Project" item if the user is an admin
