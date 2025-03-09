@@ -15,6 +15,10 @@ const ProjectDetails = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    setIsScrumMaster(false);
+  }, [projectName]);
+
+  useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser && projectName) {
