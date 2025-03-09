@@ -48,11 +48,9 @@ async function getUser(userId) {
     const doc = await userRef.get();
 
     if (!doc.exists) {
-      console.log("Uporabnik ne obstaja.");
       return null;
     } else {
       const userData = doc.data();
-      console.log("Podatki o uporabniku:", userData);
       return userData;
     }
   } catch (error) {

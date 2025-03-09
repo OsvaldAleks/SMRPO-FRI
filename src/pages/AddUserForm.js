@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { registerUser } from "../api"; // Import API function
+import { registerUser } from "../api";
 import { useNavigate } from 'react-router-dom';
 import Button from "../components/Button";
 import Input from "../components/Input";
-
 
 const AddUserForm = () => {
   const [user, setUser] = useState({
@@ -12,18 +11,29 @@ const AddUserForm = () => {
     email: "",
     username: "",
     password: "",
-    role: "User", 
+    status: "Active",
+    system_rights: false,
   });
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUser((prevUser) => ({
-      ...prevUser,
-      [name]: value,
-    }));
+    const { name, value, type, checked } = e.target;
+
+    // Handle checkbox separately
+    if (type === "checkbox") {
+      setUser((prevUser) => ({
+        ...prevUser,
+        [name]: checked, 
+      }));
+    } else {
+      setUser((prevUser) => ({
+        ...prevUser,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -34,126 +44,122 @@ const AddUserForm = () => {
       setError("All fields are required");
       return;
     }
-    console.log("User Added:", user);
-    setUser({
-      firstName: "",
-      secondName: "",
-      email: "",
-      userName: "",
-      password: "",
-      role: "User", // Reset to default after submission
-    });
-    setError("");
+
+    // Prepare user data for API
+    const userData = {
+      ...user,
+      system_rights: user.system_rights ? "Admin" : "User",
+    };
+
+    try {
+      const response = await registerUser(userData);
+      if (response.error) {
+        setError(response.message || "Failed to register user");
+      } else {
+        console.log(response)
+        setSuccess("User registered successfully!");
+        setError("");
+        setUser({
+          name: "",
+          surname: "",
+          email: "",
+          username: "",
+          password: "",
+          status: false,
+          system_rights: false,
+        });
+      }
+    } catch (err) {
+      setError("An error occurred while registering the user");
+    }
   };
-  const navigate = useNavigate();
 
   const goBackHandler = () => {
-    navigate(-1); // This will navigate back to the previous page
+    navigate(-1);
   };
 
-
   return (
-
     <div className="center--container">
       <div className="center--box wide--box">
-
-     <Button variant="goback" onClick={goBackHandler} />
-
-          <h1>Add New User</h1>
+        <Button variant="goback" onClick={goBackHandler} />
+        <h1>Add New User</h1>
         {error && <p className="p--alert">{error}</p>}
+        {success && <p className="p--success">{success}</p>}
 
         <form onSubmit={handleSubmit}>
-
           <div className={"block--element"}>
-           <label className={"block--element"}>
-            Username
-           </label>
-          <Input
-          className={"block--element"}
-            type="text"
-            name="userName"
-            placeholder="Enter Username"
-            value={user.userName}
-            onChange={handleChange}
-          />
-          </div>
-          <div className={"block--element"}>
-           <label className={"block--element"}>
-            Email
-           </label>
-           <Input
-           className={"block--element"}
-            type="email"
-            name="email"
-            placeholder="Enter Email"
-            value={user.email}
-            onChange={handleChange}
-          />
-          </div>
-          <div className={"block--element grid"}>
-            <div className="grid--leftdiv">
-             <label className={"block--element"}>
-             First Name
-             </label>
+            <label className={"block--element"}>Username</label>
             <Input
               className={"block--element"}
               type="text"
-              name="firstName"
-              placeholder="Enter First Name"
-              value={user.firstName}
+              name="username"
+              placeholder="Enter Username"
+              value={user.username}
               onChange={handleChange}
             />
-             </div>
-             <div className="grid--rightdiv">
-             <label className={"block--element"}>
-             Second Name
-             </label>
-            <Input
-            className={"block--element"}
-              type="text"
-              name="secondName"
-              placeholder="Enter Second Name"
-              value={user.secondName}
-              onChange={handleChange}
-            />
-            </div>
           </div>
-
-
-           <div className={"block--element"}>
-           <label className={"block--element"}>
-           Password
-           </label>
-          <Input
-          className={"block--element"}
-            type="password"
-            name="password"
-            placeholder="Enter Password"
-            value={user.password}
-            onChange={handleChange}
-          />
-         </div>
-         <div className="block--element">
-           
-           <label className={"block--element"}>
-              Role
-               </label>
-            <span className={"checkbox-container"}>
-                <Input
-                 className={"input--checkbox"}
-                type="checkbox"
-                name="role"
-                checked={user.role === "Admin"}
+          <div className={"block--element"}>
+            <label className={"block--element"}>Email</label>
+            <Input
+              className={"block--element"}
+              type="email"
+              name="email"
+              placeholder="Enter Email"
+              value={user.email}
+              onChange={handleChange}
+            />
+          </div>
+          <div className={"block--element grid"}>
+            <div className="grid--leftdiv">
+              <label className={"block--element"}>First Name</label>
+              <Input
+                className={"block--element"}
+                type="text"
+                name="name"
+                placeholder="Enter First Name"
+                value={user.name}
                 onChange={handleChange}
               />
-              Register as Admin
-           
-           </span>
-            <p className="p--note">Default role is <strong>User</strong></p>
-         </div>
-
-          
-          <Button className={"btn--block"} variant={"primery"} type="submit">Add User</Button>
+            </div>
+            <div className="grid--rightdiv">
+              <label className={"block--element"}>Last Name</label>
+              <Input
+                className={"block--element"}
+                type="text"
+                name="surname"
+                placeholder="Enter Second Name"
+                value={user.surname}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          <div className={"block--element"}>
+            <label className={"block--element"}>Password</label>
+            <Input
+              className={"block--element"}
+              type="password"
+              name="password"
+              placeholder="Enter Password"
+              value={user.password}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="block--element">
+            <label className={"block--element"}>Role</label>
+            <span className={"checkbox-container"}>
+              <Input
+                className={"input--checkbox"}
+                type="checkbox"
+                name="system_rights"
+                checked={user.system_rights}
+                onChange={handleChange}
+              />
+              Register as {user.system_rights ? "Admin" : "User"}
+            </span>
+          </div>
+          <Button className={"btn--block"} variant={"primery"} type="submit">
+            Add User
+          </Button>
         </form>
       </div>
     </div>
