@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getProject, getSprintsForProject } from "../api";
 import './style/ProjectDetails.css';
+import AddSprintForm from "./AddSprintForm";
 
 const ProjectDetails = () => {
   const { projectName } = useParams();
@@ -13,6 +14,7 @@ const ProjectDetails = () => {
   const [user, setUser] = useState(null);
   const [isScrumMaster, setIsScrumMaster] = useState(false);
   const [isProductManager, setIsProductManager] = useState(false);
+  const [showAddSprintForm, setShowAddSprintForm] = useState(false);
 
   const navigate = useNavigate();
 
@@ -104,6 +106,7 @@ const ProjectDetails = () => {
   }
 
   return (
+    <>
     <div className="center--box">
       <h1>{project.name}</h1>
 
@@ -184,10 +187,11 @@ const ProjectDetails = () => {
         {isScrumMaster && (
           <button
             className="add-sprint-button"
-            onClick={() => navigate(`${window.location.pathname}/addSprint`)}
+            onClick={() => setShowAddSprintForm(!showAddSprintForm)}
           >
-            +
+            <span className={showAddSprintForm ? "rotated" : ""}>+</span>
           </button>
+
         )}
       </div>
 
@@ -206,6 +210,17 @@ const ProjectDetails = () => {
       </div>
       </div>
     </div>
+    {showAddSprintForm && (
+      <AddSprintForm
+        projectName={projectName}
+        onSprintAdded={() => {
+          setShowAddSprintForm(false);
+          fetchSprints();
+        }}
+      />
+    )}
+
+    </>
   );
 };
 

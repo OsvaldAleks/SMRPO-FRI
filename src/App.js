@@ -34,7 +34,6 @@ function App() {
                 <Route path="/addUser" element={<AdminRoute><AddUserForm /></AdminRoute>} />
                 <Route path="/userProjects" element={<PrivateRoute><UserProjects /></PrivateRoute>} />
                 <Route path="/project/:projectName" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
-                <Route path="/project/:projectName/addSprint" element={<PrivateRoute><AddSprintForm /></PrivateRoute>} />
                 <Route 
                   path="/project/:projectName/sprint/:sprintId"
                   element={<PrivateRoute><SprintDetails /></PrivateRoute>} 
