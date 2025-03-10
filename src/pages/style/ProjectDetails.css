@@ -52,6 +52,14 @@
     background-color: rgba(47, 137, 127, 0.8);
   }
   
+.sprint-box h2{
+  display: inline;
+  font-size: 2rem;
+  justify-content: center;
+  width: 100%;
+  color: #fff;
+}
+
   .add-sprint-button {
     border: 0;
     background-color: var(--color-primary);

@@ -18,21 +18,27 @@
     flex-direction: column;
     background-color: var(--color-secondary);
     height: 100%;
-    padding: 2rem 1rem 2rem 1rem; 
+    padding: 2rem 2rem 2rem 2rem; 
     cursor: pointer;
     justify-content: center;
     align-items: center;
     border-radius: var(--border-radius);  
 }
 
-.userStory p {
+.userStory p, 
+.userStory h2{
     display: block;
     margin: 0.5rem 0;
     color: #ffffff;
     font-size: 1.2rem;
-    text-align: center;
+    text-align: left;
     width: 100%;
     white-space: nowrap;
+}
+
+.userStory h2{
+    font-size: 2rem;
+
 }
 
 .plus-button {

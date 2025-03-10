@@ -63,14 +63,14 @@ const SprintDetails = () => {
           <tr>
             <td>
               <div className="userStory">
-                <p>Name of story</p>
+                <h2>Name of story</h2>
                 <p>Must have</p>
                 <p>Business value: 23</p>
               </div>
             </td>
             <td>
               <div className="userStory">
-                <p>Another story</p>
+                <h2>Another story</h2>
                 <p>Nice to have</p>
                 <p>Business value: 10</p>
               </div>

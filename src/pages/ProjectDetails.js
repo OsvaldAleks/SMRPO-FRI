@@ -65,15 +65,19 @@ const ProjectDetails = () => {
       if (!project) {
         throw new Error("Project data is not available.");
       }
-
+  
       const sprintsData = await getSprintsForProject(project.id);
-      setSprints(sprintsData.sprint || []); // Ensure sprints is an array
+  
+      const sortedSprints = (sprintsData.sprint || []).sort((a, b) => {
+        return a.start_date.localeCompare(b.start_date);
+      });
+      
+      setSprints(sortedSprints);
     } catch (error) {
       console.error("Failed to fetch sprints:", error);
       setError("Failed to load sprints. Please try again later.");
     }
   };
-
   const handleSprintClick = (sprintId) => {
     navigate(`/project/${projectName}/sprint/${sprintId}`);
   };
@@ -145,13 +149,13 @@ const ProjectDetails = () => {
       <h2>Sprints</h2>
       <div className="sprints-grid">
         {sprints.length > 0 ? (
-          sprints.map((sprint) => (
+          sprints.map((sprint, index) => (
             <div
               key={sprint.id}
               className="sprint-box"
               onClick={() => handleSprintClick(sprint.id)}
             >
-              <h3>{sprint.name}</h3>
+              <h2>Sprint #{index + 1}</h2>
               <p>
                 <strong>Start Date:</strong>{" "}
                 {sprint.start_date
@@ -167,7 +171,7 @@ const ProjectDetails = () => {
             </div>
           ))
         ) : (
-          <></>
+          <p>No sprints found for this project.</p>
         )}
 
         {/* Add Sprint Button */}
