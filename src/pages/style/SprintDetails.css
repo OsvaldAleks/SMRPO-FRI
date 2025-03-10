@@ -1,0 +1,57 @@
+
+
+.responsive-table-container-sprints .responsive-table td {
+    width: 200px;
+    height: 150px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .responsive-table-container-sprints .responsive-table th{
+    width: 200px;
+    height: 100%;
+    text-align: center;
+    vertical-align: middle;
+
+}
+.userStory {
+    display: flex; 
+    flex-direction: column;
+    background-color: var(--color-secondary);
+    height: 100%;
+    padding: 2rem 1rem 2rem 1rem; 
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--border-radius);  
+}
+
+.userStory p {
+    display: block;
+    margin: 0.5rem 0;
+    color: #ffffff;
+    font-size: 1.2rem;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+}
+
+.plus-button {
+    display: flex;  /* Use flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    width: 100%; /* Give it a fixed width */
+    height: 100%; /* Give it a fixed height */
+    margin: auto; /* Center in its parent */
+    background-color: var(--color-primary);
+    color: white;
+    font-size: 4rem;
+    font-weight: bold;
+    text-align: center;
+    border-radius: var(--border-radius); /* Makes it a perfect circle */
+    cursor: pointer;
+}
+
+
+.plus-button:hover {
+    background-color: #0056b3;
+}

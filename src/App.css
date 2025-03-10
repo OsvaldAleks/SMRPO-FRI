@@ -72,7 +72,7 @@ body{
 }
 
 .responsive-table {
-  width: 100%;
+  width: auto;
   max-width: 100%;
   border-collapse: collapse;
   overflow-x: auto;
@@ -118,6 +118,8 @@ body{
 
 .responsive-table-container {
   width: 100%;
+  display: flex;
+  justify-content: center;
   overflow-x: auto;
   margin: 0.5rem 0 0 0;
 }
