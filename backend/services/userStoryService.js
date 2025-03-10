@@ -10,6 +10,10 @@ async function createUserStory(sprintId, name, description, acceptanceCriteria, 
     throw new Error("Acceptance criteria must be an array of strings.");
   }
 
+  if (typeof businessValue !== "number" || businessValue < 0 || businessValue > 100) {
+    throw new Error("Business value must be a valid number.");
+  }
+
   const sprintRef = db.collection("sprints").doc(sprintId);
   const sprintDoc = await sprintRef.get();
   if (!sprintDoc.exists) throw new Error("Sprint not found.");
