@@ -85,7 +85,7 @@ const EditAccount = () => {
   }
 
   return (
-      <div className="center--box wide--box">
+      <div className="center--box">
       <form onSubmit={handlePasswordChange}>
       <h1>Edit Account</h1>
       {user && (
@@ -122,7 +122,7 @@ const EditAccount = () => {
           {error && <p style={{ color: "red" }}>{error}</p>}
           {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
         </div>
-        <Button type="submit" disabled={loading}>{loading ? "Updating..." : "Change Password"}</Button>
+        <Button className={"btn--block"} variant="primery" type="submit" disabled={loading}>{loading ? "Updating..." : "Change Password"}</Button>
       </form>
     </div>
   );

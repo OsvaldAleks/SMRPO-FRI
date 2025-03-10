@@ -15,7 +15,7 @@
 
   --color-accent: #CA9998; 
 
-  --border-radius:20px;
+  --border-radius:10px;
 }
 *,*::after, *::before{
   box-sizing: border-box;
