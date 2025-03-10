@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUserStory, getUserStories } = require("../services/userStoryService");
+const { createUserStory, assignUserStoryToSprint, updateUserStoryStatus } = require("../services/userStoryService");
 
 const router = express.Router();
 
@@ -7,12 +7,13 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   try {
     const userStory = await createUserStory(
-      req.body.sprintId,
+      req.body.projectId,
       req.body.name,
       req.body.description,
       req.body.acceptanceCriteria,
       req.body.priority,
-      req.body.businessValue
+      req.body.businessValue,
+      req.body.sprintId || null
     );
     res.status(201).json({ message: "User story created successfully!", userStory });
   } catch (error) {
@@ -20,20 +21,29 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Get user stories for a project
-router.get("/:projectId", async (req, res) => {
+// Assign user story to a sprint
+router.put("/:storyId/assignSprint", async (req, res) => {
   try {
-    const { projectId } = req.params;
-    const storiesSnapshot = await db.collection("userStories").where("projectId", "==", projectId).get();
+    const { storyId } = req.params;
+    const { sprintId } = req.body;
 
-    if (storiesSnapshot.empty) {
-      return res.status(404).json({ message: "No user stories found!" });
-    }
-
-    const userStories = storiesSnapshot.docs.map(doc => doc.data());
-    res.status(200).json(userStories);
+    const response = await assignUserStoryToSprint(storyId, sprintId);
+    res.status(200).json(response);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching user stories", error: error.message });
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update user story status
+router.put("/:storyId/status", async (req, res) => {
+  try {
+    const { storyId } = req.params;
+    const { newStatus } = req.body;
+
+    const response = await updateUserStoryStatus(storyId, newStatus);
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
