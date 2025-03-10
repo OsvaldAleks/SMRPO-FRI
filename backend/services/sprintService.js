@@ -1,33 +1,63 @@
 const { db } = require("../firebase");
 
+function doDatesOverlap(start1, end1, start2, end2) {
+  return start1 <= end2 && start2 <= end1;
+}
+
+async function validateSprintDates(projectId, newStartDate, newEndDate) {
+  try {
+    const sprints = await getSprintsByProjectId(projectId);
+
+    const newStart = newStartDate;
+    const newEnd = newEndDate;
+    console.log(projectId, newEnd)
+
+    for (const sprint of sprints) {
+      const existingStart = sprint.start_date;
+      const existingEnd = sprint.end_date;
+
+      if (doDatesOverlap(newStart, newEnd, existingStart, existingEnd)) {
+        throw new Error(
+          `New sprint overlaps with existing sprint: ${sprint.name} (${sprint.start_date} to ${sprint.end_date})`
+        );
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error validating sprint dates:", error);
+    throw error;
+  }
+}
+
 async function createSprint(projectName, start_date, end_date, velocity) {
-  if (!projectName || !start_date || !end_date || velocity === undefined) {
-    throw new Error("All fields are required.");
+  const newSprint = { start_date, end_date, velocity } ;
+
+  try {
+    const projectQuery = await db.collection("projects")
+      .where("name", "==", projectName)
+      .limit(1)
+      .get();
+
+    if (projectQuery.empty) {
+      throw new Error("Project not found.");
+    }
+
+    const projectId = projectQuery.docs[0].id;
+
+    await validateSprintDates(projectId, start_date, end_date);
+
+    const sprintRef = db.collection("sprints").doc();
+    const sprint = { id: sprintRef.id, projectId, ...newSprint };
+  
+    await sprintRef.set(sprint);
+    console.log("Sprint added successfully:", sprint);
+
+    return sprint;
+  } catch (error) {
+    console.error("Failed to add sprint:", error.message);
+    throw error;
   }
-
-  const projectQuery = await db.collection("projects")
-    .where("name", "==", projectName)
-    .limit(1)
-    .get();
-
-  if (projectQuery.empty) {
-    throw new Error("Project not found.");
-  }
-
-  const projectDoc = projectQuery.docs[0];
-  const projectId = projectDoc.id;
-
-  const sprintRef = db.collection("sprints").doc();
-
-  const sprint = { id: sprintRef.id,
-    projectId,
-    start_date,
-    end_date,
-    velocity 
-  };
-
-  await sprintRef.set(sprint);
-  return sprint;
 }
 
 // Get a sprint by its ID
