@@ -71,7 +71,7 @@ const ProjectDetails = () => {
       const sortedSprints = (sprintsData.sprint || []).sort((a, b) => {
         return a.start_date.localeCompare(b.start_date);
       });
-      
+
       setSprints(sortedSprints);
     } catch (error) {
       console.error("Failed to fetch sprints:", error);
@@ -170,7 +170,7 @@ const ProjectDetails = () => {
               </p>
             </div>
           ))
-        ) : (
+        ) : !isScrumMaster && (
           <p>No sprints found for this project.</p>
         )}
 

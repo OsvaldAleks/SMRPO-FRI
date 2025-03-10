@@ -1,5 +1,6 @@
 body{
   background: rgb(223, 228, 230);
+  height: 100vh;
 }
 
 .center--container{
@@ -7,6 +8,7 @@ body{
   justify-content: center;
   align-items: center;
   margin-top: 1rem;
+  flex-grow: 1;
 }
 
 .center--box{

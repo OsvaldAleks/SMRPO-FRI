@@ -1,30 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useAuth } from "../context/AuthContext";
 import { getUserProjects } from "../api"; 
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const UserProjects = () => {
-    const [user, setUser] = useState(null);
-    const [userProjects, setUserProjects] = useState([]); // State to store user projects
+  const { user, loading } = useAuth();
+  const [userProjects, setUserProjects] = useState([]);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-      const auth = getAuth();
-      const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-        setUser(currentUser);
-  
-        if (currentUser) {
-          getUserProjects(currentUser.uid).then((projects) => {
-            setUserProjects(projects);
-          }).catch((error) => {
-            console.error("Error fetching user projects:", error);
-          });
-        } else {
-          setUserProjects([]);
-        }
-      });
-  
-      return () => unsubscribe();
-    }, []);
+  useEffect(() => {
+    if (user) {
+      getUserProjects(user.uid)
+        .then((projects) => {
+          setUserProjects(projects);
+        })
+        .catch((error) => {
+          console.error("Error fetching user projects:", error);
+        });
+    } else {
+      setUserProjects([]);
+    }
+  }, [user]);
 
     /*
   if (loading) {
@@ -39,19 +36,40 @@ const UserProjects = () => {
     return <div>No projects found.</div>;
   }
 */
+const handleProjectClick = (projectName) => {
+  navigate(`/project/${projectName}`);
+};
 
   return (
     <div className="center--box">
       <h1>Your projects</h1>
+      <div className="sprints-grid">
       {userProjects.length > 0 ? (
                 userProjects.map((project) => (
-                  <p key={project.projectId}>
-                    <Link to={`../project/`+project.projectName}>{project.projectName}</Link>
-                  </p>
+                <div
+                  key={project.projectName}
+                  className="sprint-box"
+                  onClick={() => handleProjectClick(project.projectName)}
+                >
+          
+                  <h2 key={project.projectId}>
+                    {project.projectName}
+                  </h2>
+                  </div>
                 ))
               ) : (
                 <li>No projects found</li>
               )}
+              {/* Add Sprint Button */}
+        {user.system_rights === "Admin" && (
+          <button
+            className="add-sprint-button"
+            onClick={() => navigate(`/newProject`)}
+          >
+            +
+          </button>
+        )}
+    </div>
     </div>
   );
 };

@@ -1,20 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import UserProjects from "./UserProjects";
+import Button from "../components/Button";
+import './style/Dashboard.css'
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   return (
-    <div>
-      <h1>Dashboard</h1>
+    <div className="dashboard-wrapper">
       {user ? (
-        <div>
-          <p>Welcome, {user.email}!</p>
-          <p>Your user ID is: {user.uid}</p>
-          <p>Your system rights: {user.system_rights}</p>
-        </div>
+        <>
+          <h1>Welcome!</h1>
+          <h2>Jump into a project</h2>
+          <UserProjects></UserProjects>
+        </>
       ) : (
-        <p>homepage</p>
+        <>
+          <h1>HOMEPAGE</h1>
+          <h2>You con log in here</h2>
+            <Button onClick={() => navigate(`/login`)}>LOGIN</Button>
+        </>
       )}
     </div>
   );

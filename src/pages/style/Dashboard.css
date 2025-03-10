@@ -1,0 +1,10 @@
+.dashboard-wrapper{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dashboard-wrapper h1,
+.dashboard-wrapper h2{
+    text-align: center; 
+}
