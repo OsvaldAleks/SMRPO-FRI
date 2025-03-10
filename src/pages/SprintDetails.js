@@ -2,13 +2,18 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useParams } from "react-router-dom";
 import { getSprintData } from '../api.js'
+import { getProject } from "../api";
 import './style/SprintDetails.css'
 
 const SprintDetails = () => {
+  const { projectName } = useParams();
   const { user, loading } = useAuth();
-  const { sprintId } = useParams();
+  const { sprintId } = useParams(); 
   const [sprint, setSprint] = useState(null);
   const [error, setError] = useState(null);
+  const [isScrumMaster, setIsScrumMaster] = useState(false);
+  const [isProductManager, setIsProductManager] = useState(false);
+
 
   useEffect(() => {
     if (sprintId) {
@@ -22,13 +27,39 @@ const SprintDetails = () => {
       };
       fetchSprintData();
     }
+    
   }, [sprintId]);
+  
+  useEffect(() => {
+    fetchProject(user.uid);
+  }, [projectName]);
+
+  const fetchProject = async (uid) => {
+      try {
+        if (!projectName) {
+          throw new Error("Project name is undefined");
+        }
+  
+        const projectData = await getProject(projectName, uid);
+  
+        if (projectData.project.scrumMasters?.some((sm) => sm.id === uid)) {
+          setIsScrumMaster(true);
+        }
+        if (projectData.project.productManagers?.some((sm) => sm.id === uid)) {
+          setIsProductManager(true);
+        }
+      } catch (error) {
+        console.error("Failed to fetch project:", error);
+        setError("Failed to load project data. Please try again later.");
+      }
+    };
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
+    <>
     <div className="center--box">
       <h1>Sprint Details</h1>
       {error && <p style={{ color: "red" }}>Error: {error}</p>}
@@ -78,17 +109,22 @@ const SprintDetails = () => {
             <td>
             </td>
           </tr>
+          {(isScrumMaster || isProductManager) && (
           <tr>
             <td>
               <div className="userStory plus-button">+</div>
             </td>
           </tr>
+          )}
         </tbody>
       </table>
     </div>
-
-
     </div>
+    <div className="center--box">
+      <h1>User story:</h1>
+      <h2>Name of story</h2>
+    </div>
+    </>
   );
 };
 

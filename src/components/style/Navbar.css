@@ -164,7 +164,7 @@
 .logout-link {
   font-weight: bold;
   color: #fff;
-  background-color: rgba(157, 61, 61, 0.613);
+  background-color: var(--color-accent);
 }
 
 .logout-link:hover {
