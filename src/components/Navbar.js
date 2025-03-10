@@ -37,6 +37,9 @@ const Navbar = () => {
     myProjectsItems.push({
       label: "+ Create Project",
       path: "/newProject",
+    }, {
+      label:"+ Add User Story",
+      path:"/userStoryForm" ,
     });
   }
 

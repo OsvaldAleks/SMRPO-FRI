@@ -32,7 +32,7 @@ const ManageUsers = () => {
       
       {/* Add User Button */}
       <Link to="/addUser">
-        <Button className="add-user-btn">Add User</Button>
+        <Button className="">Add User</Button>
       </Link>
 
       {/* Loading or table display */}

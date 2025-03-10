@@ -15,12 +15,17 @@ import AddSprintForm from "./pages/AddSprintForm";
 import { ProjectsProvider } from "./context/ProjectsContext";
 import './App.css'
 import SprintDetails from "./pages/SprintDetails";
+import { UserStoryProvider } from './context/userStoryContext';
+import UserStoryForm from "./pages/UserStoryForm";
 
 function App() {
   return (
     <AuthProvider>
       <ProjectsProvider>
+  
+      <UserStoryProvider>
         <Router>
+          
           <Navbar />
           <main>
             <div className="center--container">
@@ -33,7 +38,8 @@ function App() {
                 <Route path="/manageUsers" element={<AdminRoute><ManageUsers /></AdminRoute>} />
                 <Route path="/addUser" element={<AdminRoute><AddUserForm /></AdminRoute>} />
                 <Route path="/userProjects" element={<PrivateRoute><UserProjects /></PrivateRoute>} />
-                <Route path="/project/:projectName" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
+                <Route path="/project/:projectName" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />      
+                <Route path="/userStoryForm" element={<AdminRoute><UserStoryForm /></AdminRoute>} />
                 <Route 
                   path="/project/:projectName/sprint/:sprintId"
                   element={<PrivateRoute><SprintDetails /></PrivateRoute>} 
@@ -42,6 +48,7 @@ function App() {
             </div>
           </main>
         </Router>
+        </UserStoryProvider>
       </ProjectsProvider>
     </AuthProvider>
   );
