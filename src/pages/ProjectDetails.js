@@ -12,6 +12,8 @@ const ProjectDetails = () => {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [isScrumMaster, setIsScrumMaster] = useState(false);
+  const [isProductManager, setIsProductManager] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,6 +51,9 @@ const ProjectDetails = () => {
 
       if (projectData.project.scrumMasters?.some((sm) => sm.id === uid)) {
         setIsScrumMaster(true);
+      }
+      if (projectData.project.productManagers?.some((sm) => sm.id === uid)) {
+        setIsProductManager(true);
       }
 
       setProject(projectData.project);
@@ -146,6 +151,7 @@ const ProjectDetails = () => {
         </div>
       </div>
 
+      <div>
       <h2>Sprints</h2>
       <div className="sprints-grid">
         {sprints.length > 0 ? (
@@ -183,6 +189,21 @@ const ProjectDetails = () => {
             +
           </button>
         )}
+      </div>
+
+      <div>
+      <h2>Stories</h2>
+      <div className="sprints-grid">
+        {/* Add Sprint Button */}
+        {(isScrumMaster || isProductManager) && (
+          <button
+            className="add-sprint-button"
+          >
+            +
+          </button>
+        )}
+        </div>
+      </div>
       </div>
     </div>
   );

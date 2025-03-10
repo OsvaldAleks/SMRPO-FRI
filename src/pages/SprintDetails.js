@@ -12,7 +12,6 @@ const SprintDetails = () => {
   const [sprint, setSprint] = useState(null);
   const [error, setError] = useState(null);
   const [isScrumMaster, setIsScrumMaster] = useState(false);
-  const [isProductManager, setIsProductManager] = useState(false);
 
 
   useEffect(() => {
@@ -45,9 +44,11 @@ const SprintDetails = () => {
         if (projectData.project.scrumMasters?.some((sm) => sm.id === uid)) {
           setIsScrumMaster(true);
         }
+        /*
         if (projectData.project.productManagers?.some((sm) => sm.id === uid)) {
           setIsProductManager(true);
         }
+          */
       } catch (error) {
         console.error("Failed to fetch project:", error);
         setError("Failed to load project data. Please try again later.");
@@ -60,6 +61,28 @@ const SprintDetails = () => {
 
   return (
     <>
+    <div className="center--box">
+      <h1>User Stories</h1>
+      <div className="responsive-table-container3">
+        <table className="responsive-table">
+          <thead>
+            <tr>
+              <th>Include</th>
+              <th>Story Title</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <input type="checkbox" />
+              </td>
+              <td>Name of Story</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div className="center--box">
       <h1>Sprint Details</h1>
       {error && <p style={{ color: "red" }}>Error: {error}</p>}
@@ -109,7 +132,7 @@ const SprintDetails = () => {
             <td>
             </td>
           </tr>
-          {(isScrumMaster || isProductManager) && (
+          {isScrumMaster && (
           <tr>
             <td>
               <div className="userStory plus-button">+</div>
@@ -121,7 +144,7 @@ const SprintDetails = () => {
     </div>
     </div>
     <div className="center--box">
-      <h1>User story:</h1>
+      <h1>User Story</h1>
       <h2>Name of story</h2>
     </div>
     </>

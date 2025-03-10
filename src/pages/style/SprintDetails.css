@@ -13,6 +13,35 @@
     vertical-align: middle;
 
 }
+
+.responsive-table-container3 {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.responsive-table-container3 .responsive-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.responsive-table-container3 .responsive-table th,
+.responsive-table-container3 .responsive-table td {
+    vertical-align: middle;
+    padding: 1rem;
+}
+
+.responsive-table-container3 .responsive-table th:nth-child(1),
+.responsive-table-container3 .responsive-table td:nth-child(1) {
+    text-align: center;
+    width: 5%;
+}
+
+.responsive-table-container3.responsive-table th:nth-child(2),
+.responsive-table-container3 .responsive-table td:nth-child(2) {
+    text-align: left;
+    width: 95%;
+}
+
 .userStory {
     display: flex; 
     flex-direction: column;
