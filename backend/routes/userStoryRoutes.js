@@ -7,7 +7,6 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   try {
     const userStory = await createUserStory(
-      req.body.projectId,
       req.body.sprintId,
       req.body.name,
       req.body.description,
