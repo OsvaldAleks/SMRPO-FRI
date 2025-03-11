@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getProject, getSprintsForProject } from "../api";
+import { formatDate } from "../utils/storyUtils.js";
 import './style/ProjectDetails.css';
 import AddSprintForm from "./AddSprintForm";
 import UserStoryForm from "./UserStoryForm";
@@ -174,13 +175,13 @@ const ProjectDetails = () => {
               <p>
                 <strong>Start Date:</strong>{" "}
                 {sprint.start_date
-                  ? sprint.start_date
+                  ? formatDate(sprint.start_date)
                   : "No start date available"}
               </p>
               <p>
                 <strong>End Date:</strong>{" "}
                 {sprint.end_date
-                  ? sprint.end_date
+                  ? formatDate(sprint.end_date)
                   : "No end date available"}
               </p>
             </div>

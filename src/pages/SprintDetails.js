@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useParams } from "react-router-dom";
 import { getSprintData } from '../api.js'
 import { getProject } from "../api";
+import { formatDate } from "../utils/storyUtils.js";
 import './style/SprintDetails.css'
 
 const SprintDetails = () => {
@@ -12,7 +13,6 @@ const SprintDetails = () => {
   const [sprint, setSprint] = useState(null);
   const [error, setError] = useState(null);
   const [isScrumMaster, setIsScrumMaster] = useState(false);
-
 
   useEffect(() => {
     if (sprintId) {
@@ -91,12 +91,12 @@ const SprintDetails = () => {
         <div>
           <p><strong>Start Date: </strong>
                 {sprint?.start_date
-                    ? sprint.start_date
+                    ? formatDate(sprint.start_date)
                     : "No end date available"}
             </p>
           <p><strong>End Date: </strong>
                 {sprint?.end_date
-                    ? sprint.end_date
+                    ? formatDate(sprint.end_date)
                     : "No end date available"}
             </p>
           <p><strong>Velocity: </strong> {sprint.velocity}</p>

@@ -7,7 +7,7 @@
 }
 
 .roles-grid div {
-  background-color: #f4f4f4;
+  background-color: lightgray;
   padding: 1rem;
   border-radius: var(--border-radius);
 }
@@ -19,6 +19,7 @@
 
 .roles-grid li {
   padding: 0.5rem;
+  color: var(--color-primary);
   border-bottom: 1px solid #ccc;
 }
 
@@ -46,6 +47,10 @@
   text-align: center;
   min-height: 150px;
   padding: 1rem;
+}
+
+.sprint-box.gray {
+  background-color: #ccc;
 }
 
 .sprint-box:hover {
