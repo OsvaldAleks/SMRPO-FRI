@@ -9,7 +9,7 @@
 .roles-grid div {
   background-color: #f4f4f4;
   padding: 1rem;
-  border-radius: 20px;
+  border-radius: var(--border-radius);
 }
 
 .roles-grid ul {
@@ -34,7 +34,7 @@
 }
 
 .sprint-box, .add-sprint-button {
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   background-color: var(--color-secondary);
   color: #fff;;
   cursor: pointer;
@@ -66,7 +66,7 @@ color: #fff;
   color: #fff;
   font-size: 4rem;
   font-weight: bold;
-  border-radius: 20px;
+  border-radius: var(--border-radius);
 }
 
 .add-sprint-button:hover {
