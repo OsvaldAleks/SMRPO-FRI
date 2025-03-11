@@ -27,10 +27,11 @@ const UserStoryForm = ({ projectId }) => {
     const newStory = {
       name,
       description,
-      acceptanceCriteria: acceptanceCriteria.filter(item => item.trim() !== ''), // Remove empty values
+      acceptanceCriteria: acceptanceCriteria.filter(item => item.trim() !== ''), 
       priority,
       businessValue: parseInt(businessValue, 10),
-      projectId,
+      projectId,     // automatically passed in from props
+      sprintId: [],  // default to an empty array
     };
 
     if (validateStory(newStory)) {
