@@ -43,6 +43,7 @@ const ManageUsers = () => {
           <table className="responsive-table">
             <thead>
               <tr>
+                <th></th>
                 <th>Username</th>
                 <th>Name</th>
                 <th>Last name</th>
@@ -53,6 +54,9 @@ const ManageUsers = () => {
               {users.length > 0 ? (
                 users.map((user) => (
                   <tr key={user.id}>
+                    <td><div className={user.status=='Active' 
+                      ? 'activeStatus'
+                      : 'offlineStatus'}></div></td>
                     <td>{user.username}</td>
                     <td>{user.name}</td>
                     <td>{user.surname}</td>

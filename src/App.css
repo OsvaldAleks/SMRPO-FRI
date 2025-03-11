@@ -137,3 +137,25 @@ body{
     padding: 0.5rem;
   }
 }
+
+.activeStatus {
+  background-color: green;
+  color: white;
+  width: 10px;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.offlineStatus {
+  background-color: gray;
+  color: white;
+  width: 10px;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
