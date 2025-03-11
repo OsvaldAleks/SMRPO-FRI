@@ -3,36 +3,34 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false); 
+  const [error, setError] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(null);
     try {
       await login(email, password);
-      navigate("/dashboard");
+      navigate("/");
     } catch (error) {
-      console.error("Login failed:", error.message);
+      setError("Invalid email or password. Please try again.");
     }
   };
 
   return (
     <div className="center--container">
       <div className="center--box">
-        
         <form onSubmit={handleLogin}>
-        <h1>
-          Login
-        </h1>
+          <h1>Login</h1>
 
-       <div className={"block--element"}>
-         <label className={"block--element"}>
-          Username
-         </label>
+          <div className={"block--element"}>
+            <label className={"block--element"}>Username</label>
             <Input
               className={"block--element"}
               type="email"
@@ -41,13 +39,10 @@ const Login = () => {
               required
               placeholder="Enter your username or email"
             />
-       </div>
+          </div>
 
-
-          <div className={"block--element"} >
-          <label className={"block--element"}>
-        Password
-       </label>
+          <div className={"block--element"}>
+            <label className={"block--element"}>Password</label>
             <Input
               className={"block--element"}
               type={showPassword ? "text" : "password"} 
@@ -58,26 +53,24 @@ const Login = () => {
             />
             <span className={"checkbox-container"}>
               <Input
-               className={"input--checkbox"}
+                className={"input--checkbox"}
                 type="checkbox"
                 checked={showPassword}
                 onChange={() => setShowPassword(!showPassword)}
               />
-             
               Show Password
-            
-              
             </span>
           </div>
-          <div className={"block--element"} >
-          <Button variant="primery" type="submit">Login</Button>
+
+          {error && <p className="p--alert">{error}</p>}
+
+          <div className={"block--element"}>
+            <Button variant="primery" type="submit">Login</Button>
           </div>
         </form>
       </div>
     </div>
-   
   );
 };
-
 
 export default Login;
