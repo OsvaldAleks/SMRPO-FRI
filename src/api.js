@@ -227,7 +227,6 @@ export const getStoriesForProject = async (projectId) => {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    console.log(response)
 
     if (!response.ok) {
       const errorData = await response.json();

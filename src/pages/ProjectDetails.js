@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getProject, getSprintsForProject, getStoriesForProject } from "../api";
 import { formatDate } from "../utils/storyUtils.js";
+import Input from '../components/Input.js'
 import './style/ProjectDetails.css';
 import AddSprintForm from "./AddSprintForm";
 import UserStoryForm from "./UserStoryForm";
@@ -11,7 +12,7 @@ const ProjectDetails = () => {
   const { projectName } = useParams();
   const [project, setProject] = useState(null);
   const [sprints, setSprints] = useState([]);
-  const [stories, setStories] = useState([]); // Add state for stories
+  const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
@@ -101,10 +102,10 @@ const ProjectDetails = () => {
         throw new Error("Project data is not available.");
       }
 
-      const storiesData = await getStoriesForProject(project.id); // Assuming this API exists
+      const storiesData = await getStoriesForProject(project.id);
 
       const sortedStories = (storiesData.stories || []).sort((a, b) => {
-        return a.name.localeCompare(b.name); // You can adjust sorting logic based on your needs
+        return a.name.localeCompare(b.name);
       });
 
       setStories(sortedStories);
@@ -223,6 +224,7 @@ const ProjectDetails = () => {
                   >
                     <h2>{story.name}</h2>
                     <p>{story.description}</p>
+                    <Input></Input>
                   </div>
                 ))
               ) : (
