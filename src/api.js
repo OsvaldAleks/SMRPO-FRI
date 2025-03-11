@@ -1,3 +1,5 @@
+import { getDatabase, ref, update, serverTimestamp } from "firebase/database";
+
 const API_URL = "http://localhost:5001"; // Your backend URL
 
 // Register a new user via API
@@ -266,7 +268,7 @@ export const getUserStatus = async (userId) => {
     });
     
     if (response.ok) {
-      console.log(response)
+      //console.log(response)
       return response.json();
     } else {
       const errorData = await response.json();
@@ -274,5 +276,34 @@ export const getUserStatus = async (userId) => {
     }
   } catch (error) {
     return { message: "Network error", error };
+  }
+};
+
+export const updateUserStatus = async (userId, status) => {
+  if (!userId){
+    //console.log("NO UID")
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}/status`, {
+      method: "PUT", // Use PUT for updates
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: status,
+        last_online: new Date().toISOString(),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to update user status:", errorData);
+      throw new Error(errorData.message || "Failed to update status");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Network error updating user status:", error);
+    return { error: true, message: error.message || "Network error" };
   }
 };

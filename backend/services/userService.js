@@ -50,11 +50,10 @@ async function getUser(userId) {
     if (!doc.exists) {
       return null;
     } else {
-      const userData = doc.data();
-      return userData;
+      return doc.data();
     }
   } catch (error) {
-    console.error("Napaka pri pridobivanju podatkov o uporabniku:", error);
+    console.error("Error fetching user data:", error);
     throw error;
   }
 }
@@ -64,19 +63,46 @@ async function getUsers() {
   const snapshot = await usersRef.get();
 
   if (snapshot.empty) {
-      return [];
+    return [];
   }
 
   const users = [];
   snapshot.forEach((doc) => {
-      const userData = doc.data();
-      userData.id = doc.id;
-      users.push(userData);
+    const userData = doc.data();
+    userData.id = doc.id;
+    users.push(userData);
   });
 
   return users;
 }
 
-module.exports = {getUser,
-    getUsers,
-    addUser};
+// New function to update user status
+async function updateUserStatus(userId, status) {
+  try {
+    const userRef = db.collection("users").doc(userId);
+
+    // Ensure the user exists
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+      throw new Error("User not found");
+    }
+
+    // Update the status and last_online timestamp (if going offline)
+    await userRef.update({
+      status: status,
+      last_online: new Date().toISOString(),
+    });
+
+    console.log(`User ${userId} status updated to ${status}`);
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    throw error;
+  }
+}
+
+module.exports = {
+  getUser,
+  getUsers,
+  addUser,
+  updateUserStatus,
+};
