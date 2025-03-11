@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getProject, getSprintsForProject, getStoriesForProject } from "../api";
+import { getUserStatus } from "../api";
 import { formatDate } from "../utils/storyUtils.js";
 import Input from '../components/Input.js';
 import './style/ProjectDetails.css';
@@ -19,6 +20,7 @@ const ProjectDetails = () => {
   const [isScrumMaster, setIsScrumMaster] = useState(false);
   const [isProductManager, setIsProductManager] = useState(false);
   const [showForm, setShowForm] = useState(0);
+  const [userStatuses, setUserStatuses] = useState({});
 
   const navigate = useNavigate();
 
@@ -53,6 +55,37 @@ const ProjectDetails = () => {
       fetchStories();
     }
   }, [project]);
+
+  useEffect(() => {
+    const fetchUserStatuses = async () => {
+      if (!project) return;
+      const users = [...(project.devs || []), ...(project.scrumMasters || []), ...(project.productManagers || [])];
+      const statuses = {};
+      
+      for (const user of users) {
+        const statusData = await getUserStatus(user.id);
+        statuses[user.id] = statusData.status === "online";
+      }
+      
+      setUserStatuses(statuses);
+    };
+    
+    fetchUserStatuses();
+  }, [project]);
+
+  const renderUserWithStatus = (user) => (
+    <li key={user.id}>
+      <span style={{
+        height: "10px",
+        width: "10px",
+        backgroundColor: userStatuses[user.id] ? "green" : "red",
+        borderRadius: "50%",
+        display: "inline-block",
+        marginRight: "8px"
+      }}></span>
+      {user.username}
+    </li>
+  );
 
   const handleToggleForm = (formType) => {
     setShowForm((prev) => (prev === formType ? 0 : formType));
@@ -157,6 +190,7 @@ const ProjectDetails = () => {
               ) : (
                 <li>No managers assigned</li>
               )}
+              {project.productManagers.map(renderUserWithStatus)}
             </ul>
           </div>
 
@@ -171,6 +205,7 @@ const ProjectDetails = () => {
               ) : (
                 <li>No SCRUM Masters assigned</li>
               )}
+              {project.scrumMasters.map(renderUserWithStatus)}
             </ul>
           </div>
 
@@ -185,6 +220,7 @@ const ProjectDetails = () => {
               ) : (
                 <li>No developers assigned</li>
               )}
+              {project.devs.map(renderUserWithStatus)}
             </ul>
           </div>
         </div>

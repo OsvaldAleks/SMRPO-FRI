@@ -257,3 +257,22 @@ export const assignUserStoryToSprint = async (storyId, sprintId) => {
     throw error;
   }
 };
+
+export const getUserStatus = async (userId) => {
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    
+    if (response.ok) {
+      console.log(response)
+      return response.json();
+    } else {
+      const errorData = await response.json();
+      return { message: errorData.message || "Failed to fetch user status", error: true };
+    }
+  } catch (error) {
+    return { message: "Network error", error };
+  }
+};
