@@ -79,9 +79,9 @@ const ProjectDetails = () => {
       if (!project) {
         throw new Error("Project data is not available.");
       }
-  
+
       const sprintsData = await getSprintsForProject(project.id);
-  
+
       const sortedSprints = (sprintsData.sprint || []).sort((a, b) => {
         return a.start_date.localeCompare(b.start_date);
       });
@@ -92,6 +92,7 @@ const ProjectDetails = () => {
       setError("Failed to load sprints. Please try again later.");
     }
   };
+
   const handleSprintClick = (sprintId) => {
     navigate(`/project/${projectName}/sprint/${sprintId}`);
   };
@@ -114,123 +115,129 @@ const ProjectDetails = () => {
 
   return (
     <>
-    <div className="center--box">
-      <h1>{project.name}</h1>
-      <h2>Members</h2>
-      <div className="roles-grid">
-        {/* Product Managers */}
-        <div>
-          <h2>Project Managers</h2>
-          <ul>
-            {project.productManagers && project.productManagers.length > 0 ? (
-              project.productManagers.map((user) => (
-                <li key={user.id}>{user.username}</li>
-              ))
-            ) : (
-              <li>No managers assigned</li>
-            )}
-          </ul>
+      <div className="center--box">
+        <h1>{project.name}</h1>
+        <h2>Members</h2>
+        <div className="roles-grid">
+          {/* Product Managers */}
+          <div>
+            <h2>Project Managers</h2>
+            <ul>
+              {project.productManagers && project.productManagers.length > 0 ? (
+                project.productManagers.map((user) => (
+                  <li key={user.id}>{user.username}</li>
+                ))
+              ) : (
+                <li>No managers assigned</li>
+              )}
+            </ul>
+          </div>
+
+          {/* SCRUM Masters */}
+          <div>
+            <h2>SCRUM Masters</h2>
+            <ul>
+              {project.scrumMasters && project.scrumMasters.length > 0 ? (
+                project.scrumMasters.map((user) => (
+                  <li key={user.id}>{user.username}</li>
+                ))
+              ) : (
+                <li>No SCRUM Masters assigned</li>
+              )}
+            </ul>
+          </div>
+
+          {/* Developers */}
+          <div>
+            <h2>Developers</h2>
+            <ul>
+              {project.devs && project.devs.length > 0 ? (
+                project.devs.map((user) => (
+                  <li key={user.id}>{user.username}</li>
+                ))
+              ) : (
+                <li>No developers assigned</li>
+              )}
+            </ul>
+          </div>
         </div>
 
-        {/* SCRUM Masters */}
         <div>
-          <h2>SCRUM Masters</h2>
-          <ul>
-            {project.scrumMasters && project.scrumMasters.length > 0 ? (
-              project.scrumMasters.map((user) => (
-                <li key={user.id}>{user.username}</li>
+          <h2>Sprints</h2>
+          <div className="sprints-grid">
+            {sprints.length > 0 ? (
+              sprints.map((sprint, index) => (
+                <div
+                  key={sprint.id}
+                  className="sprint-box"
+                  onClick={() => handleSprintClick(sprint.id)}
+                >
+                  <h2>Sprint #{index + 1}</h2>
+                  <p>
+                    <strong>Start Date:</strong>{" "}
+                    {sprint.start_date
+                      ? formatDate(sprint.start_date)
+                      : "No start date available"}
+                  </p>
+                  <p>
+                    <strong>End Date:</strong>{" "}
+                    {sprint.end_date
+                      ? formatDate(sprint.end_date)
+                      : "No end date available"}
+                  </p>
+                </div>
               ))
-            ) : (
-              <li>No SCRUM Masters assigned</li>
+            ) : !isScrumMaster && (
+              <p>No sprints found for this project.</p>
             )}
-          </ul>
-        </div>
 
-        {/* Developers */}
-        <div>
-          <h2>Developers</h2>
-          <ul>
-            {project.devs && project.devs.length > 0 ? (
-              project.devs.map((user) => (
-                <li key={user.id}>{user.username}</li>
-              ))
-            ) : (
-              <li>No developers assigned</li>
+            {/* Add Sprint Button */}
+            {isScrumMaster && (
+              <button
+                className={showForm === 1 ? "add-sprint-button selected" : "add-sprint-button"}
+                onClick={() => handleToggleForm(1)}
+              >
+                <span className={showForm === 1 ? "rotated" : ""}>+</span>
+              </button>
             )}
-          </ul>
-        </div>
-      </div>
+          </div>
 
-      <div>
-      <h2>Sprints</h2>
-      <div className="sprints-grid">
-        {sprints.length > 0 ? (
-          sprints.map((sprint, index) => (
-            <div
-              key={sprint.id}
-              className="sprint-box"
-              onClick={() => handleSprintClick(sprint.id)}
-            >
-              <h2>Sprint #{index + 1}</h2>
-              <p>
-                <strong>Start Date:</strong>{" "}
-                {sprint.start_date
-                  ? formatDate(sprint.start_date)
-                  : "No start date available"}
-              </p>
-              <p>
-                <strong>End Date:</strong>{" "}
-                {sprint.end_date
-                  ? formatDate(sprint.end_date)
-                  : "No end date available"}
-              </p>
+          <div>
+            <h2>Stories</h2>
+            <div className="sprints-grid">
+              {/* Add Story Button */}
+              {(isScrumMaster || isProductManager) && (
+                <button
+                  className={showForm === 2 ? "add-sprint-button selected" : "add-sprint-button"}
+                  onClick={() => handleToggleForm(2)}
+                >
+                  <span className={showForm === 2 ? "rotated" : ""}>+</span>
+                </button>
+              )}
             </div>
-          ))
-        ) : !isScrumMaster && (
-          <p>No sprints found for this project.</p>
-        )}
-
-        {/* Add Sprint Button */}
-        {isScrumMaster && (
-            <button
-              className={showForm==1 ? "add-sprint-button selected" : "add-sprint-button"}
-              onClick={() => handleToggleForm(1)}
-            >
-            <span className={showForm==1 ? "rotated" : ""}>+</span>
-          </button>
-
-        )}
-      </div>
-
-      <div>
-      <h2>Stories</h2>
-      <div className="sprints-grid">
-        {/* Add Sprint Button */}
-        {(isScrumMaster || isProductManager) && (
-          <button
-            className={showForm==2 ? "add-sprint-button selected" : "add-sprint-button"}
-            onClick={() => handleToggleForm(2)}
-          >
-            <span className={showForm==2 ? "rotated" : ""}>+</span>
-            </button>
-        )}
+          </div>
         </div>
       </div>
-      </div>
-    </div>
-    {showForm==1 && (
-      <AddSprintForm
-        projectName={projectName}
-        onSprintAdded={() => {
-          setShowForm(0);
-          fetchSprints();
-        }}
-      />
-    )}
-    {showForm==2 && (
-      <UserStoryForm/>
-    )}
 
+      {showForm === 1 && (
+        <AddSprintForm
+          projectName={projectName}
+          onSprintAdded={() => {
+            setShowForm(0);
+            fetchSprints();
+          }}
+        />
+      )}
+
+      {showForm === 2 && (
+        <UserStoryForm
+          projectId={project.id}
+          onSprintAdded={() => {
+            setShowForm(0);
+            // TODO refetch stories
+          }}
+        />
+      )}
     </>
   );
 };

@@ -1,95 +1,94 @@
 import React, { useState } from 'react';
-import { useUserStory } from '../context/userStoryContext';
-import useUserStoryValidation from '../components/useUserStoryValidation';
+import { createUserStory } from '../api';
+import { validateStory } from '../utils/storyUtils.js';
 import Button from '../components/Button';
 import Input from '../components/Input';
 
-const FormField = ({ label, value, onChange, type = 'text', name }) => (
-  <div>
-    <label>{label}:</label>
-    <input
-      type={type}
-      name={name}
-      value={value}
-      onChange={onChange}
-    />
-  </div>
-);
-
-const UserStoryForm = () => {
-  const { userStories, addUserStory } = useUserStory();
-  const { validateStory, error } = useUserStoryValidation(userStories);
-  
+const UserStoryForm = ({ projectId }) => {
   const [name, setName] = useState('');
-  const [text, setText] = useState('');
-  const [acceptanceTests, setAcceptanceTests] = useState('');
+  const [description, setDescription] = useState('');
+  const [acceptanceCriteria, setAcceptanceCriteria] = useState(['']); // Initialize with one empty field
   const [priority, setPriority] = useState('');
   const [businessValue, setBusinessValue] = useState('');
+
+  const handleAcceptanceCriteriaChange = (index, value) => {
+    const updatedCriteria = [...acceptanceCriteria];
+    updatedCriteria[index] = value;
+    setAcceptanceCriteria(updatedCriteria);
+  };
+
+  const addAcceptanceCriteriaField = () => {
+    setAcceptanceCriteria([...acceptanceCriteria, '']);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const newStory = { name, text, acceptanceTests, priority, businessValue: parseInt(businessValue) };
+    const newStory = {
+      name,
+      description,
+      acceptanceCriteria: acceptanceCriteria.filter(item => item.trim() !== ''), // Remove empty values
+      priority,
+      businessValue: parseInt(businessValue, 10),
+      projectId,
+    };
 
     if (validateStory(newStory)) {
-      addUserStory(newStory);
+      createUserStory(newStory);
       setName('');
-      setText('');
-      setAcceptanceTests('');
+      setDescription('');
+      setAcceptanceCriteria(['']); // Reset to one empty field
       setPriority('');
       setBusinessValue('');
     }
   };
 
   return (
-        <div className="center--box ">
+    <div className="center--box">
       <h1>Add New User Story</h1>
       <form onSubmit={handleSubmit}>
+        <div className="block--element">
+          <label className="block--element">Name</label>
+          <Input
+            className="block--element"
+            type="text"
+            value={name} 
+            onChange={(e) => setName(e.target.value)}
+            required
+            placeholder="Enter story name"
+          />
+        </div>
+        
+        <div className="block--element">
+          <label className="block--element">Description</label>
+          <Input
+            className="block--element"
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            placeholder="Enter the description"
+          />
+        </div> 
 
-        <div className={"block--element"}>
-         <label className={"block--element"}>
-         Name
-         </label>
-            <Input
-              className={"block--element"}
-              type="Name"
-              value={name} 
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Enter your username or email"
-            />
-       </div>
-       <div className={"block--element"}>
-         <label className={"block--element"}>
-         Text
-         </label>
-            <Input
-              className={"block--element"}
-              label="Text"
-              value={text} 
-              onChange={(e) => setText(e.target.value)}
-              required
-              placeholder="Enter the description"
-            />
-       </div> 
-       
-       <div className={"block--element"}>
-         <label className={"block--element"}>
-         2
-         </label>
-            <Input
-              className={"block--element"}
-              value={acceptanceTests} 
-              onChange={(e) => setAcceptanceTests(e.target.value)}
-              required
-              placeholder="Enter the description"
-            />
-       </div>
+        <div className="block--element">
+          <label className="block--element">Acceptance Criteria</label>
+          {acceptanceCriteria.map((criteria, index) => (
+            <div key={index} className="acceptance-criteria-input">
+              <Input
+                className="block--element"
+                value={criteria}
+                onChange={(e) => handleAcceptanceCriteriaChange(index, e.target.value)}
+                required
+                placeholder={`Enter acceptance criteria ${index + 1}`}
+              />
+            </div>
+          ))}
+          
+          <Button type="button" onClick={addAcceptanceCriteriaField}>+</Button>
+        </div>
 
-        <div className={"block--element"}>
-         <label className={"block--element"}>
-         Priority:
-         </label>
+        <div className="block--element">
+          <label className="block--element">Priority:</label>
           <select value={priority} onChange={(e) => setPriority(e.target.value)}>
             <option value="">Select Priority</option>
             <option value="must have">Must Have</option>
@@ -99,24 +98,21 @@ const UserStoryForm = () => {
           </select>
         </div>
 
-        <div className={"block--element"}>
-         <label className={"block--element"}>
-         Business Value
-         </label>
-            <Input
-              className={"block--element"}
-              type="number"
-              value={businessValue} 
-              onChange={(e) => setBusinessValue(e.target.value)}
-              required
-              placeholder="Enter the description"
-            />
-       </div>
+        <div className="block--element">
+          <label className="block--element">Business Value</label>
+          <Input
+            className="block--element"
+            type="number"
+            value={businessValue} 
+            onChange={(e) => setBusinessValue(e.target.value)}
+            required
+            placeholder="Enter the business value"
+          />
+        </div>
+        
         <Button type="submit">Add User Story</Button>
       </form>
-
-      {error && <div className='p--alert'>{error}</div>}
-      </div>
+    </div>
   );
 };
 

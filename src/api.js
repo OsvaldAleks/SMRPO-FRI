@@ -190,3 +190,30 @@ export const getSprintsForProject = async (projectId) => {
     throw new Error(error.message || "Network error");
   }
 };
+
+export const createUserStory = async (storyData) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(storyData),
+    });
+
+    const responseBody = await response.text();
+    let result;
+    try {
+      result = JSON.parse(responseBody);
+    } catch (error) {
+      throw new Error("Invalid JSON response from server");
+    }
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to create user story");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Network error:", error.message);
+    return { error: true, message: error.message || "Network error" };
+  }
+};

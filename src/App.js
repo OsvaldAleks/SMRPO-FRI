@@ -15,15 +15,12 @@ import AddSprintForm from "./pages/AddSprintForm";
 import { ProjectsProvider } from "./context/ProjectsContext";
 import './App.css'
 import SprintDetails from "./pages/SprintDetails";
-import { UserStoryProvider } from './context/userStoryContext';
 import UserStoryForm from "./pages/UserStoryForm";
 
 function App() {
   return (
     <AuthProvider>
       <ProjectsProvider>
-  
-      <UserStoryProvider>
         <Router>
           
           <Navbar />
@@ -48,7 +45,6 @@ function App() {
             </div>
           </main>
         </Router>
-        </UserStoryProvider>
       </ProjectsProvider>
     </AuthProvider>
   );
