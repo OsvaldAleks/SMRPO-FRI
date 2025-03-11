@@ -73,7 +73,7 @@ const UserStoryForm = ({ projectId }) => {
         <div className="block--element">
           <label className="block--element">Acceptance Criteria</label>
           {acceptanceCriteria.map((criteria, index) => (
-            <div key={index} className="acceptance-criteria-input">
+            <div key={index} className="block--element">
               <Input
                 className="block--element"
                 value={criteria}

@@ -199,10 +199,10 @@ const ProjectDetails = () => {
                 </div>
               ))
             ) : (
-              <p>No sprints found for this project.</p>
+              !(isScrumMaster) && <p>No stories found for this project.</p>
             )}
             {/* Add Sprint Button */}
-            {(isScrumMaster || isProductManager) && (
+            {(isScrumMaster) && (
                 <button
                   className={showForm === 1 ? "add-button selected" : "add-button"}
                   onClick={() => handleToggleForm(1)}
@@ -226,7 +226,7 @@ const ProjectDetails = () => {
                   </div>
                 ))
               ) : (
-                <p>No stories found for this project.</p>
+                !(isScrumMaster || isProductManager) && <p>No stories found for this project.</p>
               )}
               {/* Add Story Button */}
               {(isScrumMaster || isProductManager) && (

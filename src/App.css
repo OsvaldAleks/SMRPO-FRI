@@ -46,9 +46,9 @@ body{
 
  .grid {
   display: grid;
-  grid-template-columns: auto 1fr auto; /* Adjust grid structure */
-  align-items: center; /* Align vertically */
-  gap: 1rem; /* Add space between elements */
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
 }
 
 .grid--leftdiv{

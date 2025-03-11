@@ -35,10 +35,10 @@ const UserProjects = () => {
   return (
     <div className="center--box">
       <h1>Your projects</h1>
-      <div className="sprints-grid">
+      <div className="grid-container">
         {isLoadingProjects ? (
           <div
-            className="sprint-box gray"
+            className="grid-item gray"
           >
             <p>Loading projects...</p>
           </div>
@@ -46,7 +46,7 @@ const UserProjects = () => {
           userProjects.map((project) => (
             <div
               key={project.projectName}
-              className="sprint-box"
+              className="grid-item"
               onClick={() => handleProjectClick(project.projectName)}
             >
               <h2 key={project.projectId}>
@@ -60,7 +60,7 @@ const UserProjects = () => {
         {/* Add Sprint Button */}
         {user?.system_rights === "Admin" && (
           <button
-            className="add-sprint-button"
+            className="add-button"
             onClick={() => navigate(`/newProject`)}
           >
             +
