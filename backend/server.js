@@ -13,9 +13,7 @@ const userStoryRoutes = require("./routes/userStoryRoutes");
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.get('/projects/user/:id', (req, res) => {
-  res.json({ message: 'This is the project data' });
-});
+
 const PORT = process.env.PORT || 5001;
 
 // Use routes

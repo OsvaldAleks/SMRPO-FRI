@@ -11,6 +11,7 @@ const UserProjects = () => {
 
   useEffect(() => {
     if (user) {
+      console.log(user.uid)
       getUserProjects(user.uid)
         .then((projects) => {
           setUserProjects(projects);
@@ -23,19 +24,6 @@ const UserProjects = () => {
     }
   }, [user]);
 
-    /*
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
-
-  if (!project) {
-    return <div>No projects found.</div>;
-  }
-*/
 const handleProjectClick = (projectName) => {
   navigate(`/project/${projectName}`);
 };

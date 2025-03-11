@@ -81,12 +81,15 @@ export const getUserProjects = async (userId) => {
   try {
     const response = await fetch(`${API_URL}/projects/user/${userId}`, { method: "GET", headers: { "Content-Type": "application/json" } });
     if (response.ok) {
-      return response.json();
+      console.log(response)
+      return response.json();    
+
     } else {
       const errorData = await response.json();
-      return { message: errorData.message || "Failed to fetch projects", error: true };
+      return { message: errorData.message || "Failed to fetch projects", error: true };      
+
     }
-  } catch (error) {
+  } catch (error) {      
     return { message: "Network error", error };
   }
 };
