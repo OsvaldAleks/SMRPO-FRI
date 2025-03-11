@@ -86,7 +86,7 @@ const AddSprintForm = ({ projectName, onSprintAdded }) => {
       } else {
         setSuccessMessage("Sprint added successfully!");
         setError("");
-        onSprintAdded(); // Call the callback to refresh the sprints list
+        onSprintAdded();
       }
     } catch (err) {
       setError("An error occurred while adding the sprint.");

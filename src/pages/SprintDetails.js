@@ -13,6 +13,7 @@ const SprintDetails = () => {
   const [sprint, setSprint] = useState(null);
   const [error, setError] = useState(null);
   const [isScrumMaster, setIsScrumMaster] = useState(false);
+  const [showIncludeStories, setShowIncludeStories] = useState(false); // Toggle state
 
   useEffect(() => {
     if (sprintId) {
@@ -44,11 +45,6 @@ const SprintDetails = () => {
         if (projectData.project.scrumMasters?.some((sm) => sm.id === uid)) {
           setIsScrumMaster(true);
         }
-        /*
-        if (projectData.project.productManagers?.some((sm) => sm.id === uid)) {
-          setIsProductManager(true);
-        }
-          */
       } catch (error) {
         console.error("Failed to fetch project:", error);
         setError("Failed to load project data. Please try again later.");
@@ -61,27 +57,30 @@ const SprintDetails = () => {
 
   return (
     <>
-    <div className="center--box">
-      <h1>User Stories</h1>
-      <div className="responsive-table-container3">
-        <table className="responsive-table">
-          <thead>
-            <tr>
-              <th>Include</th>
-              <th>Story Title</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <input type="checkbox" />
-              </td>
-              <td>Name of Story</td>
-            </tr>
-          </tbody>
-        </table>
+    {/* Toggle section */}
+    {showIncludeStories && (
+      <div className="center--box">
+        <h1>User Stories</h1>
+        <div className="responsive-table-container3">
+          <table className="responsive-table">
+            <thead>
+              <tr>
+                <th>Include</th>
+                <th>Story Title</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <input type="checkbox" />
+                </td>
+                <td>Name of Story</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    )}
 
     <div className="center--box">
       <h1>Sprint Details</h1>
@@ -92,7 +91,7 @@ const SprintDetails = () => {
           <p><strong>Start Date: </strong>
                 {sprint?.start_date
                     ? formatDate(sprint.start_date)
-                    : "No end date available"}
+                    : "No start date available"}
             </p>
           <p><strong>End Date: </strong>
                 {sprint?.end_date
@@ -104,45 +103,52 @@ const SprintDetails = () => {
       ) : (
         <p>Loading sprint data...</p>
       )}
-    <div className="responsive-table-container-sprints">
-      <table className="responsive-table">
-        <thead>
-          <tr>
-            <th>TODO</th>
-            <th>Doing</th>
-            <th>Done</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <div className="userStory">
-                <h2>Name of story</h2>
-                <p>Must have</p>
-                <p>Business value: 23</p>
-              </div>
-            </td>
-            <td>
-              <div className="userStory">
-                <h2>Another story</h2>
-                <p>Nice to have</p>
-                <p>Business value: 10</p>
-              </div>
-            </td>
-            <td>
-            </td>
-          </tr>
-          {isScrumMaster && (
-          <tr>
-            <td>
-              <div className="userStory plus-button">+</div>
-            </td>
-          </tr>
-          )}
-        </tbody>
-      </table>
+
+      <div className="responsive-table-container-sprints">
+        <table className="responsive-table">
+          <thead>
+            <tr>
+              <th>TODO</th>
+              <th>Doing</th>
+              <th>Done</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div className="userStory">
+                  <h2>Name of story</h2>
+                  <p>Must have</p>
+                  <p>Business value: 23</p>
+                </div>
+              </td>
+              <td>
+                <div className="userStory">
+                  <h2>Another story</h2>
+                  <p>Nice to have</p>
+                  <p>Business value: 10</p>
+                </div>
+              </td>
+              <td></td>
+            </tr>
+            {isScrumMaster && (
+              <tr>
+                <td>
+                  {/* Toggle button */}
+                  <div 
+                    className={`userStory plus-button ${showIncludeStories ? "selected" : ""}`}
+                    onClick={() => setShowIncludeStories(prev => !prev)}
+                  >
+                    <span>+</span>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
-    </div>
+    
     <div className="center--box">
       <h1>User Story</h1>
       <h2>Name of story</h2>

@@ -93,14 +93,13 @@ color: #fff;
 
 .add-sprint-button span {
   display: inline-block;
-  transition: transform 0.7s ease; /* Smooth transition for the rotation */
+  transition: transform 0.7s ease;
 }
 
 .add-sprint-button span.rotated {
-  transform: rotate(45deg); /* Rotate the '+' symbol by 45 degrees */
+  transform: rotate(45deg);
 }
 
 .add-sprint-button.selected{
   background-color: var(--color-accent);
 }
-

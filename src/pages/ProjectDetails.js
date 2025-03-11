@@ -116,7 +116,7 @@ const ProjectDetails = () => {
     <>
     <div className="center--box">
       <h1>{project.name}</h1>
-
+      <h2>Members</h2>
       <div className="roles-grid">
         {/* Product Managers */}
         <div>

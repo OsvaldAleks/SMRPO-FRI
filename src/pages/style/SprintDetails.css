@@ -90,3 +90,12 @@
 .plus-button:hover {
     background-color: #0056b3;
 }
+
+.userStory.plus-button.selected{
+    background-color: var(--color-accent);
+}
+
+.userStory.plus-button.selected span{
+    transition: transform 0.7s ease;
+    transform: rotate(45deg);
+}
