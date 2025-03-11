@@ -1,4 +1,5 @@
 /* General Navbar Styling */
+
 .nav {
   background-color: var(--color-primary);
   display: flex;
@@ -9,8 +10,27 @@
   margin: 0;
   height: 60px;
   flex-shrink: 0; 
-  box-shadow: 0px 4px 8px rgba(63, 65, 70, 0.204);
+  box-shadow: 0px 4px 8px rgba(52, 53, 57, 0.431); 
+  position: fixed; /* Make the navbar fixed */
+  top: 0; /* Position it at the top of the screen */
+  left: 0; /* Ensure it spans from the left edge */
+  right: 0; /* Ensure it spans to the right edge */
+  z-index: 1000; /* Ensure it stays above other content */
+
 }
+
+.nav {
+  transition: transform 0.3s ease-in-out;
+}
+
+.hidden {
+  transform: translateY(-100%);
+}
+
+.visible {
+  transform: translateY(0);
+}
+
 
 /* Navbar title */
 .nav-title {

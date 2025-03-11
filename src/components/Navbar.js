@@ -7,59 +7,58 @@ import { ProjectsContext } from "../context/ProjectsContext";
 import List from "../components/Lists";
 
 const Navbar = () => {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { projects } = useContext(ProjectsContext) || { projects: [] };
-
-  const projectList = Array.isArray(projects) ? projects : [];
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(window.scrollY);
 
   const navigate = useNavigate();
+  const projectList = Array.isArray(projects) ? projects : [];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (Math.abs(currentScrollY - lastScrollY) > 20) {
+        setIsVisible(currentScrollY < lastScrollY);
+        setLastScrollY(currentScrollY);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   const handleLogout = () => {
-    const auth = getAuth();
-    auth.signOut()
+    getAuth().signOut()
       .then(() => {
         console.log("User signed out!");
         navigate("/");
       })
-      .catch((error) => {
-        console.error("Error signing out:", error);
-      });
+      .catch((error) => console.error("Error signing out:", error));
   };
 
-  // Generate dropdown items for "My Projects"
   const myProjectsItems = projectList.map((project) => ({
     label: project.projectName, 
     path: `/project/${project.projectName}`, 
   }));
 
-  // Add "Create Project" item if the user is an admin
-  if (user && user.system_rights === 'Admin') {
-    myProjectsItems.push({
-      label: "+ Create Project",
-      path: "/newProject",
-    });
+  if (user?.system_rights === 'Admin') {
+    myProjectsItems.push({ label: "+ Create Project", path: "/newProject" });
   }
 
   return (
-    <nav className="nav">
+    <nav className={`nav ${isVisible ? "visible" : "hidden"}`}>
       <Link to="/" className="nav-title">Sprintly</Link>
       {!user ? (
-        <>
-          <Link to="/login" className="login-link">Login</Link>
-        </>
+        <Link to="/login" className="login-link">Login</Link>
       ) : (
         <>
           <List
             className="nav-left"
             items={[
-              {
-                label: "My Projects",
-                path: "/userProjects",
-                items: myProjectsItems,
-              },
-              ...(user && user.system_rights === "Admin"
-                ? [{ label: "Manage Users", path: "/manageUsers" }]
-                : []),
+              { label: "My Projects", path: "/userProjects", items: myProjectsItems },
+              ...(user.system_rights === "Admin" ? [{ label: "Manage Users", path: "/manageUsers" }] : []),
             ]}
             variant="inline"
           />
