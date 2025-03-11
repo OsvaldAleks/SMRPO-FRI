@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getProject, getSprintsForProject, getStoriesForProject } from "../api";
 import { formatDate } from "../utils/storyUtils.js";
-import Input from '../components/Input.js'
+import Input from '../components/Input.js';
 import './style/ProjectDetails.css';
 import AddSprintForm from "./AddSprintForm";
 import UserStoryForm from "./UserStoryForm";
@@ -23,8 +23,13 @@ const ProjectDetails = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    setProject(null);
+    setSprints([]);
+    setStories([]);
     setIsScrumMaster(false);
     setIsProductManager(false);
+    setLoading(true);
+    setError(null);
   }, [projectName]);
 
   useEffect(() => {
@@ -45,7 +50,7 @@ const ProjectDetails = () => {
   useEffect(() => {
     if (project) {
       fetchSprints();
-      fetchStories(); // Fetch stories when project is available
+      fetchStories();
     }
   }, [project]);
 
@@ -200,17 +205,17 @@ const ProjectDetails = () => {
                 </div>
               ))
             ) : (
-              !(isScrumMaster) && <p>No stories found for this project.</p>
+              !isScrumMaster && <p>No sprints found for this project.</p>
             )}
             {/* Add Sprint Button */}
-            {(isScrumMaster) && (
-                <button
-                  className={showForm === 1 ? "add-button selected" : "add-button"}
-                  onClick={() => handleToggleForm(1)}
-                >
-                  <span className={showForm === 1 ? "rotated" : ""}>+</span>
-                </button>
-              )}
+            {isScrumMaster && (
+              <button
+                className={showForm === 1 ? "add-button selected" : "add-button"}
+                onClick={() => handleToggleForm(1)}
+              >
+                <span className={showForm === 1 ? "rotated" : ""}>+</span>
+              </button>
+            )}
           </div>
 
           <div>
@@ -224,7 +229,17 @@ const ProjectDetails = () => {
                   >
                     <h2>{story.name}</h2>
                     <p>{story.description}</p>
-                    <Input></Input>
+                    {isScrumMaster && (!story.sprintId || story.sprintId.length === 0) && (
+                      <>
+                        <span>time complexity</span>
+                        <Input
+                          name="storyPointValue"
+                          placeholder="Enter time complexity"
+                          value={user.name}
+                          /*onChange={handleChange}*/
+                        />
+                      </>
+                    )}
                   </div>
                 ))
               ) : (

@@ -81,7 +81,6 @@ export const getUserProjects = async (userId) => {
   try {
     const response = await fetch(`${API_URL}/projects/user/${userId}`, { method: "GET", headers: { "Content-Type": "application/json" } });
     if (response.ok) {
-      console.log(response)
       return response.json();    
 
     } else {
@@ -119,7 +118,6 @@ export const getProject = async (projectName, userId) => {
 
 export const createSprint = async (sprintData) => {
   try {
-    console.log(sprintData)
     const response = await fetch(`${API_URL}/sprints/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

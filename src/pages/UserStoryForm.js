@@ -4,7 +4,7 @@ import { validateStory } from '../utils/storyUtils.js';
 import Button from '../components/Button';
 import Input from '../components/Input';
 
-const UserStoryForm = ({ projectId }) => {
+const UserStoryForm = ({ projectId, onStoryAdded }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [acceptanceCriteria, setAcceptanceCriteria] = useState(['']); // Initialize with one empty field
@@ -21,7 +21,7 @@ const UserStoryForm = ({ projectId }) => {
     setAcceptanceCriteria([...acceptanceCriteria, '']);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newStory = {
@@ -35,13 +35,14 @@ const UserStoryForm = ({ projectId }) => {
     };
 
     if (validateStory(newStory)) {
-      createUserStory(newStory);
+      await createUserStory(newStory);
       setName('');
       setDescription('');
       setAcceptanceCriteria(['']); // Reset to one empty field
       setPriority('');
       setBusinessValue('');
     }
+    onStoryAdded();
   };
 
   return (
