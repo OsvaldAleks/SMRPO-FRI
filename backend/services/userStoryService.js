@@ -1,7 +1,15 @@
 const { db } = require("../firebase");
 
 // Create a user story
-async function createUserStory(projectId, name, description, acceptanceCriteria, priority, businessValue, sprintId = null) {
+async function createUserStory(
+  projectId,
+  name,
+  description,
+  acceptanceCriteria,
+  priority,
+  businessValue,
+  sprintId = [] // <-- default to empty array
+) {
   if (!projectId || !name || !description || !acceptanceCriteria || !priority || businessValue === undefined) {
     throw new Error("All fields except sprintId are required.");
   }
@@ -19,16 +27,16 @@ async function createUserStory(projectId, name, description, acceptanceCriteria,
   if (!projectDoc.exists) throw new Error("Project not found.");
 
   const storyRef = db.collection("userStories").doc();
-  const story = { 
-    id: storyRef.id, 
-    projectId, 
-    sprintId, // Defaults to null
-    name, 
-    description, 
-    acceptanceCriteria, 
-    priority, 
-    businessValue, 
-    status: "Backlog" // Initial status
+  const story = {
+    id: storyRef.id,
+    projectId,
+    sprintId, // Now stores an array rather than a single sprint ID
+    name,
+    description,
+    acceptanceCriteria,
+    priority,
+    businessValue,
+    status: "Backlog", // Initial status
   };
 
   await storyRef.set(story);
