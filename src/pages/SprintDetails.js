@@ -5,7 +5,6 @@ import {
   getSprintData,
   getProject,
   getStoriesForProject,
-  // Import the assign call here:
   assignUserStoryToSprint,
 } from "../api.js";
 import { formatDate } from "../utils/storyUtils.js";
@@ -22,7 +21,7 @@ const SprintDetails = () => {
   const [isScrumMaster, setIsScrumMaster] = useState(false);
   const [showIncludeStories, setShowIncludeStories] = useState(false);
 
-  // NEW: Track which user stories are selected (checked)
+  // Track which user stories are selected (checked) for adding to sprint
   const [selectedStories, setSelectedStories] = useState([]);
 
   useEffect(() => {
@@ -76,32 +75,43 @@ const SprintDetails = () => {
     fetchStories();
   }, [projectId]);
 
-  // NEW: Handle checkbox changes
+  // 1) Filter out the stories actually assigned to this sprint
+  //    (assuming 'sprintId' in each story is an array)
+  const sprintStories = stories.filter((story) =>
+    story.sprintId?.includes(sprintId)
+  );
+
+  // 2) Optionally group them by status to show them in separate columns
+  //    Adjust these filters to match your real statuses
+  const todoStories = sprintStories.filter((story) =>
+    ["Backlog", "Product backlog"].includes(story.status)
+  );
+  const doingStories = sprintStories.filter((story) =>
+    ["Sprint backlog", "Coding", "Testing"].includes(story.status)
+  );
+  const doneStories = sprintStories.filter(
+    (story) => story.status === "Done"
+  );
+
+  // Handle checkbox changes in the "Add story to sprint" panel
   const handleCheckboxChange = (storyId) => {
-    setSelectedStories((prevSelected) => {
-      if (prevSelected.includes(storyId)) {
-        // Already selected? then unselect
-        return prevSelected.filter((id) => id !== storyId);
-      } else {
-        // Not selected? then add it
-        return [...prevSelected, storyId];
-      }
-    });
+    setSelectedStories((prevSelected) =>
+      prevSelected.includes(storyId)
+        ? prevSelected.filter((id) => id !== storyId)
+        : [...prevSelected, storyId]
+    );
   };
 
-  // NEW: Assign selected stories to the sprint
   const handleAddToSprint = async () => {
     if (!sprintId || selectedStories.length === 0) return;
 
     try {
-      // For each selected story, call your API to assign it
       for (const storyId of selectedStories) {
         await assignUserStoryToSprint(storyId, sprintId);
       }
-      // Optionally re-fetch stories or reset selections
+      // Optionally re-fetch or reset
       setSelectedStories([]);
       setShowIncludeStories(false);
-      // Potentially fetchStories() again to see the updated statuses
     } catch (err) {
       console.error("Failed to add stories to sprint:", err);
       setError("Failed to add selected stories to sprint. Check console.");
@@ -114,9 +124,10 @@ const SprintDetails = () => {
 
   return (
     <>
+      {/* If user clicked the plus button to add stories */}
       {showIncludeStories && (
         <div className="center--box">
-          <h1>User Stories</h1>
+          <h1>Add Stories to Sprint</h1>
           <div className="responsive-table-container3">
             <table className="responsive-table">
               <thead>
@@ -141,11 +152,7 @@ const SprintDetails = () => {
               </tbody>
             </table>
           </div>
-
-          {/* NEW: Button to assign the checked stories to the sprint */}
-          <button onClick={handleAddToSprint}>
-            Add Selected Stories to Sprint
-          </button>
+          <button onClick={handleAddToSprint}>Add Selected Stories</button>
         </div>
       )}
 
@@ -175,6 +182,7 @@ const SprintDetails = () => {
           <p>Loading sprint data...</p>
         )}
 
+        {/* 3) Show them in your columns */}
         <div className="responsive-table-container-sprints">
           <table className="responsive-table">
             <thead>
@@ -185,27 +193,39 @@ const SprintDetails = () => {
               </tr>
             </thead>
             <tbody>
-              {/* Example row placeholders */}
               <tr>
                 <td>
-                  <div className="userStory">
-                    <h2>Name of story</h2>
-                    <p>Must have</p>
-                    <p>Business value: 23</p>
-                  </div>
+                  {todoStories.map((story) => (
+                    <div className="userStory" key={story.id}>
+                      <h2>{story.name}</h2>
+                      <p>Priority: {story.priority}</p>
+                      <p>Business Value: {story.businessValue}</p>
+                    </div>
+                  ))}
                 </td>
                 <td>
-                  <div className="userStory">
-                    <h2>Another story</h2>
-                    <p>Nice to have</p>
-                    <p>Business value: 10</p>
-                  </div>
+                  {doingStories.map((story) => (
+                    <div className="userStory" key={story.id}>
+                      <h2>{story.name}</h2>
+                      <p>Priority: {story.priority}</p>
+                      <p>Business Value: {story.businessValue}</p>
+                    </div>
+                  ))}
                 </td>
-                <td></td>
+                <td>
+                  {doneStories.map((story) => (
+                    <div className="userStory" key={story.id}>
+                      <h2>{story.name}</h2>
+                      <p>Priority: {story.priority}</p>
+                      <p>Business Value: {story.businessValue}</p>
+                    </div>
+                  ))}
+                </td>
               </tr>
               {isScrumMaster && (
                 <tr>
                   <td>
+                    {/* The + button that toggles the "Add stories" panel */}
                     <div
                       className={`userStory plus-button ${
                         showIncludeStories ? "selected" : ""
@@ -215,6 +235,9 @@ const SprintDetails = () => {
                       <span>+</span>
                     </div>
                   </td>
+                  {/* The other columns can be empty for that row */}
+                  <td></td>
+                  <td></td>
                 </tr>
               )}
             </tbody>
@@ -222,6 +245,7 @@ const SprintDetails = () => {
         </div>
       </div>
 
+      {/* Optional bottom section (remove if you don't need it) */}
       <div className="center--box">
         <h1>User Story</h1>
         <h2>Name of story</h2>
