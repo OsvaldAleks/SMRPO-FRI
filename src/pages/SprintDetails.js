@@ -122,9 +122,12 @@ const SprintDetails = () => {
     return <div>Loading...</div>;
   }
 
+  const notInThisSprint = stories.filter(
+    (story) => !story.sprintId?.includes(sprintId)
+  );
+
   return (
     <>
-      {/* If user clicked the plus button to add stories */}
       {showIncludeStories && (
         <div className="center--box">
           <h1>Add Stories to Sprint</h1>
@@ -137,7 +140,8 @@ const SprintDetails = () => {
                 </tr>
               </thead>
               <tbody>
-                {stories.map((story) => (
+                {/* 2) Render only 'notInThisSprint' */}
+                {notInThisSprint.map((story) => (
                   <tr key={story.id}>
                     <td>
                       <input
@@ -227,9 +231,8 @@ const SprintDetails = () => {
                   <td>
                     {/* The + button that toggles the "Add stories" panel */}
                     <div
-                      className={`userStory plus-button ${
-                        showIncludeStories ? "selected" : ""
-                      }`}
+                      className={`userStory plus-button ${showIncludeStories ? "selected" : ""
+                        }`}
                       onClick={() => setShowIncludeStories((prev) => !prev)}
                     >
                       <span>+</span>
