@@ -42,9 +42,8 @@ const UserStoryForm = () => {
   };
 
   return (
-    <div className="center--container wide--box">
         <div className="center--box ">
-      <h2>Add New User Story</h2>
+      <h1>Add New User Story</h1>
       <form onSubmit={handleSubmit}>
 
         <div className={"block--element"}>
@@ -117,17 +116,8 @@ const UserStoryForm = () => {
       </form>
 
       {error && <div className='p--alert'>{error}</div>}
-
-      <h2>Existing User Stories</h2>
-      <ul>
-        {userStories.map((story, index) => (
-          <li key={index}>
-            <strong>{story.name}</strong> - {story.priority} - Business Value: {story.businessValue}
-          </li>
-        ))}
-      </ul>
       </div>
- </div> );
+  );
 };
 
 export default UserStoryForm;

@@ -4,6 +4,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getProject, getSprintsForProject } from "../api";
 import './style/ProjectDetails.css';
 import AddSprintForm from "./AddSprintForm";
+import UserStoryForm from "./UserStoryForm";
 
 const ProjectDetails = () => {
   const { projectName } = useParams();
@@ -14,12 +15,13 @@ const ProjectDetails = () => {
   const [user, setUser] = useState(null);
   const [isScrumMaster, setIsScrumMaster] = useState(false);
   const [isProductManager, setIsProductManager] = useState(false);
-  const [showAddSprintForm, setShowAddSprintForm] = useState(false);
+  const [showForm, setShowForm] = useState(0);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     setIsScrumMaster(false);
+    setIsProductManager(false);
   }, [projectName]);
 
   useEffect(() => {
@@ -42,6 +44,10 @@ const ProjectDetails = () => {
       fetchSprints();
     }
   }, [project]);
+
+  const handleToggleForm = (formType) => {
+    setShowForm((prev) => (prev === formType ? 0 : formType));
+  };
 
   const fetchProject = async (uid) => {
     try {
@@ -185,11 +191,11 @@ const ProjectDetails = () => {
 
         {/* Add Sprint Button */}
         {isScrumMaster && (
-          <button
-            className="add-sprint-button"
-            onClick={() => setShowAddSprintForm(!showAddSprintForm)}
-          >
-            <span className={showAddSprintForm ? "rotated" : ""}>+</span>
+            <button
+              className={showForm==1 ? "add-sprint-button selected" : "add-sprint-button"}
+              onClick={() => handleToggleForm(1)}
+            >
+            <span className={showForm==1 ? "rotated" : ""}>+</span>
           </button>
 
         )}
@@ -201,23 +207,27 @@ const ProjectDetails = () => {
         {/* Add Sprint Button */}
         {(isScrumMaster || isProductManager) && (
           <button
-            className="add-sprint-button"
+            className={showForm==2 ? "add-sprint-button selected" : "add-sprint-button"}
+            onClick={() => handleToggleForm(2)}
           >
-            +
-          </button>
+            <span className={showForm==2 ? "rotated" : ""}>+</span>
+            </button>
         )}
         </div>
       </div>
       </div>
     </div>
-    {showAddSprintForm && (
+    {showForm==1 && (
       <AddSprintForm
         projectName={projectName}
         onSprintAdded={() => {
-          setShowAddSprintForm(false);
+          setShowForm(0);
           fetchSprints();
         }}
       />
+    )}
+    {showForm==2 && (
+      <UserStoryForm/>
     )}
 
     </>

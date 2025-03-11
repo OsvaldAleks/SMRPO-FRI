@@ -1,97 +1,101 @@
 .roles-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    text-align: center; 
-    margin: 2rem 2rem;
-  }
-  
-  .roles-grid div {
-    background-color: #f4f4f4;
-    padding: 1rem;
-    border-radius: 20px;
-  }
-  
-  .roles-grid ul {
-    list-style-type: none; 
-    padding: 0;
-  }
-  
-  .roles-grid li {
-    padding: 0.5rem;
-    border-bottom: 1px solid #ccc;
-  }
-  
-  .roles-grid li:last-child {
-    border-bottom: none;
-  }
-  
-  .sprints-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin: 0.5rem 2rem 0 2rem
-  }
-  
-  .sprint-box, .add-sprint-button {
-    border-radius: 20px;
-    background-color: var(--color-secondary);
-    color: #fff;;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    min-height: 150px;
-    padding: 1rem;
-  }
-  
-  .sprint-box:hover {
-    background-color: rgba(47, 137, 127, 0.8);
-  }
-  
-.sprint-box h2{
-  display: inline;
-  font-size: 2rem;
-  justify-content: center;
-  width: 100%;
-  color: #fff;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  text-align: center; 
+  margin: 2rem 2rem;
 }
 
-  .add-sprint-button {
-    border: 0;
-    background-color: var(--color-primary);
-    color: #fff;
-    font-size: 4rem;
-    font-weight: bold;
-    border-radius: 20px;
-  }
-  
-  .add-sprint-button:hover {
-    background-color: #0c3339;
-  }
-  
-  .sprint-box p {
-    font-size: 1.5rem;
-    color: #fff;;
-  }
+.roles-grid div {
+  background-color: #f4f4f4;
+  padding: 1rem;
+  border-radius: 20px;
+}
 
-  .add-sprint-button {
-    color: white;
-    font-weight: bold;
-    text-align: center;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-  }
-  
-  .add-sprint-button span {
-    display: inline-block;
-    transition: transform 0.7s ease; /* Smooth transition for the rotation */
-  }
-  
-  .add-sprint-button span.rotated {
-    transform: rotate(45deg); /* Rotate the '+' symbol by 45 degrees */
-  }
-  
+.roles-grid ul {
+  list-style-type: none; 
+  padding: 0;
+}
+
+.roles-grid li {
+  padding: 0.5rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.roles-grid li:last-child {
+  border-bottom: none;
+}
+
+.sprints-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 0.5rem 2rem 0 2rem
+}
+
+.sprint-box, .add-sprint-button {
+  border-radius: 20px;
+  background-color: var(--color-secondary);
+  color: #fff;;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 150px;
+  padding: 1rem;
+}
+
+.sprint-box:hover {
+  background-color: rgba(47, 137, 127, 0.8);
+}
+
+.sprint-box h2{
+display: inline;
+font-size: 2rem;
+justify-content: center;
+width: 100%;
+color: #fff;
+}
+
+.add-sprint-button {
+  border: 0;
+  background-color: var(--color-primary);
+  color: #fff;
+  font-size: 4rem;
+  font-weight: bold;
+  border-radius: 20px;
+}
+
+.add-sprint-button:hover {
+  background-color: #0c3339;
+}
+
+.sprint-box p {
+  font-size: 1.5rem;
+  color: #fff;;
+}
+
+.add-sprint-button {
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
+
+.add-sprint-button span {
+  display: inline-block;
+  transition: transform 0.7s ease; /* Smooth transition for the rotation */
+}
+
+.add-sprint-button span.rotated {
+  transform: rotate(45deg); /* Rotate the '+' symbol by 45 degrees */
+}
+
+.add-sprint-button.selected{
+  background-color: var(--color-accent);
+}
+
