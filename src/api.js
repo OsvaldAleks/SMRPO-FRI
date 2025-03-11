@@ -237,3 +237,23 @@ export const getStoriesForProject = async (projectId) => {
     throw new Error(error.message || "Network error");
   }
 };
+
+export const assignUserStoryToSprint = async (storyId, sprintId) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/assignSprint`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sprintId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to assign user story to sprint");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error assigning user story to sprint:", error);
+    throw error;
+  }
+};

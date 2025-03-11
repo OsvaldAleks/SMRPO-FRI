@@ -1,4 +1,6 @@
 const { db } = require("../firebase");
+const admin = require("firebase-admin");
+const FieldValue = admin.firestore.FieldValue;
 
 // Create a user story
 async function createUserStory(
@@ -52,7 +54,12 @@ async function assignUserStoryToSprint(storyId, sprintId) {
   const storyDoc = await storyRef.get();
   if (!storyDoc.exists) throw new Error("User story not found.");
 
-  await storyRef.update({ sprintId, status: "Product backlog" }); // Move to next stage
+  // Use arrayUnion to *append* the new sprintId to the existing sprintId array
+  await storyRef.update({
+    sprintId: FieldValue.arrayUnion(sprintId),
+    status: "Product backlog"
+  });
+
   return { message: "User story assigned to sprint successfully!" };
 }
 
