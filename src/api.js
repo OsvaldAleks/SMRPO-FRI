@@ -217,3 +217,26 @@ export const createUserStory = async (storyData) => {
     return { error: true, message: error.message || "Network error" };
   }
 };
+
+export const getStoriesForProject = async (projectId) => {
+  if (!projectId) {
+    throw new Error("Project ID is required.");
+  }
+  try {
+    const response = await fetch(`${API_URL}/userStories/project/${projectId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    console.log(response)
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to fetch user stories");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching user stories:", error);
+    throw new Error(error.message || "Network error");
+  }
+};

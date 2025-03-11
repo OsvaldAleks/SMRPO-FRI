@@ -27,14 +27,14 @@
   border-bottom: none;
 }
 
-.sprints-grid {
+.grid-container {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin: 0.5rem 2rem 0 2rem
 }
 
-.sprint-box, .add-sprint-button {
+.grid-item, .add-button {
   border-radius: var(--border-radius);
   background-color: var(--color-secondary);
   color: #fff;;
@@ -49,15 +49,15 @@
   padding: 1rem;
 }
 
-.sprint-box.gray {
+.grid-item.gray {
   background-color: #ccc;
 }
 
-.sprint-box:hover {
+.grid-item:hover {
   background-color: rgba(47, 137, 127, 0.8);
 }
 
-.sprint-box h2{
+.grid-item h2{
 display: inline;
 font-size: 2rem;
 justify-content: center;
@@ -65,7 +65,7 @@ width: 100%;
 color: #fff;
 }
 
-.add-sprint-button {
+.add-button {
   border: 0;
   background-color: var(--color-primary);
   color: #fff;
@@ -74,16 +74,20 @@ color: #fff;
   border-radius: var(--border-radius);
 }
 
-.add-sprint-button:hover {
+.add-button:hover {
   background-color: #0c3339;
 }
 
-.sprint-box p {
+.grid-item p {
   font-size: 1.5rem;
   color: #fff;;
 }
 
-.add-sprint-button {
+.grid-item.story{
+  background-color: #6d9f9d;
+}
+
+.add-button {
   color: white;
   font-weight: bold;
   text-align: center;
@@ -91,15 +95,15 @@ color: #fff;
   cursor: pointer;
 }
 
-.add-sprint-button span {
+.add-button span {
   display: inline-block;
   transition: transform 0.7s ease;
 }
 
-.add-sprint-button span.rotated {
+.add-button span.rotated {
   transform: rotate(45deg);
 }
 
-.add-sprint-button.selected{
+.add-button.selected{
   background-color: var(--color-accent);
 }

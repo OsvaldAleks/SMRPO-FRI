@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getProject, getSprintsForProject } from "../api";
+import { getProject, getSprintsForProject, getStoriesForProject } from "../api";
 import { formatDate } from "../utils/storyUtils.js";
 import './style/ProjectDetails.css';
 import AddSprintForm from "./AddSprintForm";
@@ -11,6 +11,7 @@ const ProjectDetails = () => {
   const { projectName } = useParams();
   const [project, setProject] = useState(null);
   const [sprints, setSprints] = useState([]);
+  const [stories, setStories] = useState([]); // Add state for stories
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
@@ -43,6 +44,7 @@ const ProjectDetails = () => {
   useEffect(() => {
     if (project) {
       fetchSprints();
+      fetchStories(); // Fetch stories when project is available
     }
   }, [project]);
 
@@ -90,6 +92,25 @@ const ProjectDetails = () => {
     } catch (error) {
       console.error("Failed to fetch sprints:", error);
       setError("Failed to load sprints. Please try again later.");
+    }
+  };
+
+  const fetchStories = async () => {
+    try {
+      if (!project) {
+        throw new Error("Project data is not available.");
+      }
+
+      const storiesData = await getStoriesForProject(project.id); // Assuming this API exists
+
+      const sortedStories = (storiesData.stories || []).sort((a, b) => {
+        return a.name.localeCompare(b.name); // You can adjust sorting logic based on your needs
+      });
+
+      setStories(sortedStories);
+    } catch (error) {
+      console.error("Failed to fetch stories:", error);
+      setError("Failed to load stories. Please try again later.");
     }
   };
 
@@ -164,51 +185,53 @@ const ProjectDetails = () => {
 
         <div>
           <h2>Sprints</h2>
-          <div className="sprints-grid">
+          <div className="grid-container">
             {sprints.length > 0 ? (
               sprints.map((sprint, index) => (
                 <div
                   key={sprint.id}
-                  className="sprint-box"
+                  className="grid-item sprint"
                   onClick={() => handleSprintClick(sprint.id)}
                 >
                   <h2>Sprint #{index + 1}</h2>
-                  <p>
-                    <strong>Start Date:</strong>{" "}
-                    {sprint.start_date
-                      ? formatDate(sprint.start_date)
-                      : "No start date available"}
-                  </p>
-                  <p>
-                    <strong>End Date:</strong>{" "}
-                    {sprint.end_date
-                      ? formatDate(sprint.end_date)
-                      : "No end date available"}
-                  </p>
+                  <p><strong>Start Date:</strong> {formatDate(sprint.start_date)}</p>
+                  <p><strong>End Date:</strong> {formatDate(sprint.end_date)}</p>
                 </div>
               ))
-            ) : !isScrumMaster && (
+            ) : (
               <p>No sprints found for this project.</p>
             )}
-
             {/* Add Sprint Button */}
-            {isScrumMaster && (
-              <button
-                className={showForm === 1 ? "add-sprint-button selected" : "add-sprint-button"}
-                onClick={() => handleToggleForm(1)}
-              >
-                <span className={showForm === 1 ? "rotated" : ""}>+</span>
-              </button>
-            )}
+            {(isScrumMaster || isProductManager) && (
+                <button
+                  className={showForm === 1 ? "add-button selected" : "add-button"}
+                  onClick={() => handleToggleForm(1)}
+                >
+                  <span className={showForm === 1 ? "rotated" : ""}>+</span>
+                </button>
+              )}
           </div>
 
           <div>
             <h2>Stories</h2>
-            <div className="sprints-grid">
+            <div className="grid-container">
+              {stories.length > 0 ? (
+                stories.map((story, index) => (
+                  <div
+                    key={story.id}
+                    className="grid-item story"
+                  >
+                    <h2>{story.name}</h2>
+                    <p>{story.description}</p>
+                  </div>
+                ))
+              ) : (
+                <p>No stories found for this project.</p>
+              )}
               {/* Add Story Button */}
               {(isScrumMaster || isProductManager) && (
                 <button
-                  className={showForm === 2 ? "add-sprint-button selected" : "add-sprint-button"}
+                  className={showForm === 2 ? "add-button selected" : "add-button"}
                   onClick={() => handleToggleForm(2)}
                 >
                   <span className={showForm === 2 ? "rotated" : ""}>+</span>
@@ -232,9 +255,9 @@ const ProjectDetails = () => {
       {showForm === 2 && (
         <UserStoryForm
           projectId={project.id}
-          onSprintAdded={() => {
+          onStoryAdded={() => {
             setShowForm(0);
-            // TODO refetch stories
+            fetchStories();
           }}
         />
       )}

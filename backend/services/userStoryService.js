@@ -61,11 +61,30 @@ async function updateUserStoryStatus(storyId, newStatus) {
   await storyRef.update({ status: newStatus });
   return { message: `User story status updated to ${newStatus}.` };
 }
+async function getUserStoriesForProject(projectId) {
+  if (!projectId) {
+    throw new Error("Project ID is required.");
+  }
 
-module.exports = { createUserStory, assignUserStoryToSprint, updateUserStoryStatus };
+  const storiesRef = db.collection("userStories");
+  const querySnapshot = await storiesRef.where("projectId", "==", projectId).get();
+
+  if (querySnapshot.empty) {
+    return []; 
+  }
+
+  const userStories = querySnapshot.docs.map(doc => {
+    return { id: doc.id, ...doc.data() };
+  });
+
+  return userStories;
+}
+
+module.exports = { 
+  createUserStory, 
+  assignUserStoryToSprint, 
+  updateUserStoryStatus, 
+  getUserStoriesForProject 
+};
 
 
-module.exports = { createUserStory, assignUserStoryToSprint };
-
-
-module.exports = { createUserStory };
