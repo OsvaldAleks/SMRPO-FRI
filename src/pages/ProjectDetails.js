@@ -184,13 +184,10 @@ const ProjectDetails = () => {
             <h2>Project Managers</h2>
             <ul>
               {project.productManagers && project.productManagers.length > 0 ? (
-                project.productManagers.map((user) => (
-                  <li key={user.id}>{user.username}</li>
-                ))
+                project.productManagers.map(renderUserWithStatus)
               ) : (
                 <li>No managers assigned</li>
               )}
-              {project.productManagers.map(renderUserWithStatus)}
             </ul>
           </div>
 
@@ -199,13 +196,10 @@ const ProjectDetails = () => {
             <h2>SCRUM Masters</h2>
             <ul>
               {project.scrumMasters && project.scrumMasters.length > 0 ? (
-                project.scrumMasters.map((user) => (
-                  <li key={user.id}>{user.username}</li>
-                ))
+                project.scrumMasters.map(renderUserWithStatus)
               ) : (
                 <li>No SCRUM Masters assigned</li>
               )}
-              {project.scrumMasters.map(renderUserWithStatus)}
             </ul>
           </div>
 
@@ -214,13 +208,10 @@ const ProjectDetails = () => {
             <h2>Developers</h2>
             <ul>
               {project.devs && project.devs.length > 0 ? (
-                project.devs.map((user) => (
-                  <li key={user.id}>{user.username}</li>
-                ))
+                project.devs.map(renderUserWithStatus)
               ) : (
                 <li>No developers assigned</li>
               )}
-              {project.devs.map(renderUserWithStatus)}
             </ul>
           </div>
         </div>
