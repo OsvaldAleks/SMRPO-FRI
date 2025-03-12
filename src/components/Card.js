@@ -19,20 +19,20 @@ const Card = ({ projectName, teamMembers, startDate, status, onClick }) => {
       
         </div>
         </div>
-        <div>
+        {/* <div>
         <p className="card--date">
             Due to
             {startDate ? new Date(startDate).toLocaleDateString() : "N/A"}
         </p>
-       </div>
+       </div> */}
      
-      <div className="card__team">
-        <strong>Team Members: </strong>
+      <div className="card--team">
+        <h3>Team Members: </h3>
         <ul>
           {teamMembers && teamMembers.length > 0 ? (
             teamMembers.map((member, index) => <li key={index}>{member}</li>)
           ) : (
-            <li>No team members assigned yet.</li>
+            <p className="p--note card--footer">No team members assigned yet.</p>
           )}
         </ul>
       </div>

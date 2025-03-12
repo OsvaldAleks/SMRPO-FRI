@@ -13,8 +13,9 @@ const Dashboard = () => {
     <div className="dashboard-wrapper">
       {user ? (
         <>
-          <h1>Welcome!</h1>
-          <h2>Jump into a project</h2>
+          <h1 >Welcome!</h1>
+          <h2>Select a project</h2>
+
           <UserProjects></UserProjects>
           <div className="center--box">
             <h2>Your ongoing sprints</h2>

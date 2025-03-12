@@ -69,7 +69,7 @@
  }
  .btn--goback::before{
     content: "←"; 
-    font-size: 20px;
+    font-size: 30px;
     transition: margin 0.15s;
   }
 

@@ -20,10 +20,11 @@ const UserProjects = () => {
   };
   return (
     <div className="center--box wide--box">
+     
        <Button variant="goback" onClick={goBackHandler} />
       
       <h1>Projects</h1>
-     
+     <h2>Select your project</h2>
       <div className=" block--element grid ">
         <div className="grid--leftdiv">
           <Input
@@ -55,30 +56,13 @@ const UserProjects = () => {
             teamMembers={project.teamMembers || []}
             startDate={project.startDate}
             status={project.status}
-            onClick={() => handleProjectClick(project.projectName)} // On click handler for the card
+            onClick={() => handleProjectClick(project.projectName)} 
           />
         ))
       ) : (
         <p>No projects available.</p>
       )}
     </div>
-
-
-      {/* <div className="grid-container">
-
-        
-        {projects.length > 0 && (
-          projects.map((project) => (
-            <div
-              key={project.projectName}
-              className="grid-item"
-              onClick={() => handleProjectClick(project.projectName)}
-            >
-              <h2>{project.projectName}</h2>
-            </div>
-          )))}
-       
-      </div> */}
     </div>
   );
 };

@@ -1,11 +1,11 @@
 .card {
-    border: 1px solid #ddd;
+    border: 1px solid var( --color-borders);
     border-radius: 8px;
     padding: 20px;
     margin: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
-    background-color: white;
+
     display: inline-block;
     width: 350px;
   }
@@ -25,7 +25,7 @@
     text-align: left;
   }
   .card--title {
-  
+    text-align: left;
     margin: 0;
     margin-bottom: 1rem;
     width: 100%;
@@ -35,7 +35,8 @@
     right: 0px;
     font-size: 1.1rem;
     border-radius:19px ;
-    background-color: #fccece;
+    background-color: var( --color-secondary);
+    color: var(--color-bg-light);
     padding: 0.5rem 1rem;
   }
   
@@ -45,21 +46,30 @@
     margin: 0 0 1rem 0;
     padding: 0;
   }
-  .card__team {
+  .card--team {
     font-size: 1em;
-    margin-top: 10px;
+    margin-top: 20px;
+    text-align: left;
   }
   
-  .card__team ul {
+  .card--team ul {
     list-style-type: none;
     padding-left: 0;
   }
   
   .card__team li {
-    margin: 5px 0;
+    /* margin: 5px 0; */
   }
   
   .card__date {
     color: #555;
+  }
+
+.card--footer{
+    /* position: absolute;
+    bottom: 10px; */
+    text-align: left;
+    margin: 0;
+    padding: 0;
   }
   
