@@ -1,12 +1,12 @@
 
 
-.responsive-table-container-sprints .responsive-table td {
+.responsive-table-container-wide .responsive-table td {
     width: 200px;
     height: 150px;
     text-align: center;
     vertical-align: middle;
   }
-  .responsive-table-container-sprints .responsive-table th{
+  .responsive-table-container-wide .responsive-table th{
     width: 200px;
     height: 100%;
     text-align: center;

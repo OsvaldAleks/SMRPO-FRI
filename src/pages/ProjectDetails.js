@@ -261,11 +261,6 @@ const ProjectDetails = () => {
                   >
                     <h2>{story.name}</h2>
                     <p>{story.description}</p>
-                    {isScrumMaster && (!story.sprintId || story.sprintId.length === 0) && (
-                      <>
-                        <span>unset time complexity</span>
-                      </>
-                    )}
                   </div>
                 ))
               ) : (
