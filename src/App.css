@@ -17,7 +17,7 @@ body{
   margin: 3rem 1rem 4rem 1rem;
   padding-bottom: 2rem;
   box-shadow: 0px 4px 8px rgba(63, 65, 70, 0.204);
- } 
+ }
 
  .block--element{
   display: block;
@@ -85,7 +85,7 @@ body{
   vertical-align: middle;
 }
 .responsive-table tbody tr:nth-child(2n-1) {
-  background-color: #e8f2f8 !important;
+  background-color: #e8f2f8;
 }
 .responsive-table th{
   background-color: var(--color-primary) !important;
@@ -124,6 +124,8 @@ body{
   overflow-x: auto;
   margin: 0.5rem 0 0 0;
 }
+
+
 
 /* Ensuring it doesn't break layout in smaller screens */
 @media (max-width: 768px) {

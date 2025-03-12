@@ -52,6 +52,7 @@
     justify-content: center;
     align-items: center;
     border-radius: var(--border-radius);  
+    transition: 0.3s;
 }
 
 .userStory p, 
@@ -91,11 +92,22 @@
     background-color: #0056b3;
 }
 
-.userStory.plus-button.selected{
-    background-color: var(--color-accent);
-}
-
-.userStory.plus-button.selected span{
+.userStory.plus-button span{
     transition: transform 0.7s ease;
+}
+.userStory.plus-button.selected span{
     transform: rotate(45deg);
+}
+tr{
+    transition: 0.3s;
+}
+.userStory.selected{
+    background-color: #479eab !important;
+}
+tr.selected{
+    background-color: #7ac0c9 !important;
+    color: #ffffff;
+}
+.userStory.plus-button.selected{
+    background-color: var(--color-accent)!important;
 }

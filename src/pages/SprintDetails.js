@@ -126,6 +126,18 @@ const SprintDetails = () => {
     }
   };
 
+  // Reset selectedStory when the "Add Stories to Sprint" table is closed
+  useEffect(() => {
+    if (!showIncludeStories && selectedStory) {
+      const notInThisSprint = stories.filter(
+        (story) => !story.sprintId?.includes(sprintId)
+      );
+      if (notInThisSprint.some((story) => story.id === selectedStory.id)) {
+        setSelectedStory(null);
+      }
+    }
+  }, [showIncludeStories, selectedStory, stories, sprintId]);
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -150,7 +162,7 @@ const SprintDetails = () => {
               <tbody>
                 {/* 2) Render only 'notInThisSprint' */}
                 {notInThisSprint.map((story) => (
-                  <tr key={story.id} onClick={() => handleStoryClick(story)}>
+                  <tr key={story.id} className={`${selectedStory?.id === story.id ? "selected" : ""}`}>
                     <td>
                       <input
                         type="checkbox"
@@ -158,7 +170,7 @@ const SprintDetails = () => {
                         onChange={() => handleCheckboxChange(story.id)}
                       />
                     </td>
-                    <td>{story.name}</td>
+                    <td onClick={() => handleStoryClick(story)}>{story.name}</td>
                   </tr>
                 ))}
               </tbody>
@@ -209,7 +221,7 @@ const SprintDetails = () => {
               <tr key={story.id}>
                 {story.status == "Product backlog" ? (
                   <td>
-                    <div className="userStory" onClick={() => handleStoryClick(story)}>
+                    <div onClick={() => handleStoryClick(story)} className={`userStory ${selectedStory?.id === story.id ? "selected" : ""}`}>
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
@@ -219,7 +231,7 @@ const SprintDetails = () => {
 
                 {story.status == "" ? ( // Replace with a valid status
                   <td>
-                    <div className="userStory" onClick={() => handleStoryClick(story)}>
+                    <div onClick={() => handleStoryClick(story)} className={`userStory ${selectedStory?.id === story.id ? "selected" : ""}`}>
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
@@ -229,7 +241,7 @@ const SprintDetails = () => {
 
                 {story.status == "" ? ( // Replace with a valid status
                   <td>
-                    <div className="userStory" onClick={() => handleStoryClick(story)}>
+                    <div onClick={() => handleStoryClick(story)} className={`userStory ${selectedStory?.id === story.id ? "selected" : ""}`}>
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
@@ -262,7 +274,6 @@ const SprintDetails = () => {
 
       {selectedStory && (
         <StoryDetailsComponent story={selectedStory} />
-
       )}
     </>
   );
