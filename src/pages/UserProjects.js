@@ -19,21 +19,21 @@ const UserProjects = () => {
     navigate(-1);
   };
   return (
-    <div className="center--box wide--box">
-     
+    <div className="center--box dashboard--box">
+ 
        <Button variant="goback" onClick={goBackHandler} />
       
       <h1>Projects</h1>
      <h2>Select your project</h2>
-      <div className=" block--element grid ">
-        <div className="grid--leftdiv">
+      <div className=" btn-container">
+        <div className="btn--left">
           <Input
           type="text"
           placeholder="Search"
           
           />
         </div>
-        <div className="grid--rightdiv">
+        <div className="btn--right">
           
              {/* Add Project Button */}
           {user?.system_rights === "Admin" && !loading && (

@@ -33,31 +33,50 @@
 
 
 .wide--box{
-  max-width: 1200px;
+  width: 500px;
   position: relative;
   margin-top: 3rem;
  } 
 
- /* grid */
+ .dashboard--box{
+  max-width: 1200px;
+  position: relative;
+ }
 
- .grid {
+
+
+
+
+
+
+
+ 
+ /* form */
+ .form--title{
+margin-bottom: 2rem;
+display: flex;
+position: relative;
+justify-content: center;
+ }
+ .grid--form {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 1rem;
   position: relative;
-  margin: 3rem 2rem ;
+  margin: 2rem 0 5rem 0;
+    padding-bottom: 3rem
 }
 
-.grid--leftdiv{
+.grid--form--leftdiv{
   margin-right: 1rem;
-  position: absolute; 
-  left:30px;
+position: absolute;
+  left:20px;
 }
-.grid--rightdiv{
-  margin-left: 1rem;
-  position: absolute; 
-  right:60px;
+.grid--form--rightdiv{
+  margin-left: 2rem; 
+  position: absolute;
+  right: 20px;
 }
 /* notification */
 .p--note{

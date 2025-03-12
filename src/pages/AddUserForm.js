@@ -80,10 +80,12 @@ const AddUserForm = () => {
 
   return (
       <div className="center--box wide--box">
-        <Button variant="goback" onClick={goBackHandler} />
-        <h1>Add New User</h1>
-        {error && <p className="p--alert">{error}</p>}
-        {success && <p className="p--success">{success}</p>}
+        <div className="form--title">
+          <Button variant="goback" onClick={goBackHandler} />
+          <h1>Add New User</h1>
+          {error && <p className="p--alert">{error}</p>}
+          {success && <p className="p--success">{success}</p>}
+        </div>
 
         <form onSubmit={handleSubmit}>
           <div className={"block--element"}>
@@ -108,8 +110,8 @@ const AddUserForm = () => {
               onChange={handleChange}
             />
           </div>
-          <div className={"block--element grid"}>
-            <div className="grid--leftdiv">
+          <div className={"grid--form"}>
+            <div className="grid--form--leftdiv">
               <label className={"block--element"}>First Name</label>
               <Input
                 className={"block--element"}
@@ -120,7 +122,7 @@ const AddUserForm = () => {
                 onChange={handleChange}
               />
             </div>
-            <div className="grid--rightdiv">
+            <div className="grid--form--rightdiv">
               <label className={"block--element"}>Last Name</label>
               <Input
                 className={"block--element"}

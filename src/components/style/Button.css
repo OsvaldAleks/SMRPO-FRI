@@ -78,6 +78,26 @@
     color: var(--color-accent);
      margin-right: 20px;
   }
+
+  .btn-container {
+    display: flex;
+    justify-content: space-between; /* Space between buttons */
+    align-items: center;
+    width: 100%;
+  }
+  
+
+  
+  .btn--left {
+   margin-left: 4.2rem;
+  }
+  
+  .btn--right {
+    margin-right:4rem;
+  }
+  
+
+
 @media screen and (max-width:1024px) {
     .btn {
         font-size: 2rem; 
