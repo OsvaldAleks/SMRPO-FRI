@@ -17,7 +17,7 @@ const Dashboard = () => {
           <h2>Jump into a project</h2>
           <UserProjects></UserProjects>
           <div className="center--box">
-            <h1>Your ongoing sprints</h1>
+            <h2>Your ongoing sprints</h2>
           </div>
         </>
       ) : (
