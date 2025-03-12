@@ -78,14 +78,12 @@ const SprintDetails = () => {
     }
   };
 
-  // 1) Filter out the stories actually assigned to this sprint
-  //    (assuming 'sprintId' in each story is an array)
+  // Filter out the stories actually assigned to this sprint
   const sprintStories = stories.filter((story) =>
     story.sprintId?.includes(sprintId)
   );
 
-  // 2) Optionally group them by status to show them in separate columns
-  //    Adjust these filters to match your real statuses
+  // Group them by status (adjust as needed)
   const todoStories = sprintStories.filter((story) =>
     ["Backlog", "Product backlog"].includes(story.status)
   );
@@ -116,23 +114,21 @@ const SprintDetails = () => {
       for (const storyId of selectedStories) {
         await assignUserStoryToSprint(storyId, sprintId);
       }
-      // Optionally re-fetch or reset
       setSelectedStories([]);
       setShowIncludeStories(false);
-      fetchStories();
+      fetchStories(); // re-fetch to see updated statuses
     } catch (err) {
       console.error("Failed to add stories to sprint:", err);
       setError("Failed to add selected stories to sprint. Check console.");
     }
   };
 
-  // Reset selectedStory when the "Add Stories to Sprint" table is closed
+  // Reset selectedStory if we hide the table
   useEffect(() => {
     if (!showIncludeStories && selectedStory) {
       const notInThisSprint = stories.filter(
-        (story) => !story.sprintId?.includes(sprintId) && typeof story.storyPoints === "number"
+        (story) => !story.sprintId?.includes(sprintId) 
       );
-      
       if (notInThisSprint.some((story) => story.id === selectedStory.id)) {
         setSelectedStory(null);
       }
@@ -143,8 +139,14 @@ const SprintDetails = () => {
     return <div>Loading...</div>;
   }
 
+  /**
+   * We no longer filter out stories missing storyPoints.
+   * We only filter out stories that are already in this sprint
+   * because we can’t add them again. The 'hasPoints' check below
+   * will disable the checkbox if missing story points.
+   */
   const notInThisSprint = stories.filter(
-    (story) => !story.sprintId?.includes(sprintId) && typeof story.storyPoints === "number"
+    (story) => !story.sprintId?.includes(sprintId)
   );
 
   return (
@@ -161,19 +163,38 @@ const SprintDetails = () => {
                 </tr>
               </thead>
               <tbody>
-                {/* 2) Render only 'notInThisSprint' */}
-                {notInThisSprint.map((story) => (
-                  <tr key={story.id} className={`${selectedStory?.id === story.id ? "selected" : ""}`}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedStories.includes(story.id)}
-                        onChange={() => handleCheckboxChange(story.id)}
-                      />
-                    </td>
-                    <td onClick={() => handleStoryClick(story)}>{story.name}</td>
-                  </tr>
-                ))}
+                {notInThisSprint.map((story) => {
+                  const hasPoints =
+                    story.storyPoints !== undefined && story.storyPoints !== null;
+
+                  return (
+                    <tr
+                      key={story.id}
+                      className={selectedStory?.id === story.id ? "selected" : ""}
+                    >
+                      <td>
+                        <input
+                          type="checkbox"
+                          disabled={!hasPoints} // disable if missing story points
+                          checked={selectedStories.includes(story.id)}
+                          onChange={() => handleCheckboxChange(story.id)}
+                          style={{ cursor: hasPoints ? "pointer" : "not-allowed" }}
+                        />
+                      </td>
+                      <td
+                        onClick={() => handleStoryClick(story)}
+                        style={{ color: hasPoints ? "inherit" : "gray" }}
+                      >
+                        {story.name}
+                        {!hasPoints && (
+                          <span style={{ marginLeft: "8px", color: "red" }}>
+                            (Missing story points)
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -207,7 +228,6 @@ const SprintDetails = () => {
           <p>Loading sprint data...</p>
         )}
 
-        {/* 3) Show them in your columns */}
         <div className="responsive-table-container-wide">
           <table className="responsive-table">
             <thead>
@@ -218,47 +238,73 @@ const SprintDetails = () => {
               </tr>
             </thead>
             <tbody>
-            {todoStories.map((story) => (
-              <tr key={story.id}>
-                {story.status == "Product backlog" ? (
+              {/* Example: showing only stories with status = 'Product backlog' in the TODO column */}
+              {todoStories.map((story) => (
+                <tr key={story.id}>
+                  {/* If you truly want separate columns for each status, you'd do multiple <td> in the same row.
+                      But here's a simplified approach that each story occupies one row in the correct column. */}
                   <td>
-                    <div onClick={() => handleStoryClick(story)} className={`userStory ${selectedStory?.id === story.id ? "selected" : ""}`}>
+                    <div
+                      onClick={() => handleStoryClick(story)}
+                      className={`userStory ${
+                        selectedStory?.id === story.id ? "selected" : ""
+                      }`}
+                    >
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
                     </div>
                   </td>
-                ) : null}
+                  <td></td>
+                  <td></td>
+                </tr>
+              ))}
 
-                {story.status == "" ? ( // Replace with a valid status
+              {doingStories.map((story) => (
+                <tr key={story.id}>
+                  <td></td>
                   <td>
-                    <div onClick={() => handleStoryClick(story)} className={`userStory ${selectedStory?.id === story.id ? "selected" : ""}`}>
+                    <div
+                      onClick={() => handleStoryClick(story)}
+                      className={`userStory ${
+                        selectedStory?.id === story.id ? "selected" : ""
+                      }`}
+                    >
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
                     </div>
                   </td>
-                ) : null}
+                  <td></td>
+                </tr>
+              ))}
 
-                {story.status == "" ? ( // Replace with a valid status
+              {doneStories.map((story) => (
+                <tr key={story.id}>
+                  <td></td>
+                  <td></td>
                   <td>
-                    <div onClick={() => handleStoryClick(story)} className={`userStory ${selectedStory?.id === story.id ? "selected" : ""}`}>
+                    <div
+                      onClick={() => handleStoryClick(story)}
+                      className={`userStory ${
+                        selectedStory?.id === story.id ? "selected" : ""
+                      }`}
+                    >
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
                     </div>
                   </td>
-                ) : null}
-              </tr>
-            ))}
+                </tr>
+              ))}
 
               {isScrumMaster && (
                 <tr>
                   <td>
-                    {/* The + button that toggles the "Add stories" panel */}
                     <div
-                      className={`userStory plus-button ${showIncludeStories ? "selected" : ""
-                        }`}
+                      className={`userStory plus-button ${
+                        showIncludeStories ? "selected" : ""
+                      }`}
                       onClick={() => setShowIncludeStories((prev) => !prev)}
                     >
                       <span>+</span>
@@ -274,7 +320,7 @@ const SprintDetails = () => {
       </div>
 
       {selectedStory && (
-        <StoryDetailsComponent story={selectedStory} isScrumMaster={false}/>
+        <StoryDetailsComponent story={selectedStory} isScrumMaster={false} />
       )}
     </>
   );
