@@ -138,6 +138,44 @@ async function updateStoryPoints(storyId, storyPoints) {
   return { message: "Story points updated successfully!" };
 }
 
+async function addSubtaskToUserStory(storyId, subtaskData) {
+  // 1) Validate that storyId exists
+  const storyRef = db.collection("userStories").doc(storyId);
+  const storyDoc = await storyRef.get();
+  if (!storyDoc.exists) {
+    throw new Error("User story not found.");
+  }
+
+  const story = storyDoc.data();
+
+  // 2) Ensure the story has a sprintId (meaning it's assigned to a sprint).
+  if (!story.sprintId || story.sprintId.length === 0) {
+    throw new Error("Cannot add subtasks to a story not assigned to any sprint.");
+  }
+
+  // 3) Validate the subtask fields. 
+  // For example, "description" is required, "developer" is optional:
+  if (!subtaskData.description) {
+    throw new Error("Subtask description is required.");
+  }
+  if (subtaskData.timeEstimate == null || isNaN(subtaskData.timeEstimate)) {
+    throw new Error("Subtask 'timeEstimate' must be a valid number.");
+  }
+
+  // 4) Build the subtask object. Developer is optional.
+  const newSubtask = {
+    description: subtaskData.description,
+    timeEstimate: Number(subtaskData.timeEstimate),
+    developer: subtaskData.developer || null, 
+  };
+
+  // 5) Append the subtask to the existing subtasks array
+  await storyRef.update({
+    subtasks: FieldValue.arrayUnion(newSubtask),
+  });
+
+  return { message: "Subtask added successfully!" };
+}
 
 module.exports = { 
   createUserStory, 
@@ -145,7 +183,8 @@ module.exports = {
   assignUserStoryToSprint, 
   updateUserStoryStatus, 
   getUserStoriesForProject,
-  updateStoryPoints
+  updateStoryPoints,
+  addSubtaskToUserStory
 };
 
 

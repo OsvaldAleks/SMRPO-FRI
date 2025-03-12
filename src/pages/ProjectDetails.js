@@ -178,6 +178,9 @@ const ProjectDetails = () => {
     return <div>Project not found.</div>;
   }
 
+  const storiesWithSprint = stories.filter(story => story.sprintId && story.sprintId.length > 0);
+  const storiesWithoutSprint = stories.filter(story => !story.sprintId || story.sprintId.length === 0);
+
   return (
     <>
       <div className="center--box">
@@ -252,9 +255,37 @@ const ProjectDetails = () => {
 
           <div>
             <h2>Stories</h2>
-            <div className="grid-container">
-              {stories.length > 0 ? (
-                stories.map((story, index) => (
+              <h3>Stories not in Sprints</h3>
+              <div className="grid-container">
+              {storiesWithoutSprint.length > 0 ? (
+                storiesWithoutSprint.map((story, index) => (
+                  <div
+                    key={story.id}
+                    className="grid-item story"
+                    onClick={() => handleStoryClick(story.id)}
+                  >
+                    <h2>{story.name}</h2>
+                    <p>{story.description}</p>
+                  </div>
+                ))
+              ) : (!(isScrumMaster || isProductManager) && (
+                <p>No stories without sprint found for this project.</p>
+              ))}
+              {/* Add Story Button */}
+              {(isScrumMaster || isProductManager) && (
+                <button
+                  className={showForm === 2 ? "add-button selected" : "add-button"}
+                  onClick={() => handleToggleForm(2)}
+                >
+                  <span className={showForm === 2 ? "rotated" : ""}>+</span>
+                </button>
+              )}
+
+              </div>
+              <h3>Stories in Sprints</h3>
+              <div className="grid-container">
+              {storiesWithSprint.length > 0 ? (
+                storiesWithSprint.map((story, index) => (
                   <div
                     key={story.id}
                     className="grid-item story"
@@ -265,21 +296,12 @@ const ProjectDetails = () => {
                   </div>
                 ))
               ) : (
-                !(isScrumMaster || isProductManager) && <p>No stories found for this project.</p>
+                <p>No stories with sprint found for this project.</p>
               )}
-              {/* Add Story Button */}
-              {(isScrumMaster || isProductManager) && (
-                <button
-                  className={showForm === 2 ? "add-button selected" : "add-button"}
-                  onClick={() => handleToggleForm(2)}
-                >
-                  <span className={showForm === 2 ? "rotated" : ""}>+</span>
-                </button>
-              )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
       {showForm === 1 && (
         <AddSprintForm

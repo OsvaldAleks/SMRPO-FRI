@@ -342,3 +342,21 @@ export const updateStoryPoints = async (storyId, value) => {
     return { message: "Network error", error };
   }
 };
+
+export const addSubtaskToUserStory = async (storyId, subtaskData) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/addSubtask`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(subtaskData),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to add subtask");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error adding subtask:", error);
+    throw error;
+  }
+};

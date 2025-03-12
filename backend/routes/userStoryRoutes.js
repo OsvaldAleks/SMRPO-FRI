@@ -88,5 +88,25 @@ router.put("/:storyId/setStoryPoints", async (req, res) => {
   }
 });
 
+router.put("/:storyId/addSubtask", async (req, res) => {
+  try {
+    const { storyId } = req.params;
+    const { description, timeEstimate, developer } = req.body;
+
+    // timeEstimate might be optional or required. 
+    // developer is definitely optional per your requirement.
+
+    const response = await addSubtaskToUserStory(storyId, {
+      description,
+      timeEstimate,
+      developer,
+    });
+
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 
 module.exports = router;
