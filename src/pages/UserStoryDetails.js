@@ -1,30 +1,53 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getUserStory } from "../api.js";
 import { useParams } from "react-router-dom";
-import StoryDetailsComponent from '../components/StoryDetailsComponent.js'
+import StoryDetailsComponent from '../components/StoryDetailsComponent.js';
+import { ProjectsContext } from "../context/ProjectsContext.js";
 
 const UserStoryDetails = () => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { storyId } = useParams();
   const [story, setStory] = useState(null);
   const [error, setError] = useState(null);
+  const { projects, loading: projectsLoading } = useContext(ProjectsContext);
+
+  const [isScrumMaster, setIsScrumMaster] = useState(false);
 
   useEffect(() => {
     if (!storyId) return;
 
+    // Fetch the user story
     getUserStory(storyId)
-      .then((data) => setStory(data))
+      .then((data) => {
+        setStory(data);
+
+        // Wait for projects to be available before checking
+        if (projects.length === 0) {
+          console.log("Projects not loaded yet");
+          return;
+        }
+
+        const currentProject = projects.find(project => project.projectId === data.projectId);
+
+        console.log("Current Project:", currentProject);
+
+        // Check if the userRole is 'scrumMasters' and if user is part of that role
+        if (currentProject && currentProject.userRole === 'scrumMasters') {
+          setIsScrumMaster(true);
+        } else {
+          setIsScrumMaster(false);
+        }
+      })
       .catch((err) => setError(err.message));
+  }, [storyId, projects, user.id]);
 
-  }, [storyId]);
-
-  if (loading) return <p>Loading...</p>;
+  if (authLoading || projectsLoading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
   if (!story) return <p>Loading story details...</p>;
 
   return (
-    <StoryDetailsComponent story={story}/>
+    <StoryDetailsComponent story={story} isScrumMaster={isScrumMaster} />
   );
 };
 

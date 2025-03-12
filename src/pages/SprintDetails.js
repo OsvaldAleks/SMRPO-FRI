@@ -273,7 +273,7 @@ const SprintDetails = () => {
       </div>
 
       {selectedStory && (
-        <StoryDetailsComponent story={selectedStory} />
+        <StoryDetailsComponent story={selectedStory} isScrumMaster={false}/>
       )}
     </>
   );
