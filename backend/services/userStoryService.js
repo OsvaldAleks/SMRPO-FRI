@@ -116,8 +116,8 @@ async function updateStoryPoints(storyId, storyPoints) {
   // Ensure storyPoints is parsed as a number
   storyPoints = Number(storyPoints);
 
-  if (!storyId || isNaN(storyPoints) || storyPoints < 0) {
-    throw new Error("Story ID and story points must be valid non-negative numbers.");
+  if (!storyId || isNaN(storyPoints) || storyPoints < 0 || storyPoints > 99) {
+    throw new Error("Story ID and story points must be valid non-negative numbers, smaller than 100.");
   }
 
   const storyRef = db.collection("userStories").doc(storyId);

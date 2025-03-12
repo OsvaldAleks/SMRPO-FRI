@@ -130,8 +130,9 @@ const SprintDetails = () => {
   useEffect(() => {
     if (!showIncludeStories && selectedStory) {
       const notInThisSprint = stories.filter(
-        (story) => !story.sprintId?.includes(sprintId)
+        (story) => !story.sprintId?.includes(sprintId) && typeof story.storyPoints === "number"
       );
+      
       if (notInThisSprint.some((story) => story.id === selectedStory.id)) {
         setSelectedStory(null);
       }
@@ -143,7 +144,7 @@ const SprintDetails = () => {
   }
 
   const notInThisSprint = stories.filter(
-    (story) => !story.sprintId?.includes(sprintId)
+    (story) => !story.sprintId?.includes(sprintId) && typeof story.storyPoints === "number"
   );
 
   return (

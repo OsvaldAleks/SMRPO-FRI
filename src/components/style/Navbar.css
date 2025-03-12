@@ -46,11 +46,11 @@
   background-color:rgba(255, 255, 255);
   border-radius: 0 30px 30px 0;
   box-shadow: 2px 0px 8px rgba(44, 44, 45, 0.411);
+  transition: 0.25s;
 }
 
 .nav-title:hover {
   background-color: rgba(255, 255, 255, 0.7); 
-  transition: 0.25s;
 }
 
 /* Navbar left and right sections */
@@ -93,13 +93,13 @@
   display: flex;
   align-items: center; 
   height: 100%;
+  transition: 0.25s;
 }
 
 /* Hover effect for links and buttons */
 .nav ul li a:hover,
 .nav ul li button:hover {
   background-color: rgba(255, 255, 255, 0.1);
-  transition: 0.25s;
 }
 
 /* Dropdown Styling */
@@ -128,6 +128,7 @@
   border-radius: 0 0 5px 5px;
   border-top: 0;
   box-shadow: 0px 4px 8px rgba(63, 65, 70, 0.204);
+  transition: 0.25s;
 }
 
 /* Show dropdown when hovered */
@@ -135,7 +136,6 @@
   display: flex;
   flex-direction: column;
   height: auto;
-  transition: 0.25s;
 }
 
 /* Dropdown List Items */
@@ -146,6 +146,7 @@
   align-items: center;
   justify-content: center; 
   box-sizing: border-box;
+  transition: 0.25s;
 }
 
 /* Ensure links/buttons inside li take full space */
@@ -163,7 +164,6 @@
 /* Hover effect */
 .dropdown ul li:hover {
   background-color: rgba(0, 92, 133, 0.4);
-  transition: 0.25s;
 }
 
 
@@ -177,11 +177,11 @@
   align-items: center; 
   height: 100%; 
   padding: 0 1.5rem;
+  transition: 0.25s;
 }
 
 .login-link:hover, .edit-account-link:hover {
   background-color: rgba(255, 255, 255, 0.1); 
-  transition: 0.25s;
 }
 
 /* Specific styles for logout link */
@@ -189,10 +189,10 @@
   font-weight: bold;
   color: #fff;
   background-color: var(--color-accent);
+  transition: 0.25s;
 }
 
 .logout-link:hover {
   color:#fff;
   background-color: rgba(255, 0, 0, 0.8);
-  transition: 0.25s;
 }

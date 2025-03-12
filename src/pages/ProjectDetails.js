@@ -53,6 +53,7 @@ const ProjectDetails = () => {
     if (project) {
       fetchSprints();
       fetchStories();
+      handleToggleForm(0);
     }
   }, [project]);
 
@@ -185,7 +186,7 @@ const ProjectDetails = () => {
         <div className="roles-grid">
           {/* Product Managers */}
           <div>
-            <h2>Project Managers</h2>
+            <h2>Product Managers</h2>
             <ul>
               {project.productManagers && project.productManagers.length > 0 ? (
                 project.productManagers.map(renderUserWithStatus)
