@@ -24,7 +24,15 @@ const UserProjects = () => {
       
       <h1>Projects</h1>
      
-      <div className="grid ">
+      <div className=" block--element grid ">
+        <div className="grid--leftdiv">
+          <Input
+          className={"block--element"}
+          type="text"
+          placeholder="Search"
+          
+          />
+        </div>
         <div className="grid--rightdiv">
           
              {/* Add Project Button */}

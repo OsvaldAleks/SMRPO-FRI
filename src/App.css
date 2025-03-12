@@ -49,13 +49,19 @@ body{
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 1rem;
+  position: relative;
+  margin: 3rem 2rem ;
 }
 
 .grid--leftdiv{
   margin-right: 1rem;
+  position: absolute; 
+  left:0px;
 }
 .grid--rightdiv{
   margin-left: 1rem;
+  position: absolute; 
+  right:30px;
 }
 /* notification */
 .p--note{
