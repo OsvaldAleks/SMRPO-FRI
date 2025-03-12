@@ -32,7 +32,7 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
       <div>
         <label>
           <strong>Story Points:</strong>
-          {isScrumMaster ? (
+          {(isScrumMaster && (story.sprintId.length == 0)) ? (
             <Input
               type="number"
               value={storyPointValue}
