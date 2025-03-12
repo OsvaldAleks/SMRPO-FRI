@@ -7,6 +7,7 @@ import {
   getStoriesForProject,
   assignUserStoryToSprint,
 } from "../api.js";
+import Button from '../components/Button.js'
 import { formatDate } from "../utils/storyUtils.js";
 import "./style/SprintDetails.css";
 
@@ -62,18 +63,18 @@ const SprintDetails = () => {
 
   useEffect(() => {
     // Now that we have projectId, fetch user stories
-    const fetchStories = async () => {
-      if (!projectId) return;
-      try {
-        const { stories } = await getStoriesForProject(projectId);
-        setStories(stories);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-
     fetchStories();
   }, [projectId]);
+
+  const fetchStories = async () => {
+    if (!projectId) return;
+    try {
+      const { stories } = await getStoriesForProject(projectId);
+      setStories(stories);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   // 1) Filter out the stories actually assigned to this sprint
   //    (assuming 'sprintId' in each story is an array)
@@ -112,6 +113,7 @@ const SprintDetails = () => {
       // Optionally re-fetch or reset
       setSelectedStories([]);
       setShowIncludeStories(false);
+      fetchStories();
     } catch (err) {
       console.error("Failed to add stories to sprint:", err);
       setError("Failed to add selected stories to sprint. Check console.");
@@ -156,7 +158,7 @@ const SprintDetails = () => {
               </tbody>
             </table>
           </div>
-          <button onClick={handleAddToSprint}>Add Selected Stories</button>
+          <Button onClick={handleAddToSprint}>Add Selected -></Button>
         </div>
       )}
 
@@ -197,35 +199,40 @@ const SprintDetails = () => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>
-                  {todoStories.map((story) => (
-                    <div className="userStory" key={story.id}>
+            {todoStories.map((story) => (
+              <tr key={story.id}>
+                {story.status == "Product backlog" ? (
+                  <td>
+                    <div className="userStory">
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
                     </div>
-                  ))}
-                </td>
-                <td>
-                  {doingStories.map((story) => (
-                    <div className="userStory" key={story.id}>
+                  </td>
+                ) : null}
+
+                {story.status == "" ? ( // Replace with a valid status
+                  <td>
+                    <div className="userStory">
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
                     </div>
-                  ))}
-                </td>
-                <td>
-                  {doneStories.map((story) => (
-                    <div className="userStory" key={story.id}>
+                  </td>
+                ) : null}
+
+                {story.status == "" ? ( // Replace with a valid status
+                  <td>
+                    <div className="userStory">
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
                     </div>
-                  ))}
-                </td>
+                  </td>
+                ) : null}
               </tr>
+            ))}
+
               {isScrumMaster && (
                 <tr>
                   <td>

@@ -259,12 +259,6 @@ const ProjectDetails = () => {
                     {isScrumMaster && (!story.sprintId || story.sprintId.length === 0) && (
                       <>
                         <span>time complexity</span>
-                        <Input
-                          name="storyPointValue"
-                          placeholder="Enter time complexity"
-                          value={user.name}
-                          /*onChange={handleChange}*/
-                        />
                       </>
                     )}
                   </div>

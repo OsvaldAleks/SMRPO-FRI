@@ -54,7 +54,7 @@ const ManageUsers = () => {
               {users.length > 0 ? (
                 users.map((user) => (
                   <tr key={user.id}>
-                    <td><div className={user.status=='Active' 
+                    <td><div className={user.status=='online' 
                       ? 'activeStatus'
                       : 'offlineStatus'}></div></td>
                     <td>{user.username}</td>
