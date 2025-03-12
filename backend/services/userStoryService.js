@@ -112,12 +112,40 @@ async function getUserStoriesForProject(projectId) {
   return userStories;
 }
 
+async function updateStoryPoints(storyId, storyPoints) {
+  // Ensure storyPoints is parsed as a number
+  storyPoints = Number(storyPoints);
+
+  if (!storyId || isNaN(storyPoints) || storyPoints < 0) {
+    throw new Error("Story ID and story points must be valid non-negative numbers.");
+  }
+
+  const storyRef = db.collection("userStories").doc(storyId);
+  const storyDoc = await storyRef.get();
+
+  if (!storyDoc.exists) {
+    throw new Error("User story not found.");
+  }
+
+  const storyData = storyDoc.data();
+
+  if (storyData.sprintId.length != 0) {
+    throw new Error("Cannot update story points for a story assigned to a sprint.");
+  }
+
+  await storyRef.set({ storyPoints }, { merge: true });
+
+  return { message: "Story points updated successfully!" };
+}
+
+
 module.exports = { 
   createUserStory, 
   getUserStory,
   assignUserStoryToSprint, 
   updateUserStoryStatus, 
-  getUserStoriesForProject 
+  getUserStoriesForProject,
+  updateStoryPoints
 };
 
 

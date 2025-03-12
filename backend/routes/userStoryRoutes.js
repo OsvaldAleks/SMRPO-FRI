@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject } = require("../services/userStoryService");
+const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints } = require("../services/userStoryService");
 
 const router = express.Router();
 
@@ -70,6 +70,19 @@ router.get("/project/:projectId", async (req, res) => {
     }
 
     res.status(200).json({ stories: userStories });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update story point value
+router.put("/:storyId/setStoryPoints", async (req, res) => {
+  try {
+    const { storyId } = req.params;
+    const { value } = req.body;
+
+    const response = await updateStoryPoints(storyId, value);
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

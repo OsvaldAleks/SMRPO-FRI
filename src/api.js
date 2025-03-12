@@ -322,3 +322,23 @@ export const getUserStory = async (storyId) => {
     return { message: "Network error", error };
   }
 };
+
+export const updateStoryPoints = async (storyId, value) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/setStoryPoints`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        value: value,
+      }),
+    });
+    if (response.ok) {
+      return response.json();
+    } else {
+      const errorData = await response.json();
+      return { message: errorData.message || "Failed to fetch user status", error: true };
+    }
+  } catch (error) {
+    return { message: "Network error", error };
+  }
+};

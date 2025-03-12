@@ -207,7 +207,7 @@ const SprintDetails = () => {
         )}
 
         {/* 3) Show them in your columns */}
-        <div className="responsive-table-container-sprints">
+        <div className="responsive-table-container-wide">
           <table className="responsive-table">
             <thead>
               <tr>

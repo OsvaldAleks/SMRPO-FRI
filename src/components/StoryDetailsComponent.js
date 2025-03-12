@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useParams } from "react-router-dom";
-import { getUserStory } from "../api.js";
+import { updateStoryPoints } from "../api.js";
 import Input from './Input.js';
 
 const UserStoryDetails = ({ story, isScrumMaster }) => {
@@ -13,9 +13,8 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
     setStoryPointValue(e.target.value);
   };
 
-  const handleSaveStoryPoint = () => {
-    // TODO: Add API call here to save the updated story points
-    console.log("Story points updated to:", storyPointValue);
+  const handleSaveStoryPoint = async () => {
+    await updateStoryPoints(story.id, storyPointValue)
     setOriginalStoryPointValue(storyPointValue);
   };
 
@@ -61,11 +60,24 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
       </div>
 
       <h3>Acceptance Criteria</h3>
-      <ul>
-        {story.acceptanceCriteria.map((criteria, index) => (
-          <li key={index}>{criteria}</li>
-        ))}
-      </ul>
+      <div className="responsive-table-container3">
+      <table className="responsive-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Criterion</th>
+          </tr>
+        </thead>
+        <tbody>
+          {story.acceptanceCriteria.map((criteria, index) => (
+            <tr key={index}>
+              <td>{index + 1}</td>
+              <td>{criteria}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      </div>
     </div>
   );
 };
