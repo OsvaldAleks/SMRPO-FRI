@@ -157,6 +157,10 @@ const ProjectDetails = () => {
     navigate(`/project/${projectName}/sprint/${sprintId}`);
   };
 
+  const handleStoryClick = (storyId) => {
+    navigate(`/story/${storyId}`);
+  };
+
   if (!projectName) {
     return <div>Project name is missing in the URL.</div>;
   }
@@ -253,12 +257,13 @@ const ProjectDetails = () => {
                   <div
                     key={story.id}
                     className="grid-item story"
+                    onClick={() => handleStoryClick(story.id)}
                   >
                     <h2>{story.name}</h2>
                     <p>{story.description}</p>
                     {isScrumMaster && (!story.sprintId || story.sprintId.length === 0) && (
                       <>
-                        <span>time complexity</span>
+                        <span>unset time complexity</span>
                       </>
                     )}
                   </div>

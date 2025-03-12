@@ -10,6 +10,7 @@ import {
 import Button from '../components/Button.js'
 import { formatDate } from "../utils/storyUtils.js";
 import "./style/SprintDetails.css";
+import StoryDetailsComponent from '../components/StoryDetailsComponent.js'
 
 const SprintDetails = () => {
   const { projectName, sprintId } = useParams();
@@ -21,6 +22,7 @@ const SprintDetails = () => {
   const [error, setError] = useState(null);
   const [isScrumMaster, setIsScrumMaster] = useState(false);
   const [showIncludeStories, setShowIncludeStories] = useState(false);
+  const [selectedStory, setSelectedStory] = useState(null);
 
   // Track which user stories are selected (checked) for adding to sprint
   const [selectedStories, setSelectedStories] = useState([]);
@@ -94,6 +96,10 @@ const SprintDetails = () => {
     (story) => story.status === "Done"
   );
 
+  const handleStoryClick = (story) => {
+    setSelectedStory((prevStory) => (prevStory?.id === story.id ? null : story));
+  };
+
   // Handle checkbox changes in the "Add story to sprint" panel
   const handleCheckboxChange = (storyId) => {
     setSelectedStories((prevSelected) =>
@@ -144,7 +150,7 @@ const SprintDetails = () => {
               <tbody>
                 {/* 2) Render only 'notInThisSprint' */}
                 {notInThisSprint.map((story) => (
-                  <tr key={story.id}>
+                  <tr key={story.id} onClick={() => handleStoryClick(story)}>
                     <td>
                       <input
                         type="checkbox"
@@ -203,7 +209,7 @@ const SprintDetails = () => {
               <tr key={story.id}>
                 {story.status == "Product backlog" ? (
                   <td>
-                    <div className="userStory">
+                    <div className="userStory" onClick={() => handleStoryClick(story)}>
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
@@ -213,7 +219,7 @@ const SprintDetails = () => {
 
                 {story.status == "" ? ( // Replace with a valid status
                   <td>
-                    <div className="userStory">
+                    <div className="userStory" onClick={() => handleStoryClick(story)}>
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
@@ -223,7 +229,7 @@ const SprintDetails = () => {
 
                 {story.status == "" ? ( // Replace with a valid status
                   <td>
-                    <div className="userStory">
+                    <div className="userStory" onClick={() => handleStoryClick(story)}>
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
                       <p>Business Value: {story.businessValue}</p>
@@ -245,7 +251,6 @@ const SprintDetails = () => {
                       <span>+</span>
                     </div>
                   </td>
-                  {/* The other columns can be empty for that row */}
                   <td></td>
                   <td></td>
                 </tr>
@@ -255,11 +260,10 @@ const SprintDetails = () => {
         </div>
       </div>
 
-      {/* Optional bottom section (remove if you don't need it) */}
-      <div className="center--box">
-        <h1>User Story</h1>
-        <h2>Name of story</h2>
-      </div>
+      {selectedStory && (
+        <StoryDetailsComponent story={selectedStory} />
+
+      )}
     </>
   );
 };

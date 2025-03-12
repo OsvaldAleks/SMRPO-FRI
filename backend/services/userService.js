@@ -93,7 +93,6 @@ async function updateUserStatus(userId, status) {
       last_online: new Date().toISOString(),
     });
 
-    console.log(`User ${userId} status updated to ${status}`);
   } catch (error) {
     console.error("Error updating user status:", error);
     throw error;

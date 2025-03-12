@@ -62,7 +62,7 @@ export const createProject = async (projectData) => {
     const responseBody = await response.text();
     let result;
     try {
-      result = JSON.parse(responseBody); // Attempt to parse JSON
+      result = JSON.parse(responseBody);
     } catch (error) {
       throw new Error("Invalid JSON response from server");
     }
@@ -129,7 +129,7 @@ export const createSprint = async (sprintData) => {
     const responseBody = await response.text();
     let result;
     try {
-      result = JSON.parse(responseBody); // Attempt to parse JSON
+      result = JSON.parse(responseBody);
     } catch (error) {
       throw new Error("Invalid JSON response from server");
     }
@@ -268,7 +268,6 @@ export const getUserStatus = async (userId) => {
     });
     
     if (response.ok) {
-      //console.log(response)
       return response.json();
     } else {
       const errorData = await response.json();
@@ -281,13 +280,12 @@ export const getUserStatus = async (userId) => {
 
 export const updateUserStatus = async (userId, status) => {
   if (!userId){
-    //console.log("NO UID")
     return;
   }
 
   try {
     const response = await fetch(`${API_URL}/users/${userId}/status`, {
-      method: "PUT", // Use PUT for updates
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         status: status,
@@ -305,5 +303,22 @@ export const updateUserStatus = async (userId, status) => {
   } catch (error) {
     console.error("Network error updating user status:", error);
     return { error: true, message: error.message || "Network error" };
+  }
+};
+
+export const getUserStory = async (storyId) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (response.ok) {
+      return response.json();
+    } else {
+      const errorData = await response.json();
+      return { message: errorData.message || "Failed to fetch user status", error: true };
+    }
+  } catch (error) {
+    return { message: "Network error", error };
   }
 };

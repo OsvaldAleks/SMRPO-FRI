@@ -45,6 +45,22 @@ async function createUserStory(
   return story;
 }
 
+async function getUserStory(storyId) {
+  if (!storyId) {
+    throw new Error("Story ID is required.");
+  }
+
+  const storyRef = db.collection("userStories").doc(storyId);
+  const storyDoc = await storyRef.get();
+
+  if (!storyDoc.exists) {
+    throw new Error("User story not found.");
+  }
+
+  return { id: storyDoc.id, ...storyDoc.data() };
+}
+
+
 async function assignUserStoryToSprint(storyId, sprintId) {
   if (!storyId || !sprintId) {
     throw new Error("Story ID and Sprint ID are required.");
@@ -76,6 +92,7 @@ async function updateUserStoryStatus(storyId, newStatus) {
   await storyRef.update({ status: newStatus });
   return { message: `User story status updated to ${newStatus}.` };
 }
+
 async function getUserStoriesForProject(projectId) {
   if (!projectId) {
     throw new Error("Project ID is required.");
@@ -97,6 +114,7 @@ async function getUserStoriesForProject(projectId) {
 
 module.exports = { 
   createUserStory, 
+  getUserStory,
   assignUserStoryToSprint, 
   updateUserStoryStatus, 
   getUserStoriesForProject 

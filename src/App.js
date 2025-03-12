@@ -17,6 +17,7 @@ import AddSprintForm from "./pages/AddSprintForm";
 import { ProjectsProvider } from "./context/ProjectsContext";
 import SprintDetails from "./pages/SprintDetails";
 import UserStoryForm from "./pages/UserStoryForm";
+import UserStoryDetails from "./pages/UserStoryDetails";
 import "./App.css";
 
 // New Component to Handle User Status
@@ -24,7 +25,6 @@ function UserStatusHandler() {
   const { user } = useAuth(); // Now this is inside a component that is wrapped by AuthProvider
 
   useEffect(() => {
-    console.log(user)
     if (user) {
       updateUserStatus(user.uid, "online"); // Set user online
 
@@ -41,7 +41,7 @@ function UserStatusHandler() {
     }
   }, [user]);
 
-  return null; // This component doesn't render anything
+  return null;
 }
 
 function App() {
@@ -49,7 +49,7 @@ function App() {
     <AuthProvider>
       <ProjectsProvider>
         <Router>
-          <UserStatusHandler /> {/*Moved useAuth here */}
+          <UserStatusHandler />
           <Navbar />
           <main>
             <div className="center--container">
@@ -63,11 +63,9 @@ function App() {
                 <Route path="/addUser" element={<AdminRoute><AddUserForm /></AdminRoute>} />
                 <Route path="/userProjects" element={<PrivateRoute><UserProjects /></PrivateRoute>} />
                 <Route path="/project/:projectName" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
-                <Route path="/userStoryForm" element={<AdminRoute><UserStoryForm /></AdminRoute>} />
-                <Route 
-                  path="/project/:projectName/sprint/:sprintId"
-                  element={<PrivateRoute><SprintDetails /></PrivateRoute>} 
-                />
+                <Route path="/story/:storyId" element={<PrivateRoute><UserStoryDetails /></PrivateRoute>} />
+                <Route path="/userStoryForm" element={<PrivateRoute><UserStoryForm /></PrivateRoute>} />
+                <Route path="/project/:projectName/sprint/:sprintId" element={<PrivateRoute><SprintDetails /></PrivateRoute>} />
               </Routes>
             </div>
           </main>
