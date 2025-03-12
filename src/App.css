@@ -56,12 +56,12 @@ body{
 .grid--leftdiv{
   margin-right: 1rem;
   position: absolute; 
-  left:0px;
+  left:30px;
 }
 .grid--rightdiv{
   margin-left: 1rem;
   position: absolute; 
-  right:30px;
+  right:60px;
 }
 /* notification */
 .p--note{
