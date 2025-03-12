@@ -127,7 +127,7 @@ const SprintDetails = () => {
   useEffect(() => {
     if (!showIncludeStories && selectedStory) {
       const notInThisSprint = stories.filter(
-        (story) => !story.sprintId?.includes(sprintId) 
+        (story) => !story.sprintId?.includes(sprintId)
       );
       if (notInThisSprint.some((story) => story.id === selectedStory.id)) {
         setSelectedStory(null);
@@ -246,9 +246,8 @@ const SprintDetails = () => {
                   <td>
                     <div
                       onClick={() => handleStoryClick(story)}
-                      className={`userStory ${
-                        selectedStory?.id === story.id ? "selected" : ""
-                      }`}
+                      className={`userStory ${selectedStory?.id === story.id ? "selected" : ""
+                        }`}
                     >
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
@@ -266,9 +265,8 @@ const SprintDetails = () => {
                   <td>
                     <div
                       onClick={() => handleStoryClick(story)}
-                      className={`userStory ${
-                        selectedStory?.id === story.id ? "selected" : ""
-                      }`}
+                      className={`userStory ${selectedStory?.id === story.id ? "selected" : ""
+                        }`}
                     >
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
@@ -286,9 +284,8 @@ const SprintDetails = () => {
                   <td>
                     <div
                       onClick={() => handleStoryClick(story)}
-                      className={`userStory ${
-                        selectedStory?.id === story.id ? "selected" : ""
-                      }`}
+                      className={`userStory ${selectedStory?.id === story.id ? "selected" : ""
+                        }`}
                     >
                       <h2>{story.name}</h2>
                       <p>Priority: {story.priority}</p>
@@ -302,9 +299,8 @@ const SprintDetails = () => {
                 <tr>
                   <td>
                     <div
-                      className={`userStory plus-button ${
-                        showIncludeStories ? "selected" : ""
-                      }`}
+                      className={`userStory plus-button ${showIncludeStories ? "selected" : ""
+                        }`}
                       onClick={() => setShowIncludeStories((prev) => !prev)}
                     >
                       <span>+</span>
@@ -320,8 +316,12 @@ const SprintDetails = () => {
       </div>
 
       {selectedStory && (
-        <StoryDetailsComponent story={selectedStory} isScrumMaster={false} />
+        <StoryDetailsComponent
+          story={selectedStory}
+          isScrumMaster={isScrumMaster}
+        />
       )}
+
     </>
   );
 };
