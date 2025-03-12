@@ -31,7 +31,7 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
       {/* Always show the story points input field, but only allow editing if Scrum Master */}
       <div>
         <label>
-          <strong>Story Points:</strong>
+          <strong>Story Points: </strong>
           {(isScrumMaster && (story.sprintId.length == 0)) ? (
             <Input
               type="number"
@@ -40,7 +40,7 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
               min="0"
             />
           ) : (
-            <span>{storyPointValue}</span> // Display static text if not Scrum Master
+            <span>{storyPointValue ? storyPointValue : 'not set'}</span> // Display static text if not Scrum Master
           )}
         </label>
 
