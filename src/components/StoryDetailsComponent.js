@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useParams } from "react-router-dom";
 import { updateStoryPoints } from "../api.js";
 import Input from './Input.js';
+import Button from "./Button.js";
 
 const UserStoryDetails = ({ story, isScrumMaster }) => {
   const { user, loading } = useAuth();
@@ -78,6 +79,37 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
         </tbody>
       </table>
       </div>
+
+      {story.sprintId.length > 0 && (
+        <>
+        <h3>Subtasks</h3>
+        <div className="responsive-table-container3">
+        <table className="responsive-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th>Time</th>
+              <th>Dev</th>
+              <th>Claim</th>
+            </tr>
+          </thead>
+          <tbody>
+              <tr>
+                <td>1</td>
+                <td>Subtask</td>
+                <td>[x]h</td>
+                <td>name</td>
+                <td><input type="checkbox"></input></td>
+              </tr>
+              <tr>
+                  <td colspan='5'><Button>Add subtask</Button></td>
+              </tr>
+          </tbody>
+        </table>
+        </div>
+        </>
+      )}
     </div>
   );
 };
