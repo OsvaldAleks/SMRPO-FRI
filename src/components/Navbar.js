@@ -4,6 +4,7 @@ import { getAuth } from 'firebase/auth';
 import { useAuth } from "../context/AuthContext";
 import './style/Navbar.css';
 import { ProjectsContext } from "../context/ProjectsContext";
+import { updateUserStatusOnLogout } from "../utils/UserStatusHandler"; // Import the function
 import List from "../components/Lists";
 
 const Navbar = () => {
@@ -30,6 +31,10 @@ const Navbar = () => {
   }, [lastScrollY]);
 
   const handleLogout = () => {
+    if (user) {
+      updateUserStatusOnLogout(user.uid); // Update status to offline before logging out
+    }
+
     getAuth().signOut()
       .then(() => {
         console.log("User signed out!");

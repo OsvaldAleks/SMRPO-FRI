@@ -25,4 +25,11 @@ function UserStatusHandler() {
   return null;
 }
 
+// Function to update user status on logout
+export function updateUserStatusOnLogout(userId) {
+    if (userId) {
+      updateUserStatus(userId, "offline");
+    }
+}
+
 export default UserStatusHandler;
