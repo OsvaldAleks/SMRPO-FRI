@@ -138,7 +138,7 @@ const AddSprintForm = ({ projectName, onSprintAdded }) => {
             required
           />
         </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p className="p--alert">{error}</p>}
         {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
         <Button type="submit">Add Sprint</Button>
       </form>
