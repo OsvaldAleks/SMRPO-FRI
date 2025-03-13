@@ -21,8 +21,8 @@ const UserProjects = () => {
   return (
     <div className="center--box dashboard--box">
  
-       <Button variant="goback" onClick={goBackHandler} />
-      
+       <span style={{ display: window.location.pathname === "/" ? "none" : "block" }}>
+       <Button variant="goback" onClick={goBackHandler} /></span>
       <h1>Projects</h1>
      <h2>Select your project</h2>
       <div className=" btn-container">
