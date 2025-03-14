@@ -12,6 +12,7 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
   // -- Story Points section (existing logic) --
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
   const [originalStoryPointValue, setOriginalStoryPointValue] = useState(story.storyPoints || "");
+  const [subtasks, setSubtasks] = useState(story.subtasks || []);
 
   // Lets use useEffect to reset story points when a new story is selected
   useEffect(() => {
@@ -39,7 +40,6 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
   // Function to handle adding subtask
   const handleAddSubtask = async () => {
     if (!subtaskDescription || !subtaskTime) {
-      // Could show an error or just return
       alert("Please fill out description and time estimate.");
       return;
     }
@@ -48,19 +48,21 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
       await addSubtaskToUserStory(story.id, {
         description: subtaskDescription,
         timeEstimate: subtaskTime,
-        developer: subtaskDeveloper || null, // optional
+        developer: subtaskDeveloper || null,
       });
+
       // Clear form
       setSubtaskDescription("");
       setSubtaskTime("");
       setSubtaskDeveloper("");
       setShowSubtaskForm(false);
 
-      // Re-fetch the updated story from backend to see the new subtask
-      const updated = await getUserStory(story.id);
-      // Because story is a prop, you might pass the updated story back up 
-      // or keep local state. For simplicity, let's just do this:
-      Object.assign(story, updated);
+      // Fetch updated story to get new subtasks
+      const updatedStory = await getUserStory(story.id);
+
+      // Update the subtasks state to trigger re-render
+      setSubtasks(updatedStory.subtasks || []);
+
     } catch (err) {
       console.error("Failed to add subtask:", err);
       alert("Failed to add subtask. Check console.");
@@ -140,8 +142,8 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
                 </tr>
               </thead>
               <tbody>
-                {story.subtasks && story.subtasks.length > 0 ? (
-                  story.subtasks.map((sub, idx) => (
+                {subtasks.length > 0 ? (
+                  subtasks.map((sub, idx) => (
                     <tr key={idx}>
                       <td>{sub.description}</td>
                       <td>{sub.timeEstimate}</td>
@@ -154,6 +156,7 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
                   </tr>
                 )}
               </tbody>
+
             </table>
           </div>
 

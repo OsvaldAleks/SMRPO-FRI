@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints } = require("../services/userStoryService");
+const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory } = require("../services/userStoryService");
 
 const router = express.Router();
 
