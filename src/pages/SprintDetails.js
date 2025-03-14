@@ -95,8 +95,12 @@ const SprintDetails = () => {
   );
 
   const handleStoryClick = (story) => {
+    if (story.storyPoints === undefined || story.storyPoints === null) {
+      return;
+    }
     setSelectedStory((prevStory) => (prevStory?.id === story.id ? null : story));
   };
+  
 
   // Handle checkbox changes in the "Add story to sprint" panel
   const handleCheckboxChange = (storyId) => {
