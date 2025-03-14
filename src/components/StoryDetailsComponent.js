@@ -1,6 +1,6 @@
 // StoryDetailsComponent.js
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
 import { updateStoryPoints, addSubtaskToUserStory, getUserStory } from "../api.js";
@@ -12,6 +12,12 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
   // -- Story Points section (existing logic) --
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
   const [originalStoryPointValue, setOriginalStoryPointValue] = useState(story.storyPoints || "");
+
+  // Lets use useEffect to reset story points when a new story is selected
+  useEffect(() => {
+    setStoryPointValue(story.storyPoints || "");
+    setOriginalStoryPointValue(story.storyPoints || "");
+  }, [story]); // Runs every time `story` changes
 
   const handleStoryPointChange = (e) => {
     setStoryPointValue(e.target.value);
