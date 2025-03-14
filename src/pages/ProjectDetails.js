@@ -305,6 +305,7 @@ const ProjectDetails = () => {
 
       {showForm === 1 && (
         <AddSprintForm
+          projectId={project.id}
           projectName={projectName}
           onSprintAdded={() => {
             setShowForm(0);

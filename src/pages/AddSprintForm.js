@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { createSprint } from "../api";
+import { createSprint, validateSprintDates } from "../api";
 import Button from "../components/Button";
 import Input from "../components/Input";
 
-const AddSprintForm = ({ projectName, onSprintAdded }) => {
+const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [velocity, setVelocity] = useState("");
@@ -72,6 +72,18 @@ const AddSprintForm = ({ projectName, onSprintAdded }) => {
     }
 
     try {
+      setError("");
+      setSuccessMessage("");
+
+      // Validate sprint dates before creating a new sprint
+      const validationResponse = await validateSprintDates(projectId, startDate, endDate);
+
+      if (!validationResponse.success) {
+        setError(validationResponse.message);
+        return;
+      }
+
+      // Proceed with sprint creation if validation passes
       const sprintData = {
         projectName: projectName,
         start_date: startDate,

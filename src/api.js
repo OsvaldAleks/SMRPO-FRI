@@ -168,6 +168,32 @@ export const getSprintData = async (sprintId) => {
   }
 };
 
+export const validateSprintDates = async (projectId, newStartDate, newEndDate) => {
+  try {
+    const response = await fetch(`${API_URL}/sprints/validateDates`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectId,
+        newStartDate,
+        newEndDate,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Error validating sprint dates");
+    }
+
+    return result; // Expected to return { success: true } or { success: false, message: "Overlapping sprint exists" }
+  } catch (error) {
+    console.error("Error validating sprint dates:", error);
+    return { success: false, message: error.message || "Network error" };
+  }
+};
+
+
 export const getSprintsForProject = async (projectId) => {
   if (!projectId) {
     throw new Error("Project name and user ID are required.");

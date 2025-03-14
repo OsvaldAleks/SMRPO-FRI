@@ -7,28 +7,27 @@ function doDatesOverlap(start1, end1, start2, end2) {
 async function validateSprintDates(projectId, newStartDate, newEndDate) {
   try {
     const sprints = await getSprintsByProjectId(projectId);
-
     const newStart = newStartDate;
     const newEnd = newEndDate;
-    console.log(projectId, newEnd)
 
     for (const sprint of sprints) {
       const existingStart = sprint.start_date;
       const existingEnd = sprint.end_date;
 
       if (doDatesOverlap(newStart, newEnd, existingStart, existingEnd)) {
-        throw new Error(
-          `New sprint overlaps with existing sprint: ${sprint.name} (${sprint.start_date} to ${sprint.end_date})`
-        );
+        return {
+          success: false,
+          message: `New sprint overlaps with existing sprint: ${sprint.name} (${sprint.start_date} to ${sprint.end_date})`,
+        };
       }
     }
-
-    return true;
+    return { success: true };
   } catch (error) {
     console.error("Error validating sprint dates:", error);
-    throw error;
+    return { success: false, message: "Error validating sprint dates." };
   }
 }
+
 
 async function createSprint(projectName, start_date, end_date, velocity) {
   const newSprint = { start_date, end_date, velocity } ;
