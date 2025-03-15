@@ -8,12 +8,12 @@ const Card = ({ projectName, teamMembers, startDate, status, onClick }) => {
     <div className="card" onClick={onClick}>
 
         <div className="card--header">
-        <p className="card--status" hidden>
+        <p className="card--status">
         <strong> statuse: {status}</strong>
         </p>
         <div className="card--header--left">
         <h2 className="card--title">{projectName}</h2>
-        <p className="card--p" hidden>
+        <p className="card--p">
         project discreption
         </p>
       

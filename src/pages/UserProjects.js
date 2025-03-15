@@ -30,7 +30,7 @@ const UserProjects = () => {
           <Input
           type="text"
           placeholder="Search"
-          hidden
+          
           />
         </div>
         <div className="btn--right">
