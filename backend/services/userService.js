@@ -34,6 +34,8 @@ async function addUser(userData) {
       system_rights,
       status,
       last_online: null, // Update on login
+      previous_online: null, // Update on login
+
     });
 
     console.log("User successfully created:", userRecord.uid);
@@ -87,17 +89,30 @@ async function updateUserStatus(userId, status) {
       throw new Error("User not found");
     }
 
-    // Update the status and last_online timestamp (if going offline)
-    await userRef.update({
-      status: status,
-      last_online: new Date().toISOString(),
-    });
+    // Get current data
+    const userData = userDoc.data();
 
+    if (status === "offline") {
+      // Move last_online to previous_online, then update last_online
+      await userRef.update({
+        status: "offline",
+        //previous_online: userData.last_online, // Store the old last_online value
+        //last_online: new Date().toISOString(),
+      });
+    } else {
+      // Just update status to "online"
+      await userRef.update({
+        status: "online",
+        previous_online: userData.last_online, // Store the old last_online value
+        last_online: new Date().toISOString(),
+      });
+    }
   } catch (error) {
     console.error("Error updating user status:", error);
     throw error;
   }
 }
+
 
 module.exports = {
   getUser,
