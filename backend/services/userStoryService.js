@@ -164,7 +164,7 @@ async function addSubtaskToUserStory(storyId, subtaskData) {
   const newSubtask = {
     description: subtaskData.description,
     timeEstimate: Number(subtaskData.timeEstimate),
-    developer: subtaskData.developer || null,
+    devName: subtaskData.developer || null,
   };
 
   // Ensure the `subtasks` array exists before updating
@@ -178,6 +178,58 @@ async function addSubtaskToUserStory(storyId, subtaskData) {
   return { message: "Subtask added successfully!" };
 } 
 
+async function claimSubtask(storyId, userId, taskIndex) {
+  if (!storyId || !userId || taskIndex === undefined) {
+    console.error("Invalid storyId, userId, or taskIndex.");
+    throw new Error("Invalid storyId, userId, or taskIndex.");
+  }
+
+  const storyRef = db.collection("userStories").doc(storyId);
+  const storyDoc = await storyRef.get();
+
+  if (!storyDoc.exists) {
+    console.error(`User story not found for ID: ${storyId}`);
+    throw new Error("User story not found.");
+  }
+
+  const storyData = storyDoc.data();
+  const subtasks = storyData.subtasks || [];
+
+  if (taskIndex < 0 || taskIndex >= subtasks.length) {
+    console.error(`Invalid subtask index: ${taskIndex}`);
+    throw new Error("Invalid subtask index.");
+  }
+
+  const subtask = subtasks[taskIndex];
+
+  const newDeveloperId = subtask.developerId === userId ? null : userId;
+  let newDevName = null;
+
+  if (newDeveloperId) {
+    try {
+      const userRef = db.collection("users").doc(newDeveloperId);
+      const userDoc = await userRef.get();
+
+      if (!userDoc.exists) {
+        throw new Error(`User not found for ID: ${newDeveloperId}`);
+      }
+
+      newDevName = userDoc.data().name || "Unknown Developer";
+    } catch (error) {
+      console.error("Failed to fetch user details:", error);
+    }
+  }
+
+  subtasks[taskIndex] = { ...subtask, developerId: newDeveloperId, devName: newDevName };
+
+  await storyRef.update({ subtasks });
+
+  return {
+    message: newDeveloperId ? "Subtask claimed successfully!" : "Subtask unclaimed successfully!",
+    subtask: subtasks[taskIndex],
+  };
+}
+
 module.exports = { 
   createUserStory, 
   getUserStory,
@@ -185,7 +237,8 @@ module.exports = {
   updateUserStoryStatus, 
   getUserStoriesForProject,
   updateStoryPoints,
-  addSubtaskToUserStory
+  addSubtaskToUserStory,
+  claimSubtask
 };
 
 

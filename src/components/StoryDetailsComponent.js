@@ -1,24 +1,30 @@
-// StoryDetailsComponent.js
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-
-import { updateStoryPoints, addSubtaskToUserStory, getUserStory } from "../api.js";
+import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask } from "../api.js";
 import Input from "./Input.js";
 
 const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
   const { user, loading } = useAuth();
 
-  // -- Story Points section (existing logic) --
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
   const [originalStoryPointValue, setOriginalStoryPointValue] = useState(story.storyPoints || "");
   const [subtasks, setSubtasks] = useState(story.subtasks || []);
 
-  // Lets use useEffect to reset story points when a new story is selected
   useEffect(() => {
     setStoryPointValue(story.storyPoints || "");
     setOriginalStoryPointValue(story.storyPoints || "");
-  }, [story]); // Runs every time `story` changes
+    const fetchLatestStory = async () => {
+        try {
+          const updatedStory = await getUserStory(story.id);
+          setSubtasks(updatedStory.subtasks || []);
+        } catch (err) {
+          console.error("Failed to fetch latest subtasks:", err);
+        }
+      };
+      
+      fetchLatestStory();
+      
+  }, [story]);
 
   const handleStoryPointChange = (e) => {
     setStoryPointValue(e.target.value);
@@ -31,13 +37,12 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
 
   const hasChanges = storyPointValue !== originalStoryPointValue;
 
-  // -- Subtasks section (new logic) --
+  // Subtasks section
   const [showSubtaskForm, setShowSubtaskForm] = useState(false);
   const [subtaskDescription, setSubtaskDescription] = useState("");
   const [subtaskTime, setSubtaskTime] = useState("");
   const [subtaskDeveloper, setSubtaskDeveloper] = useState("");
 
-  // Function to handle adding subtask
   const handleAddSubtask = async () => {
     if (!subtaskDescription || !subtaskTime) {
       alert("Please fill out description and time estimate.");
@@ -51,16 +56,12 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
         developer: subtaskDeveloper || null,
       });
 
-      // Clear form
       setSubtaskDescription("");
       setSubtaskTime("");
       setSubtaskDeveloper("");
       setShowSubtaskForm(false);
 
-      // Fetch updated story to get new subtasks
       const updatedStory = await getUserStory(story.id);
-
-      // Update the subtasks state to trigger re-render
       setSubtasks(updatedStory.subtasks || []);
 
     } catch (err) {
@@ -68,6 +69,21 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
       alert("Failed to add subtask. Check console.");
     }
   };
+
+  const handleClaim = async (taskIndex) => {
+    try {
+  
+      await claimSubtask(story.id, user.uid, taskIndex);
+  
+      const updatedStory = await getUserStory(story.id);
+      setSubtasks(updatedStory.subtasks || []);
+    } catch (err) {
+      console.error("Failed to claim/unclaim subtask:", err);
+      alert("Failed to claim/unclaim subtask. Check console.");
+    }
+  };
+  
+  
 
   return (
     <div className="center--box">
@@ -77,7 +93,6 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
       <p><strong>Business Value:</strong> {story.businessValue}</p>
       <p><strong>Status:</strong> {story.status}</p>
 
-      {/* Story Points logic */}
       <div>
         <label>
           <strong>Story Points: </strong>
@@ -128,7 +143,6 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
         </table>
       </div>
 
-      {/* Subtasks Section */}
       {story.sprintId && story.sprintId.length > 0 && (
         <>
           <h3>Subtasks</h3>
@@ -140,7 +154,7 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
                   <th>Description</th>
                   <th>Time[h]</th>
                   <th>Dev</th>
-                  {isDev && <th>Claim</th>} {/* Only show the "Claim" column if isDev is true */}
+                  {isDev && <th>Claim</th>}
                 </tr>
               </thead>
               <tbody>
@@ -148,25 +162,27 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
                   subtasks.map((sub, idx) => (
                     <tr key={idx}>
                       <td>
-                        <input type="checkbox" checked={sub.isDone} />
+                        <input 
+                          type="checkbox" 
+                          checked={sub.isDone} 
+                          disabled={!sub.developerId || sub.developerId !== user.uid} 
+                        />                     
                       </td>
                       <td>{sub.description}</td>
                       <td>{sub.timeEstimate}</td>
-                      <td>{sub.developer || "N/A"}</td>
+                      <td>{sub.devName || "N/A"}</td>
                       {isDev && (
                         <td>
-                          {sub.developer === user.id ? (
-                            <button>Unclaim</button>
-                          ) : (
-                            <button>Claim</button>
-                          )}
+                          <button onClick={() => handleClaim(idx)}>
+                            {sub.developerId ? (sub.developerId == user.uid ? "Unclaim" : "Claim") : "Claim"}
+                          </button>
                         </td>
                       )}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={isDev ? "6" : "5"}>No subtasks yet.</td> {/* Adjust the colSpan based on whether "Claim" column is visible */}
+                    <td colSpan={isDev ? "6" : "5"}>No subtasks yet.</td>
                   </tr>
                 )}
               </tbody>
@@ -175,45 +191,44 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
         </>
       )}
 
-          {/* "Skrbnik metodologije" or "razvojna ekipa" can add subtasks. Let's assume we handle that with isScrumMaster or some condition */}
-          {(isScrumMaster || isDev) && (
-            <div style={{ marginTop: "1rem" }}>
-              {!showSubtaskForm ? (
-                <button onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</button>
-              ) : (
-                <>
-                  <div style={{ marginBottom: "0.5rem" }}>
-                    <label>Description: </label>
-                    <Input
-                      type="text"
-                      value={subtaskDescription}
-                      onChange={(e) => setSubtaskDescription(e.target.value)}
-                    />
-                  </div>
-                  <div style={{ marginBottom: "0.5rem" }}>
-                    <label>Time (hrs): </label>
-                    <Input
-                      type="number"
-                      value={subtaskTime}
-                      onChange={(e) => setSubtaskTime(e.target.value)}
-                    />
-                  </div>
-                  <div style={{ marginBottom: "0.5rem" }}>
-                    <label>Developer (optional): </label>
-                    <Input
-                      type="text"
-                      value={subtaskDeveloper}
-                      onChange={(e) => setSubtaskDeveloper(e.target.value)}
-                    />
-                  </div>
-                  <button onClick={handleAddSubtask} style={{ marginRight: "0.5rem" }}>
-                    Save Subtask
-                  </button>
-                  <button onClick={() => setShowSubtaskForm(false)}>Cancel</button>
-                </>
-              )}
-            </div>
+      {(isScrumMaster || isDev) && (
+        <div style={{ marginTop: "1rem" }}>
+          {!showSubtaskForm ? (
+            <button onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</button>
+          ) : (
+            <>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <label>Description: </label>
+                <Input
+                  type="text"
+                  value={subtaskDescription}
+                  onChange={(e) => setSubtaskDescription(e.target.value)}
+                />
+              </div>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <label>Time (hrs): </label>
+                <Input
+                  type="number"
+                  value={subtaskTime}
+                  onChange={(e) => setSubtaskTime(e.target.value)}
+                />
+              </div>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <label>Developer (optional): </label>
+                <Input
+                  type="text"
+                  value={subtaskDeveloper}
+                  onChange={(e) => setSubtaskDeveloper(e.target.value)}
+                />
+              </div>
+              <button onClick={handleAddSubtask} style={{ marginRight: "0.5rem" }}>
+                Save Subtask
+              </button>
+              <button onClick={() => setShowSubtaskForm(false)}>Cancel</button>
+            </>
           )}
+        </div>
+      )}
     </div>
   );
 };

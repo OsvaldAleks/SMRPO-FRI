@@ -386,3 +386,26 @@ export const addSubtaskToUserStory = async (storyId, subtaskData) => {
     throw error;
   }
 };
+
+
+export const claimSubtask = async (storyId, userId, subtaskIndex) => {
+  try {
+    const subtaskData = {
+      userId,
+      subtaskIndex,
+    };
+    const response = await fetch(`${API_URL}/userStories/${storyId}/claimSubtask/`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(subtaskData),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to update subtask");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error updating subtask:", error);
+    throw error;
+  }
+};
