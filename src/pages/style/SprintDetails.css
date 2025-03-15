@@ -36,7 +36,7 @@
     width: 5%;
 }
 
-.responsive-table-container3.responsive-table th:nth-child(2),
+.responsive-table-container3 .responsive-table th:nth-child(2),
 .responsive-table-container3 .responsive-table td:nth-child(2) {
     text-align: left;
     width: 95%;

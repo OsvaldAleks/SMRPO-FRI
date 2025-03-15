@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { updateStoryPoints, addSubtaskToUserStory, getUserStory } from "../api.js";
 import Input from "./Input.js";
 
-const UserStoryDetails = ({ story, isScrumMaster }) => {
+const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
   const { user, loading } = useAuth();
 
   // -- Story Points section (existing logic) --
@@ -136,32 +136,47 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
             <table className="responsive-table">
               <thead>
                 <tr>
+                  <th>Done</th>
                   <th>Description</th>
-                  <th>Time (hrs)</th>
-                  <th>Developer</th>
+                  <th>Time[h]</th>
+                  <th>Dev</th>
+                  {isDev && <th>Claim</th>} {/* Only show the "Claim" column if isDev is true */}
                 </tr>
               </thead>
               <tbody>
                 {subtasks.length > 0 ? (
                   subtasks.map((sub, idx) => (
                     <tr key={idx}>
+                      <td>
+                        <input type="checkbox" checked={sub.isDone} />
+                      </td>
                       <td>{sub.description}</td>
                       <td>{sub.timeEstimate}</td>
                       <td>{sub.developer || "N/A"}</td>
+                      {isDev && (
+                        <td>
+                          {sub.developer === user.id ? (
+                            <button>Unclaim</button>
+                          ) : (
+                            <button>Claim</button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3">No subtasks yet.</td>
+                    <td colSpan={isDev ? "6" : "5"}>No subtasks yet.</td> {/* Adjust the colSpan based on whether "Claim" column is visible */}
                   </tr>
                 )}
               </tbody>
-
             </table>
           </div>
+        </>
+      )}
 
           {/* "Skrbnik metodologije" or "razvojna ekipa" can add subtasks. Let's assume we handle that with isScrumMaster or some condition */}
-          {(isScrumMaster /* or your dev team check */) && (
+          {(isScrumMaster || isDev) && (
             <div style={{ marginTop: "1rem" }}>
               {!showSubtaskForm ? (
                 <button onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</button>
@@ -199,8 +214,6 @@ const UserStoryDetails = ({ story, isScrumMaster }) => {
               )}
             </div>
           )}
-        </>
-      )}
     </div>
   );
 };

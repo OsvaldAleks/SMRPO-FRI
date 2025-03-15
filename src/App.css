@@ -38,6 +38,13 @@
   margin-top: 3rem;
  } 
 
+.dashboard-wrapper h1,
+.dashboard-wrapper h2{
+  width: 100%;
+  text-align: center;
+}
+
+
  .dashboard--box{
   max-width: 1200px;
   position: relative;

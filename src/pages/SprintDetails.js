@@ -21,6 +21,7 @@ const SprintDetails = () => {
   const [sprint, setSprint] = useState(null);
   const [error, setError] = useState(null);
   const [isScrumMaster, setIsScrumMaster] = useState(false);
+  const [isDev, setIsDev] = useState(false);
   const [showIncludeStories, setShowIncludeStories] = useState(false);
   const [selectedStory, setSelectedStory] = useState(null);
 
@@ -53,6 +54,11 @@ const SprintDetails = () => {
         // Check if user is a scrum master
         if (projectData.project.scrumMasters?.some((sm) => sm.id === user.uid)) {
           setIsScrumMaster(true);
+          setIsDev(false);
+        }
+        else if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
+          setIsDev(true);
+          setIsScrumMaster(false);
         }
       } catch (error) {
         console.error("Failed to fetch project:", error);
@@ -323,6 +329,7 @@ const SprintDetails = () => {
         <StoryDetailsComponent
           story={selectedStory}
           isScrumMaster={isScrumMaster}
+          isDev={isDev}
         />
       )}
 

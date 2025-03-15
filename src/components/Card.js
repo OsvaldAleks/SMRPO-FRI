@@ -8,12 +8,12 @@ const Card = ({ projectName, teamMembers, startDate, status, onClick }) => {
     <div className="card" onClick={onClick}>
 
         <div className="card--header">
-        <p className="card--status">
+        <p className="card--status" hidden>
         <strong> statuse: {status}</strong>
         </p>
         <div className="card--header--left">
         <h2 className="card--title">{projectName}</h2>
-        <p className="card--p">
+        <p className="card--p" hidden>
         project discreption
         </p>
       
@@ -25,8 +25,8 @@ const Card = ({ projectName, teamMembers, startDate, status, onClick }) => {
             {startDate ? new Date(startDate).toLocaleDateString() : "N/A"}
         </p>
        </div> */}
-     
-      <div className="card--team">
+     {/*
+      <div className="card--team" hidden>
         <h3>Team Members: </h3>
         <ul>
           {teamMembers && teamMembers.length > 0 ? (
@@ -35,6 +35,12 @@ const Card = ({ projectName, teamMembers, startDate, status, onClick }) => {
             <p className="p--note card--footer">No team members assigned yet.</p>
           )}
         </ul>
+      </div>
+      */}
+      <div className="card--team">
+      <span>
+        <strong>Your role: </strong> {teamMembers=="devs" ? 'Developer': teamMembers=="scrumMasters" ? 'SCRUM master' : 'Project Manager'}
+        </span>
       </div>
     </div>
   );

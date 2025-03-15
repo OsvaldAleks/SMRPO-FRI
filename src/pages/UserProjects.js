@@ -30,7 +30,7 @@ const UserProjects = () => {
           <Input
           type="text"
           placeholder="Search"
-          
+          hidden
           />
         </div>
         <div className="btn--right">
@@ -53,7 +53,7 @@ const UserProjects = () => {
           <Card
             key={project.projectName}
             projectName={project.projectName}
-            teamMembers={project.teamMembers || []}
+            teamMembers={project.userRole || []}
             startDate={project.startDate}
             status={project.status}
             onClick={() => handleProjectClick(project.projectName)} 
