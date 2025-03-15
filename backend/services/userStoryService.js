@@ -201,7 +201,6 @@ async function claimSubtask(storyId, userId, taskIndex) {
   }
 
   const subtask = subtasks[taskIndex];
-
   const newDeveloperId = subtask.developerId === userId ? null : userId;
   let newDevName = null;
 
@@ -209,10 +208,7 @@ async function claimSubtask(storyId, userId, taskIndex) {
     try {
       const userRef = db.collection("users").doc(newDeveloperId);
       const userDoc = await userRef.get();
-
-      if (!userDoc.exists) {
-        throw new Error(`User not found for ID: ${newDeveloperId}`);
-      }
+      if (!userDoc.exists) throw new Error(`User not found for ID: ${newDeveloperId}`);
 
       newDevName = userDoc.data().name || "Unknown Developer";
     } catch (error) {
@@ -222,13 +218,25 @@ async function claimSubtask(storyId, userId, taskIndex) {
 
   subtasks[taskIndex] = { ...subtask, developerId: newDeveloperId, devName: newDevName };
 
-  await storyRef.update({ subtasks });
+  let newStatus = storyData.status;
+
+  if (newDeveloperId) {
+    newStatus = "In progress";
+  } else {
+    // If unclaimed, check if any subtasks still have a developer
+    const anyClaimed = subtasks.some(task => task.developerId);
+    newStatus = anyClaimed ? "In progress" : "Product backlog";
+  }
+
+  await storyRef.update({ subtasks, status: newStatus });
 
   return {
     message: newDeveloperId ? "Subtask claimed successfully!" : "Subtask unclaimed successfully!",
     subtask: subtasks[taskIndex],
+    status: newStatus,
   };
 }
+
 
 module.exports = { 
   createUserStory, 

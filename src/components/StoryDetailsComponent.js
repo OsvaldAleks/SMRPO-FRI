@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask } from "../api.js";
 import Input from "./Input.js";
 
-const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
+const UserStoryDetails = ({ story, isScrumMaster, isDev, onClaim }) => {
   const { user, loading } = useAuth();
 
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
@@ -77,6 +77,9 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev }) => {
   
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
+      story.status = updatedStory.status;
+
+      onClaim(story);
     } catch (err) {
       console.error("Failed to claim/unclaim subtask:", err);
       alert("Failed to claim/unclaim subtask. Check console.");

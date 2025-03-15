@@ -84,22 +84,41 @@ const SprintDetails = () => {
     }
   };
 
-  // Filter out the stories actually assigned to this sprint
-  const sprintStories = stories.filter((story) =>
-    story.sprintId?.includes(sprintId)
-  );
-
-  // Group them by status (adjust as needed)
+  const updateStoryStatus = (storyId) => {
+    setStories((prevStories) =>
+      prevStories.map((story) => {
+        if (story.id === storyId) {
+          // Determine the new status based on current status
+          let newStatus;
+          if (["Backlog", "Product backlog"].includes(story.status)) {
+            newStatus = "In progress";
+          } else if (story.status === "In progress") {
+            newStatus = "Done";
+          } else {
+            newStatus = "Done"; // Stays "Done" if already done
+          }
+  
+          return { ...story, status: newStatus };
+        }
+        return story;
+      })
+    );
+  };
+  
+  // Group them by status dynamically from updated stories state
+  const sprintStories = stories.filter((story) => story.sprintId?.includes(sprintId));
+  
   const todoStories = sprintStories.filter((story) =>
     ["Backlog", "Product backlog"].includes(story.status)
   );
   const doingStories = sprintStories.filter((story) =>
-    ["Sprint backlog", "Coding", "Testing"].includes(story.status)
+    story.status === "In progress"
   );
-  const doneStories = sprintStories.filter(
-    (story) => story.status === "Done"
+  const doneStories = sprintStories.filter((story) =>
+    story.status === "Done"
   );
-
+  
+  
   const handleStoryClick = (story) => {
     if (story.storyPoints === undefined || story.storyPoints === null) {
       return;
@@ -330,6 +349,7 @@ const SprintDetails = () => {
           story={selectedStory}
           isScrumMaster={isScrumMaster}
           isDev={isDev}
+          onClaim={updateStoryStatus}
         />
       )}
 
