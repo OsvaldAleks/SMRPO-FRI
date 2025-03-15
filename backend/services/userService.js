@@ -4,27 +4,23 @@ async function addUser(userData) {
   try {
     const { email, password, name, surname, username, system_rights, status } = userData;
 
-    // Backend validation: Check for missing fields
     if (!email || !password || !name || !surname || !username || !system_rights || !status) {
       console.log("Error: All fields are required.");
       return;
     }
 
-    // Check if username already exists
     const usernameQuery = await db.collection("users").where("username", "==", username).get();
     if (!usernameQuery.empty) {
       console.log("Error: Username already exists.");
       return;
     }
 
-    // Create user in Firebase Authentication
     const userRecord = await auth.createUser({
       email,
       password,
       displayName: `${name} ${surname}`,
     });
 
-    // Save user to Firestore
     await db.collection("users").doc(userRecord.uid).set({
       id: userRecord.uid,
       name,
@@ -33,9 +29,8 @@ async function addUser(userData) {
       username,
       system_rights,
       status,
-      last_online: null, // Update on login
-      previous_online: null, // Update on login
-
+      last_online: null,
+      previous_online: null,
     });
 
     console.log("User successfully created:", userRecord.uid);
@@ -78,32 +73,25 @@ async function getUsers() {
   return users;
 }
 
-// New function to update user status
+// Update user status and handle last/previous online
 async function updateUserStatus(userId, status) {
   try {
     const userRef = db.collection("users").doc(userId);
-
-    // Ensure the user exists
     const userDoc = await userRef.get();
     if (!userDoc.exists) {
       throw new Error("User not found");
     }
 
-    // Get current data
     const userData = userDoc.data();
 
     if (status === "offline") {
-      // Move last_online to previous_online, then update last_online
       await userRef.update({
         status: "offline",
-        //previous_online: userData.last_online, // Store the old last_online value
-        //last_online: new Date().toISOString(),
       });
     } else {
-      // Just update status to "online"
       await userRef.update({
         status: "online",
-        previous_online: userData.last_online, // Store the old last_online value
+        previous_online: userData.last_online,
         last_online: new Date().toISOString(),
       });
     }
@@ -113,6 +101,34 @@ async function updateUserStatus(userId, status) {
   }
 }
 
+// Function to set all users to offline before the server shuts down
+async function setAllUsersOffline() {
+  try {
+    const usersRef = db.collection("users");
+    const snapshot = await usersRef.get();
+
+    const batch = db.batch();
+    snapshot.forEach((doc) => {
+      batch.update(doc.ref, { status: "offline" });
+    });
+
+    await batch.commit();
+    console.log("All users set to offline before shutdown.");
+  } catch (error) {
+    console.error("Error setting all users offline:", error);
+  }
+}
+
+// Ensure all users go offline before the server shuts down
+process.on("exit", setAllUsersOffline);
+process.on("SIGINT", async () => {
+  await setAllUsersOffline();
+  process.exit();
+});
+process.on("SIGTERM", async () => {
+  await setAllUsersOffline();
+  process.exit();
+});
 
 module.exports = {
   getUser,
