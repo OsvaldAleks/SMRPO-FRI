@@ -20,8 +20,7 @@ const SprintDetails = () => {
   const [stories, setStories] = useState([]);
   const [sprint, setSprint] = useState(null);
   const [error, setError] = useState(null);
-  const [isScrumMaster, setIsScrumMaster] = useState(false);
-  const [isDev, setIsDev] = useState(false);
+  const [role, setRole] = useState(null);
   const [showIncludeStories, setShowIncludeStories] = useState(false);
   const [selectedStory, setSelectedStory] = useState(null);
 
@@ -48,24 +47,21 @@ const SprintDetails = () => {
         if (!projectName || !user?.uid) return;
 
         const projectData = await getProject(projectName, user.uid);
-        const fetchedProjectId = projectData.project.id;
-        setProjectId(fetchedProjectId);
+        setProjectId(projectData.project.id);
 
-        // Check if user is a scrum master
-        if (projectData.project.scrumMasters?.some((sm) => sm.id === user.uid)) {
-          setIsScrumMaster(true);
-          setIsDev(false);
-        }
-        else if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
-          setIsDev(true);
-          setIsScrumMaster(false);
+        
+        if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
+          setRole("devs");
+        }else if (projectData.project.scrumMasters?.some((sm) => sm.id === user.uid)) {
+          setRole("scrumMasters");
+        }else {
+          setRole(null);
         }
       } catch (error) {
         console.error("Failed to fetch project:", error);
         setError("Failed to load project data. Please try again later.");
       }
     };
-
     fetchProjectInfo();
   }, [projectName, user]);
 
@@ -324,7 +320,7 @@ const SprintDetails = () => {
                 </tr>
               ))}
 
-              {isScrumMaster && (
+              {role === "scrumMaster" && (
                 <tr>
                   <td>
                     <div
@@ -347,8 +343,7 @@ const SprintDetails = () => {
       {selectedStory && (
         <StoryDetailsComponent
           story={selectedStory}
-          isScrumMaster={isScrumMaster}
-          isDev={isDev}
+          userRole={role}
           onClaim={updateStoryStatus}
         />
       )}

@@ -11,10 +11,7 @@ const UserStoryDetails = () => {
   const [story, setStory] = useState(null);
   const [error, setError] = useState(null);
   const { projects, loading: projectsLoading } = useContext(ProjectsContext);
-
-  const [isScrumMaster, setIsScrumMaster] = useState(false);
-  const [isDev, setIsDev] = useState(false);
-
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
     if (!storyId) return;
@@ -32,19 +29,10 @@ const UserStoryDetails = () => {
 
         const currentProject = projects.find(project => project.projectId === data.projectId);
 
-        console.log("Current Project:", currentProject);
-
-        // Check if the userRole is 'scrumMasters' and if user is part of that role
-        console.log("Current User:", user.userRole);
-        if (currentProject && currentProject.userRole === 'scrumMasters') {
-          setIsScrumMaster(true);
-          setIsDev(false);
-        } else if (currentProject && currentProject.userRole === 'devs') {
-          setIsDev(true);
-          setIsScrumMaster(false);
+        if (currentProject) {
+          setRole(currentProject.userRole);
         } else {
-          setIsDev(false);
-          setIsScrumMaster(false);
+          setRole(null);
         }
       })
       .catch((err) => setError(err.message));
@@ -55,7 +43,7 @@ const UserStoryDetails = () => {
   if (!story) return <p>Loading story details...</p>;
 
   return (
-    <StoryDetailsComponent story={story} isScrumMaster={isScrumMaster} isDev={isDev}/>
+    <StoryDetailsComponent story={story} userRole={role}/>
   );
 };
 

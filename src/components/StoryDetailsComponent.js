@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask } from "../api.js";
 import Input from "./Input.js";
 
-const UserStoryDetails = ({ story, isScrumMaster, isDev, onClaim }) => {
+const UserStoryDetails = ({ story, userRole, onClaim }) => {
   const { user, loading } = useAuth();
 
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
@@ -72,21 +72,20 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev, onClaim }) => {
 
   const handleClaim = async (taskIndex) => {
     try {
-  
       await claimSubtask(story.id, user.uid, taskIndex);
   
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
-
-      onClaim(story);
+  
+      if (typeof onClaim === 'function') {
+        onClaim(story);
+      }
     } catch (err) {
       console.error("Failed to claim/unclaim subtask:", err);
       alert("Failed to claim/unclaim subtask. Check console.");
     }
   };
-  
-  
 
   return (
     <div className="center--box">
@@ -99,7 +98,7 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev, onClaim }) => {
       <div>
         <label>
           <strong>Story Points: </strong>
-          {(isScrumMaster && (story.sprintId.length === 0)) ? (
+          {(userRole === "scrumMasters" && (story.sprintId.length === 0)) ? (
             <Input
               type="number"
               value={storyPointValue}
@@ -111,7 +110,7 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev, onClaim }) => {
           )}
         </label>
 
-        {isScrumMaster && hasChanges && (
+        {userRole === "scrumMasters" && hasChanges && (
           <span
             style={{
               color: "green",
@@ -157,7 +156,7 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev, onClaim }) => {
                   <th>Description</th>
                   <th>Time[h]</th>
                   <th>Dev</th>
-                  {isDev && <th>Claim</th>}
+                  {userRole === "devs" && <th>Claim</th>}
                 </tr>
               </thead>
               <tbody>
@@ -174,7 +173,7 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev, onClaim }) => {
                       <td>{sub.description}</td>
                       <td>{sub.timeEstimate}</td>
                       <td>{sub.devName || "N/A"}</td>
-                      {isDev && (
+                      {userRole === "devs" && (
                         <td>
                           <button onClick={() => handleClaim(idx)}>
                             {sub.developerId ? (sub.developerId == user.uid ? "Unclaim" : "Claim") : "Claim"}
@@ -185,7 +184,7 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev, onClaim }) => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={isDev ? "6" : "5"}>No subtasks yet.</td>
+                    <td colSpan={userRole === "devs" ? "6" : "5"}>No subtasks yet.</td>
                   </tr>
                 )}
               </tbody>
@@ -194,7 +193,7 @@ const UserStoryDetails = ({ story, isScrumMaster, isDev, onClaim }) => {
         </>
       )}
 
-      {(isScrumMaster || isDev) && (
+      {(userRole === "scrumMasters" || userRole === "devs") && (
         <div style={{ marginTop: "1rem" }}>
           {!showSubtaskForm ? (
             <button onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</button>
