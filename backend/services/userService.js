@@ -4,23 +4,25 @@ async function addUser(userData) {
   try {
     const { email, password, name, surname, username, system_rights, status } = userData;
 
+    // Validate required fields
     if (!email || !password || !name || !surname || !username || !system_rights || !status) {
-      console.log("Error: All fields are required.");
-      return;
+      throw new Error("All fields are required.");
     }
 
+    // Check if username already exists
     const usernameQuery = await db.collection("users").where("username", "==", username).get();
     if (!usernameQuery.empty) {
-      console.log("Error: Username already exists.");
-      return;
+      throw new Error("Username already exists.");
     }
 
+    // Create user in Firebase Authentication
     const userRecord = await auth.createUser({
       email,
       password,
       displayName: `${name} ${surname}`,
     });
 
+    // Add user to Firestore
     await db.collection("users").doc(userRecord.uid).set({
       id: userRecord.uid,
       name,
@@ -33,12 +35,23 @@ async function addUser(userData) {
       previous_online: null,
     });
 
-    console.log("User successfully created:", userRecord.uid);
+    // Return success response
+    return {
+      success: true,
+      message: "User successfully created.",
+      uid: userRecord.uid,
+    };
   } catch (error) {
+    // Log the error for debugging
     console.error("Error adding user:", error);
+
+    // Return error response
+    return {
+      success: false,
+      message: error.message || "Failed to add user.",
+    };
   }
 }
-
 async function getUser(userId) {
   try {
     const userRef = db.collection("users").doc(userId);

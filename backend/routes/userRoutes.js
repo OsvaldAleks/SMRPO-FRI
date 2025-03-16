@@ -27,10 +27,25 @@ router.get("/:userId", async (req, res) => {
 // Register a user
 router.post("/register", async (req, res) => {
   try {
-    const user = await addUser(req.body);
-    res.status(201).json({ message: "User registered successfully", user });
+    const result = await addUser(req.body);
+
+    if (result.success) {
+      // If the user was successfully created
+      res.status(201).json({ 
+        message: result.message, 
+        user: { uid: result.uid } 
+      });
+    } else {
+      // If there was an error (e.g., missing fields, duplicate username)
+      res.status(400).json({ 
+        error: result.message 
+      });
+    }
   } catch (error) {
-    res.status(500).json({ error: "Error registering user" });
+    console.error("Unexpected error in /register:", error);
+    res.status(500).json({ 
+      error: "An unexpected error occurred while registering the user." 
+    });
   }
 });
 
