@@ -101,7 +101,20 @@ const EditAccount = () => {
       setLoading(false);
     }
   };
-
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+  
+    // Extract day, month, year, hours, and minutes
+    const day = String(date.getUTCDate()).padStart(2, '0'); // Ensure two digits
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = date.getUTCFullYear();
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+  
+    // Format the date string
+    return `${day}. ${month}. ${year}. (${hours}:${minutes})`;
+  };
+  
   const handlePasswordChangeInput = (e) => {
     setNewPassword(e.target.value);
     setSuccessMessage("");
@@ -121,7 +134,7 @@ const EditAccount = () => {
         {user && (
           <div className={"block--element"}>
             <p>Email: <b>{user.email}</b></p>
-            <p>Last Login: <b>{previousOnline}</b></p>
+            <p>Last Login: <b>{formatDate(previousOnline)}</b></p>
           </div>
         )}
         <div className={"block--element"}>
