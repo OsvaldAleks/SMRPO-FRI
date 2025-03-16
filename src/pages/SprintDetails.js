@@ -49,12 +49,11 @@ const SprintDetails = () => {
         const projectData = await getProject(projectName, user.uid);
         setProjectId(projectData.project.id);
 
-        
         if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
           setRole("devs");
-        }else if (projectData.project.scrumMasters?.some((sm) => sm.id === user.uid)) {
+        } else if (projectData.project.scrumMasters?.some((sm) => sm.id === user.uid)) {
           setRole("scrumMasters");
-        }else {
+        } else {
           setRole(null);
         }
       } catch (error) {
@@ -93,17 +92,18 @@ const SprintDetails = () => {
           } else {
             newStatus = "Done"; // Stays "Done" if already done
           }
-  
+
           return { ...story, status: newStatus };
         }
         return story;
       })
     );
+    fetchStories();
   };
-  
+
   // Group them by status dynamically from updated stories state
   const sprintStories = stories.filter((story) => story.sprintId?.includes(sprintId));
-  
+
   const todoStories = sprintStories.filter((story) =>
     ["Backlog", "Product backlog"].includes(story.status)
   );
@@ -113,15 +113,10 @@ const SprintDetails = () => {
   const doneStories = sprintStories.filter((story) =>
     story.status === "Done"
   );
-  
-  
+
   const handleStoryClick = (story) => {
-    if (story.storyPoints === undefined || story.storyPoints === null) {
-      return;
-    }
     setSelectedStory((prevStory) => (prevStory?.id === story.id ? null : story));
   };
-  
 
   // Handle checkbox changes in the "Add story to sprint" panel
   const handleCheckboxChange = (storyId) => {
@@ -173,6 +168,9 @@ const SprintDetails = () => {
   const notInThisSprint = stories.filter(
     (story) => !story.sprintId?.includes(sprintId)
   );
+
+  // Determine the maximum number of rows needed
+  const maxRows = Math.max(todoStories.length, doingStories.length, doneStories.length);
 
   return (
     <>
@@ -263,64 +261,52 @@ const SprintDetails = () => {
               </tr>
             </thead>
             <tbody>
-              {/* Example: showing only stories with status = 'Product backlog' in the TODO column */}
-              {todoStories.map((story) => (
-                <tr key={story.id}>
-                  {/* If you truly want separate columns for each status, you'd do multiple <td> in the same row.
-                      But here's a simplified approach that each story occupies one row in the correct column. */}
+              {/* Render stories in rows */}
+              {Array.from({ length: maxRows }).map((_, rowIndex) => (
+                <tr key={rowIndex}>
                   <td>
-                    <div
-                      onClick={() => handleStoryClick(story)}
-                      className={`userStory ${selectedStory?.id === story.id ? "selected" : ""
-                        }`}
-                    >
-                      <h2>{story.name}</h2>
-                      <p>Priority: {story.priority}</p>
-                      <p>Business Value: {story.businessValue}</p>
-                    </div>
+                    {todoStories[rowIndex] && (
+                      <div
+                        onClick={() => handleStoryClick(todoStories[rowIndex])}
+                        className={`userStory ${selectedStory?.id === todoStories[rowIndex].id ? "selected" : ""
+                          }`}
+                      >
+                        <h2>{todoStories[rowIndex].name}</h2>
+                        <p>Priority: {todoStories[rowIndex].priority}</p>
+                        <p>Business Value: {todoStories[rowIndex].businessValue}</p>
+                      </div>
+                    )}
                   </td>
-                  <td></td>
-                  <td></td>
-                </tr>
-              ))}
-
-              {doingStories.map((story) => (
-                <tr key={story.id}>
-                  <td></td>
                   <td>
-                    <div
-                      onClick={() => handleStoryClick(story)}
-                      className={`userStory ${selectedStory?.id === story.id ? "selected" : ""
-                        }`}
-                    >
-                      <h2>{story.name}</h2>
-                      <p>Priority: {story.priority}</p>
-                      <p>Business Value: {story.businessValue}</p>
-                    </div>
+                    {doingStories[rowIndex] && (
+                      <div
+                        onClick={() => handleStoryClick(doingStories[rowIndex])}
+                        className={`userStory ${selectedStory?.id === doingStories[rowIndex].id ? "selected" : ""
+                          }`}
+                      >
+                        <h2>{doingStories[rowIndex].name}</h2>
+                        <p>Priority: {doingStories[rowIndex].priority}</p>
+                        <p>Business Value: {doingStories[rowIndex].businessValue}</p>
+                      </div>
+                    )}
                   </td>
-                  <td></td>
-                </tr>
-              ))}
-
-              {doneStories.map((story) => (
-                <tr key={story.id}>
-                  <td></td>
-                  <td></td>
                   <td>
-                    <div
-                      onClick={() => handleStoryClick(story)}
-                      className={`userStory ${selectedStory?.id === story.id ? "selected" : ""
-                        }`}
-                    >
-                      <h2>{story.name}</h2>
-                      <p>Priority: {story.priority}</p>
-                      <p>Business Value: {story.businessValue}</p>
-                    </div>
+                    {doneStories[rowIndex] && (
+                      <div
+                        onClick={() => handleStoryClick(doneStories[rowIndex])}
+                        className={`userStory ${selectedStory?.id === doneStories[rowIndex].id ? "selected" : ""
+                          }`}
+                      >
+                        <h2>{doneStories[rowIndex].name}</h2>
+                        <p>Priority: {doneStories[rowIndex].priority}</p>
+                        <p>Business Value: {doneStories[rowIndex].businessValue}</p>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
 
-              {role === "scrumMaster" && (
+              {role === "scrumMasters" && (
                 <tr>
                   <td>
                     <div
@@ -344,10 +330,9 @@ const SprintDetails = () => {
         <StoryDetailsComponent
           story={selectedStory}
           userRole={role}
-          onClaim={updateStoryStatus}
+          onUpdate={updateStoryStatus}
         />
       )}
-
     </>
   );
 };

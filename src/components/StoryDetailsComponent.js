@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask } from "../api.js";
 import Input from "./Input.js";
 
-const UserStoryDetails = ({ story, userRole, onClaim }) => {
+const UserStoryDetails = ({ story, userRole, onUpdate }) => {
   const { user, loading } = useAuth();
 
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
@@ -33,6 +33,9 @@ const UserStoryDetails = ({ story, userRole, onClaim }) => {
   const handleSaveStoryPoint = async () => {
     await updateStoryPoints(story.id, storyPointValue);
     setOriginalStoryPointValue(storyPointValue);
+    if (typeof onUpdate === 'function') {
+      onUpdate(story);
+    }
   };
 
   const hasChanges = storyPointValue !== originalStoryPointValue;
@@ -78,8 +81,8 @@ const UserStoryDetails = ({ story, userRole, onClaim }) => {
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
   
-      if (typeof onClaim === 'function') {
-        onClaim(story);
+      if (typeof onUpdate === 'function') {
+        onUpdate(story);
       }
     } catch (err) {
       console.error("Failed to claim/unclaim subtask:", err);
