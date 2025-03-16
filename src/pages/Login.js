@@ -71,7 +71,7 @@ const Login = () => {
           {error && <p className="p--alert">{error}</p>}
 
           <div className={"block--element"}>
-            <Button variant="primery" type="submit">Login</Button>
+            <Button className="btn--block" variant="primery" type="submit">Login</Button>
           </div>
         </form>
       </div>

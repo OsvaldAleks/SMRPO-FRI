@@ -152,7 +152,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
         </div>
         {error && <p className="p--alert">{error}</p>}
         {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-        <Button type="submit">Add Sprint</Button>
+        <Button className="btn--block" type="submit">Add Sprint</Button>
       </form>
     </div>
   );

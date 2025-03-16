@@ -1,20 +1,23 @@
 
 /* button */
 
-.btn{
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    text-decoration: none;
     border-radius: var(--border-radius);
     border: 0;
     cursor: pointer;
     text-align: center;
     font-size: 1.8rem;
     font-weight: 600;
-    padding: 1rem 3.5rem 1rem 3.5rem;
-    width:200px;
+    padding: 1rem 3.5rem;
+    width: 200px;
     text-transform: uppercase;
     white-space: nowrap;
     text-decoration: none;
     margin: 1rem;
-    
 }
 
 .btn--primery{

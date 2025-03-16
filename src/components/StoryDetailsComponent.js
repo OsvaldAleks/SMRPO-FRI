@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask } from "../api.js";
 import Input from "./Input.js";
+import Button from './Button.js';
 
 const UserStoryDetails = ({ story, userRole, onUpdate }) => {
   const { user, loading } = useAuth();
@@ -9,21 +10,21 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
   const [originalStoryPointValue, setOriginalStoryPointValue] = useState(story.storyPoints || "");
   const [subtasks, setSubtasks] = useState(story.subtasks || []);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     setStoryPointValue(story.storyPoints || "");
     setOriginalStoryPointValue(story.storyPoints || "");
     const fetchLatestStory = async () => {
-        try {
-          const updatedStory = await getUserStory(story.id);
-          setSubtasks(updatedStory.subtasks || []);
-        } catch (err) {
-          console.error("Failed to fetch latest subtasks:", err);
-        }
-      };
-      
-      fetchLatestStory();
-      
+      try {
+        const updatedStory = await getUserStory(story.id);
+        setSubtasks(updatedStory.subtasks || []);
+      } catch (err) {
+        console.error("Failed to fetch latest subtasks:", err);
+      }
+    };
+
+    fetchLatestStory();
   }, [story]);
 
   const handleStoryPointChange = (e) => {
@@ -48,7 +49,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
 
   const handleAddSubtask = async () => {
     if (!subtaskDescription || !subtaskTime) {
-      alert("Please fill out description and time estimate.");
+      setErrorMessage("Please fill out description and time estimate.");
       return;
     }
 
@@ -63,30 +64,30 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
       setSubtaskTime("");
       setSubtaskDeveloper("");
       setShowSubtaskForm(false);
+      setErrorMessage("");
 
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
-
     } catch (err) {
       console.error("Failed to add subtask:", err);
-      alert("Failed to add subtask. Check console.");
+      setErrorMessage(err.message);
     }
   };
 
   const handleClaim = async (taskIndex) => {
     try {
       await claimSubtask(story.id, user.uid, taskIndex);
-  
+
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
-  
+
       if (typeof onUpdate === 'function') {
         onUpdate(story);
       }
     } catch (err) {
       console.error("Failed to claim/unclaim subtask:", err);
-      alert("Failed to claim/unclaim subtask. Check console.");
+      alert("Failed to claim/unclaim subtask.");
     }
   };
 
@@ -167,20 +168,23 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
                   subtasks.map((sub, idx) => (
                     <tr key={idx}>
                       <td>
-                        <input 
-                          type="checkbox" 
-                          checked={sub.isDone} 
-                          disabled={!sub.developerId || sub.developerId !== user.uid} 
-                        />                     
+                        <input
+                          type="checkbox"
+                          checked={sub.isDone}
+                          disabled={!sub.developerId || sub.developerId !== user.uid}
+                        />
                       </td>
                       <td>{sub.description}</td>
                       <td>{sub.timeEstimate}</td>
                       <td>{sub.devName || "N/A"}</td>
                       {userRole === "devs" && (
                         <td>
-                          <button onClick={() => handleClaim(idx)}>
-                            {sub.developerId ? (sub.developerId == user.uid ? "Unclaim" : "Claim") : "Claim"}
-                          </button>
+                          <input
+                            type="checkbox"
+                            checked={!!sub.developerId && sub.developerId === user.uid}
+                            disabled={!!sub.developerId && sub.developerId !== user.uid}
+                            onChange={() => handleClaim(idx)}
+                          />
                         </td>
                       )}
                     </tr>
@@ -199,9 +203,14 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
       {(userRole === "scrumMasters" || userRole === "devs") && (
         <div style={{ marginTop: "1rem" }}>
           {!showSubtaskForm ? (
-            <button onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</button>
+            <Button className="btn--block" onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</Button>
           ) : (
             <>
+              {errorMessage && (
+                <div style={{ color: "red", marginBottom: "0.5rem" }}>
+                  {errorMessage}
+                </div>
+              )}
               <div style={{ marginBottom: "0.5rem" }}>
                 <label>Description: </label>
                 <Input
@@ -226,10 +235,10 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
                   onChange={(e) => setSubtaskDeveloper(e.target.value)}
                 />
               </div>
-              <button onClick={handleAddSubtask} style={{ marginRight: "0.5rem" }}>
+              <Button className="btn--block" onClick={handleAddSubtask}>
                 Save Subtask
-              </button>
-              <button onClick={() => setShowSubtaskForm(false)}>Cancel</button>
+              </Button>
+              <Button className="btn--block" onClick={() => setShowSubtaskForm(false)}>Cancel</Button>
             </>
           )}
         </div>

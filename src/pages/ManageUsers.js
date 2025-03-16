@@ -31,7 +31,7 @@ const ManageUsers = () => {
       <h1>Manage Users</h1>
       
       {/* Add User Button */}
-      <Link to="/addUser">
+      <Link to="/addUser" style={{ textDecoration: 'none', color: 'inherit' }}>
         <Button className="">Add User</Button>
       </Link>
 

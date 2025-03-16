@@ -49,14 +49,6 @@
   max-width: 1200px;
   position: relative;
  }
-
-
-
-
-
-
-
-
  
  /* form */
  .form--title{
@@ -152,8 +144,6 @@ position: absolute;
   overflow-x: auto;
   margin: 0.5rem 0 0 0;
 }
-
-
 
 /* Ensuring it doesn't break layout in smaller screens */
 @media (max-width: 768px) {

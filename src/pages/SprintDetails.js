@@ -221,7 +221,7 @@ const SprintDetails = () => {
               </tbody>
             </table>
           </div>
-          <Button onClick={handleAddToSprint}>Add Selected -></Button>
+          <Button className="btn--block" onClick={handleAddToSprint}>Add Selected -></Button>
         </div>
       )}
 
