@@ -55,7 +55,7 @@ const UserStoryDetails = () => {
   if (!story) return <p>Loading story details...</p>;
 
   return (
-    <StoryDetailsComponent story={story} isScrumMaster={isScrumMaster} isDev={{isDev}}/>
+    <StoryDetailsComponent story={story} isScrumMaster={isScrumMaster} isDev={isDev}/>
   );
 };
 
