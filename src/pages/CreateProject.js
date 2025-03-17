@@ -164,7 +164,7 @@ const CreateProject = () => {
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {success && <p style={{ color: "green" }}>{success}</p>}
-        <Button className="btn--block" type="submit">Create Project</Button>
+        <Button type="submit">Create Project</Button>
         <div className="responsive-table-container">
           <table className="responsive-table">
             <thead>

@@ -234,13 +234,14 @@ export const createUserStory = async (storyData) => {
     }
 
     if (!response.ok) {
-      throw new Error(result.error || "Failed to create user story");
+      const errorMessage = result.message || "Failed to create user story";
+      throw new Error(errorMessage);
     }
 
     return result;
   } catch (error) {
     console.error("Network error:", error.message);
-    return { error: true, message: error.message || "Network error" };
+    throw error;
   }
 };
 

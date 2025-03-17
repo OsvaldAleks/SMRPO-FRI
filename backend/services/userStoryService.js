@@ -12,27 +12,43 @@ async function createUserStory(
   businessValue,
   sprintId = [] // <-- default to empty array
 ) {
+  // Validate required fields
   if (!projectId || !name || !description || !acceptanceCriteria || !priority || businessValue === undefined) {
     throw new Error("All fields except sprintId are required.");
   }
 
+  // Validate acceptance criteria
   if (!Array.isArray(acceptanceCriteria) || acceptanceCriteria.length === 0) {
     throw new Error("Acceptance criteria must be a non-empty array.");
   }
 
+  // Validate business value
   if (typeof businessValue !== "number" || businessValue < 0) {
     throw new Error("Business value must be a positive number.");
   }
 
+  // Check if the project exists
   const projectRef = db.collection("projects").doc(projectId);
   const projectDoc = await projectRef.get();
   if (!projectDoc.exists) throw new Error("Project not found.");
 
+  // Check if a story with the same name already exists in the project
+  const storiesSnapshot = await db
+    .collection("userStories")
+    .where("projectId", "==", projectId)
+    .where("name", "==", name)
+    .get();
+
+  if (!storiesSnapshot.empty) {
+    throw new Error("A user story with the same name already exists in this project.");
+  }
+
+  // Create the new user story
   const storyRef = db.collection("userStories").doc();
   const story = {
     id: storyRef.id,
     projectId,
-    sprintId, // Now stores an array rather than a single sprint ID
+    sprintId,
     name,
     description,
     acceptanceCriteria,
@@ -44,7 +60,6 @@ async function createUserStory(
   await storyRef.set(story);
   return story;
 }
-
 async function getUserStory(storyId) {
   if (!storyId) {
     throw new Error("Story ID is required.");

@@ -10,6 +10,7 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
   const [acceptanceCriteria, setAcceptanceCriteria] = useState(['']); // Initialize with one empty field
   const [priority, setPriority] = useState('');
   const [businessValue, setBusinessValue] = useState('');
+  const [error, setError] = useState(''); // State to store error messages
 
   const handleAcceptanceCriteriaChange = (index, value) => {
     const updatedCriteria = [...acceptanceCriteria];
@@ -34,15 +35,33 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
       sprintId: [],  // default to an empty array
     };
 
-    if (validateStory(newStory)) {
-      await createUserStory(newStory);
+    try {
+      // Validate the story
+      if (!validateStory(newStory)) {
+        throw new Error("Invalid story data. Please check all fields.");
+      }
+
+      // Create the story
+      const response = await createUserStory(newStory);
+      if (response.error) {
+        setError(response.message);
+      }
+      else {
+      // Reset form fields
       setName('');
       setDescription('');
-      setAcceptanceCriteria(['']); // Reset to one empty field
+      setAcceptanceCriteria(['']);
       setPriority('');
       setBusinessValue('');
+      setError('');
+
+      // Notify parent component
+      onStoryAdded();
+      }
+    } catch (err) {
+      // Display error message
+      setError(err.message || "Failed to create user story. Please try again.");
     }
-    onStoryAdded();
   };
 
   return (
@@ -84,9 +103,8 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
                 placeholder={`Enter acceptance criteria ${index + 1}`}
               />
             </div>
-          ))}
-          
-          <Button type="button" onClick={addAcceptanceCriteriaField}>+</Button>
+          ))} 
+          <Button className="btn--block" type="button" onClick={addAcceptanceCriteriaField}>+</Button>
         </div>
 
         <div className="block--element">
@@ -111,8 +129,8 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
             placeholder="Enter the business value"
           />
         </div>
-        
-        <Button type="submit">Add User Story</Button>
+        {error && <div className="p--alert">{error}</div>} {/* Display error message */}
+        <Button className="btn--block" type="submit">Add User Story</Button>
       </form>
     </div>
   );
