@@ -91,6 +91,14 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
     }
   };
 
+  //TODO implement the following functions
+  const confirmStoryAsDone = async () => {
+    console.log("done");
+  }
+  const rejectStory = async () => {
+    console.log("reject");
+  }
+
   return (
     <div className="center--box">
       <h1>{story.name}</h1>
@@ -243,6 +251,13 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
           )}
         </div>
       )}
+      {(userRole === "productManagers") && (
+          //TODO add condition to only show once status is done
+          <>
+          <Button className="btn--block" onClick={() => confirmStoryAsDone(true)}>Accept Story</Button>
+          <Button className="btn--block" onClick={() => rejectStory(true)}>Reject Story</Button>
+          </>
+        )}
     </div>
   );
 };
