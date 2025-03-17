@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask } = require("../services/userStoryService");
+const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask } = require("../services/userStoryService");
 
 const router = express.Router();
 
@@ -123,5 +123,21 @@ router.put("/:storyId/claimSubtask", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+router.put("/:storyId/completeSubtask", async (req, res) => {
+  try {
+    const { storyId } = req.params;
+    const { subtaskIndex } = req.body;
+
+    const response = await completeSubtask(storyId,
+      subtaskIndex,
+    );
+
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 
 module.exports = router;

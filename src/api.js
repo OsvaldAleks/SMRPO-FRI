@@ -410,3 +410,33 @@ export const claimSubtask = async (storyId, userId, subtaskIndex) => {
     throw error;
   }
 };
+
+export const markSubtaskAsDone = async (storyId, subtaskIndex) => {
+  try {
+    const subtaskData = {
+      subtaskIndex,
+    };
+    const response = await fetch(`${API_URL}/userStories/${storyId}/completeSubtask`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(subtaskData),
+    });
+
+    const responseBody = await response.text();
+    let result;
+    try {
+      result = JSON.parse(responseBody);
+    } catch (error) {
+      throw new Error("Invalid JSON response from server");
+    }
+
+    if (!response.ok) {
+      throw new Error(result.message || "Failed to mark subtask as done");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Network error:", error.message);
+    throw error;
+  }
+};

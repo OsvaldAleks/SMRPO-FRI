@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask } from "../api.js";
+import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, markSubtaskAsDone } from "../api.js";
 import Input from "./Input.js";
 import Button from './Button.js';
 
@@ -68,6 +68,12 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
 
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
+
+      story.status = updatedStory.status;
+
+      if (typeof onUpdate === 'function') {
+        onUpdate(story);
+      }
     } catch (err) {
       console.error("Failed to add subtask:", err);
       setErrorMessage(err.message);
@@ -90,6 +96,26 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
       alert("Failed to claim/unclaim subtask.");
     }
   };
+
+  const handleMarkSubtaskAsDone = async (subtaskIndex) => {
+    try {
+      await markSubtaskAsDone(story.id, subtaskIndex);
+  
+      // Fetch the updated story to refresh the subtasks
+      const updatedStory = await getUserStory(story.id);
+      setSubtasks(updatedStory.subtasks || []);  
+      story.status = updatedStory.status;
+
+      // Notify the parent component (if needed)
+      if (typeof onUpdate === 'function') {
+        onUpdate(updatedStory);
+      }
+    } catch (err) {
+      console.error("Failed to mark subtask as done:", err);
+      setErrorMessage(err.message);
+    }
+  };
+  
 
   //TODO implement the following functions
   const confirmStoryAsDone = async () => {
@@ -178,8 +204,9 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
                       <td>
                         <input
                           type="checkbox"
-                          checked={sub.isDone}
+                          checked={sub.isDone || false}
                           disabled={!sub.developerId || sub.developerId !== user.uid}
+                          onChange={() => handleMarkSubtaskAsDone(idx)}
                         />
                       </td>
                       <td>{sub.description}</td>

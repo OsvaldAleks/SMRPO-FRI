@@ -60,6 +60,8 @@ async function createUserStory(
   await storyRef.set(story);
   return story;
 }
+
+// Get a user story by its ID
 async function getUserStory(storyId) {
   if (!storyId) {
     throw new Error("Story ID is required.");
@@ -182,16 +184,23 @@ async function addSubtaskToUserStory(storyId, subtaskData) {
     devName: subtaskData.developer || null,
   };
 
-  // Ensure the `subtasks` array exists before updating
+  // Check the status and update it if necessary
+  let newStatus = story.status;
+
+  if (story.status === "Done") {
+    newStatus = "In progress";  // If status is 'Done', change it to 'In progress'
+  }
+
   await storyRef.set(
     {
       subtasks: FieldValue.arrayUnion(newSubtask),
+      status: newStatus,
     },
     { merge: true }
   );
 
-  return { message: "Subtask added successfully!" };
-} 
+  return { message: "Subtask added successfully!", status: newStatus };
+}
 
 async function claimSubtask(storyId, userId, taskIndex) {
   if (!storyId || !userId || taskIndex === undefined) {
@@ -231,7 +240,20 @@ async function claimSubtask(storyId, userId, taskIndex) {
     }
   }
 
-  subtasks[taskIndex] = { ...subtask, developerId: newDeveloperId, devName: newDevName };
+  // If the subtask is unclaimed, set its isDone to false (initialize if undefined)
+  const updatedSubtask = {
+    ...subtask,
+    developerId: newDeveloperId,
+    devName: newDevName,
+    isDone: newDeveloperId ? subtask.isDone : (subtask.isDone !== undefined ? subtask.isDone : false), // Default to false if isDone doesn't exist
+  };
+
+  // Ensure no undefined values are present in subtasks
+  if (updatedSubtask.isDone === undefined || updatedSubtask.isDone) {
+    updatedSubtask.isDone = false; // Explicitly set to false if undefined
+  }
+
+  subtasks[taskIndex] = updatedSubtask;
 
   let newStatus = storyData.status;
 
@@ -243,14 +265,61 @@ async function claimSubtask(storyId, userId, taskIndex) {
     newStatus = anyClaimed ? "In progress" : "Product backlog";
   }
 
+  // Check if all subtasks are unclaimed to mark the story as undone
+  if (!subtasks.some(task => task.developerId)) {
+    newStatus = "In progress";
+  }
+
   await storyRef.update({ subtasks, status: newStatus });
 
   return {
     message: newDeveloperId ? "Subtask claimed successfully!" : "Subtask unclaimed successfully!",
-    subtask: subtasks[taskIndex],
+    subtask: updatedSubtask,
     status: newStatus,
   };
 }
+
+
+async function completeSubtask(storyId, subtaskIndex) {
+  try {
+    const storyRef = db.collection("userStories").doc(storyId);
+    const storyDoc = await storyRef.get();
+
+    if (!storyDoc.exists) {
+      return { success: false, message: "Story not found" };
+    }
+
+    const story = storyDoc.data();
+    const subtasks = story.subtasks || [];
+
+    if (subtaskIndex < 0 || subtaskIndex >= subtasks.length) {
+      return { success: false, message: "Invalid subtask index" };
+    }
+
+    // Toggle the completion status of the subtask
+    subtasks[subtaskIndex].isDone = !(subtasks[subtaskIndex].isDone || false);
+
+    // Check if all subtasks are completed
+    const allCompleted = subtasks.length > 0 && subtasks.every(task => task.isDone);
+
+    // Update the story status based on subtask completion
+    let newStatus = allCompleted ? "Done" : story.status;
+
+    // If it's being reverted from "Done", set status to "In progress"
+    if (!allCompleted && story.status === "Done") {
+      newStatus = "In progress";
+    }
+
+    await storyRef.update({ subtasks, status: newStatus });
+
+    return { success: true, message: "Subtask updated", subtasks, status: newStatus };
+  } catch (error) {
+    console.error("Error updating subtask:", error);
+    return { success: false, message: "Internal server error" };
+  }
+}
+
+
 
 
 module.exports = { 
@@ -261,7 +330,8 @@ module.exports = {
   getUserStoriesForProject,
   updateStoryPoints,
   addSubtaskToUserStory,
-  claimSubtask
+  claimSubtask,
+  completeSubtask
 };
 
 
