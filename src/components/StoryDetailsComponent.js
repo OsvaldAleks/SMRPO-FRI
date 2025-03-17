@@ -278,8 +278,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
           )}
         </div>
       )}
-      {(userRole === "productManagers") && (
-          //TODO add condition to only show once status is done
+      {(userRole === "productManagers" && story.status === "Done") && (
           <>
           <Button className="btn--block" onClick={() => confirmStoryAsDone(true)}>Accept Story</Button>
           <Button className="btn--block" onClick={() => rejectStory(true)}>Reject Story</Button>
