@@ -152,7 +152,6 @@ const EditAccount = () => {
         <div className={"block--element"} style={{ width: "500px" }}>
           {touchedFields.newPassword && newPassword.length < 12 && <p style={{ color: "red" }}>Password must be at least 12 characters long.</p>}
           {touchedFields.newPassword && newPassword.length > 128 && <p style={{ color: "red" }}>Password must be no more than 128 characters.</p>}
-          {touchedFields.newPassword && passwordStrength < 1 && <p style={{ color: "red" }}>Password is too weak. Please choose a stronger password.</p>}
           {touchedFields.newPassword && (
             <>
               <p>Password Strength: {["Weak", "Fair", "Good", "Strong", "Very Strong"][passwordStrength]}</p>
