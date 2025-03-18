@@ -85,27 +85,34 @@ const AddUserForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    // Clear previous feedback before showing new feedback
+    setError(""); 
+    setSuccess(""); 
+    setPasswordError(""); 
+  
+    // Validation checks
     if (!user.name || !user.surname || !user.email || !user.username || !user.password) {
       setError("All fields are required");
       return;
     }
-
+  
     if (passwordError) {
       return;
     }
-
+  
     const userData = {
       ...user,
       system_rights: user.system_rights ? "Admin" : "User",
     };
-
+  
     try {
       const response = await registerUser(userData);
-
-      if (response.success) {
-        setSuccess(response.message);
-        setError("");
+  
+      if (response.user) {
+        setSuccess(response.message);  // Set success feedback
+        
+        // Reset form state and password-related states
         setUser({
           name: "",
           surname: "",
@@ -115,18 +122,22 @@ const AddUserForm = () => {
           status: "Active",
           system_rights: false,
         });
-        setPasswordStrength(0);
-        setPasswordStrengthLabel("");
+        
+        setPasswordStrength(0);  // Reset password strength
+        setPasswordStrengthLabel("");  // Clear password strength label
+        setPasswordError("");  // Clear any password error message
       } else {
-        setError(response.message || response.error);
-        setSuccess("");
+        setError(response.message || response.error);  // Set error feedback if any
+        setSuccess("");  // Clear success message if error occurs
+        console.log(response)
       }
     } catch (err) {
       setError("An error occurred while registering the user");
-      setSuccess("");
+      setSuccess("");  // Clear success message in case of error
     }
   };
-
+  
+  
   const goBackHandler = () => {
     navigate(-1);
   };
