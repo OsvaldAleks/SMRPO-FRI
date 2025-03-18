@@ -109,13 +109,19 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
 
         <div className="block--element">
           <label className="block--element">Priority:</label>
-          <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-            <option value="">Select Priority</option>
-            <option value="must have">Must Have</option>
-            <option value="could have">Could Have</option>
-            <option value="should have">Should Have</option>
-            <option value="won't have this time">Won't Have This Time</option>
-          </select>
+          <div className="select-container">
+            <select
+              className="select"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+            >
+              <option value="">Select Priority</option>
+              <option value="must have">Must Have</option>
+              <option value="could have">Could Have</option>
+              <option value="should have">Should Have</option>
+              <option value="won't have this time">Won't Have This Time</option>
+            </select>
+          </div>
         </div>
 
         <div className="block--element">

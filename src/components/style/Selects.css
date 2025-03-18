@@ -1,0 +1,61 @@
+/* Style select to match input and extend width */
+.select {
+    border-radius: var(--border-radius);
+    padding: 1rem 2rem;
+    border: 1px solid var(--color-borders);
+    color: var(--color-headings);
+    font-size: 1.5rem;
+    outline: 0;
+    background: white;
+    appearance: none; /* Remove default system styles */
+    width: 100%; /* Make the select extend to full width */
+    cursor: pointer; /* Change the cursor to a clickable pointer */
+    box-sizing: border-box; /* Ensure padding/border are included in width calculation */
+}
+
+/* Shorter variant */
+.select--short {
+    padding: 0.05rem 1rem; /* Reduced padding */
+    font-size: 0.9rem; /* Smaller font size */
+    margin: 0;
+    width: auto; /* Allow automatic width for the short variant */
+}
+
+/* Ensure input group allows centering */
+.input--group {
+    display: flex;
+    justify-content: center; /* Center child elements horizontally */
+    width: 100%; /* Ensure the group is full width */
+}
+
+/* Make sure select inside input group is styled properly */
+.input--group .select {
+    border: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    width: 100%; /* Ensure select fills the available space */
+}
+
+/* Add a down arrow to indicate dropdown */
+.select-container {
+    position: relative;
+    display: inline-block;
+}
+
+.select-container::after {
+    content: "▼";
+    font-size: 1rem;
+    color: var(--color-body);
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; /* Prevent interaction */
+}
+
+/* Responsive adjustments */
+@media screen and (min-width: 1024px) {
+    .select {
+        font-size: 1.5rem;
+    }
+}

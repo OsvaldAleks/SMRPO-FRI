@@ -265,17 +265,20 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [] })
               </div>
               <div style={{ marginBottom: "0.5rem" }}>
                 <label>Developer (optional): </label>
-                <select
-                  value={subtaskDeveloper}
-                  onChange={(e) => setSubtaskDeveloper(e.target.value)}
-                >
-                  <option value="N/A">Unassigned</option>
-                  {projectDevelopers.map((dev) => (
-                    <option key={dev} value={dev}>
-                      {dev}
-                    </option>
-                  ))}
-                </select>
+                <div className="select-container">
+                  <select
+                    className="select"
+                    value={subtaskDeveloper}
+                    onChange={(e) => setSubtaskDeveloper(e.target.value)}
+                  >
+                    <option value="N/A">Unassigned</option>
+                    {projectDevelopers.map((dev) => (
+                      <option key={dev} value={dev}>
+                        {dev}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <Button className="btn--block" onClick={handleAddSubtask}>
