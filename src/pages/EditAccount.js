@@ -149,7 +149,7 @@ const EditAccount = () => {
           <label className={"block--element"}>Confirm New Password</label>
           <Input type="password" className={"block--element"} value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} onFocus={() => handleFieldFocus("confirmNewPassword")} required />
         </div>
-        <div className={"block--element"}>
+        <div className={"block--element"} style={{ width: "500px" }}>
           {touchedFields.newPassword && newPassword.length < 12 && <p style={{ color: "red" }}>Password must be at least 12 characters long.</p>}
           {touchedFields.newPassword && newPassword.length > 128 && <p style={{ color: "red" }}>Password must be no more than 128 characters.</p>}
           {touchedFields.newPassword && passwordStrength < 1 && <p style={{ color: "red" }}>Password is too weak. Please choose a stronger password.</p>}
