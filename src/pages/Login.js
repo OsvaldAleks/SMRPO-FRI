@@ -3,7 +3,6 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
-import { formatDate } from "../utils/storyUtils";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -37,14 +36,14 @@ const Login = () => {
           <h1>Login</h1>
 
           <div className={"block--element"}>
-            <label className={"block--element"}>Username</label>
+            <label className={"block--element"}>Email</label>
             <Input
               className={"block--element"}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="Enter your username or email"
+              placeholder="Enter email"
             />
           </div>
 

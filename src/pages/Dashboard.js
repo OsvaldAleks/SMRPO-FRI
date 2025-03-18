@@ -22,11 +22,11 @@ const Dashboard = () => {
           </div>
         </>
       ) : (
-        <>
+        <div className="center--box">
           <h1>HOMEPAGE</h1>
           <h2>You con log in here</h2>
-            <Button onClick={() => navigate(`/login`)}>LOGIN</Button>
-        </>
+            <Button className="btn--block" onClick={() => navigate(`/login`)}>LOGIN</Button>
+        </div>
       )}
     </div>
   );

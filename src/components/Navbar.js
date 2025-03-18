@@ -56,7 +56,10 @@ const Navbar = () => {
     <nav className={`nav ${isVisible ? "visible" : "hidden"}`}>
       <Link to="/" className="nav-title">Sprintly</Link>
       {!user ? (
-        <Link to="/login" className="login-link">Login</Link>
+        <div className="nav-right">
+          <Link to="/userDocumentation" className="edit-account-link">🯄</Link>
+          <Link to="/login" className="login-link">Login</Link>
+        </div>
       ) : (
         <>
           <List
@@ -69,6 +72,7 @@ const Navbar = () => {
           />
 
           <div className="nav-right">
+            <Link to="/userDocumentation" className="edit-account-link">🯄</Link>
             <Link to="/EditAccount" className="edit-account-link">Edit Account</Link>
             <span className="logout-link" onClick={handleLogout}>Logout</span>
           </div>

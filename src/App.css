@@ -38,6 +38,9 @@
   margin-top: 3rem;
  } 
 
+ .dashboard-wrapper .center--box{
+  padding-top: 1rem;
+ }
 .dashboard-wrapper h1,
 .dashboard-wrapper h2{
   width: 100%;

@@ -17,6 +17,7 @@ import SprintDetails from "./pages/SprintDetails";
 import UserStoryForm from "./pages/UserStoryForm";
 import UserStoryDetails from "./pages/UserStoryDetails";
 import UserStatusHandler from "./utils/UserStatusHandler"; // Import the new component
+import Documentation from "./pages/Documentation";
 import "./App.css";
 
 
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/EditAccount" element={<PrivateRoute><EditAccount /></PrivateRoute>} />
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/userDocumentation" element={<Documentation />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/newProject" element={<AdminRoute><CreateProject /></AdminRoute>} />
                 <Route path="/manageUsers" element={<AdminRoute><ManageUsers /></AdminRoute>} />

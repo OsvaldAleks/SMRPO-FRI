@@ -1,0 +1,43 @@
+.center--box details {
+    margin-bottom: 20px;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .center--box details:last-of-type {
+    border-bottom: none;
+  }
+  
+  .center--box summary {
+    font-size: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+    cursor: pointer;
+    color: var(--color-primary);
+    font-weight: bold;
+  }
+  
+  .center--box p, .center--box ul {
+    font-size: 0.9em;
+    text-align: left;
+    margin: 5px 20px 5px 20px;
+  }
+  
+  .center--box ul {
+    list-style-type: disc;
+  }
+  
+  .center--box .image-container {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .center--box img {
+    max-width: 100%;
+    object-fit: contain;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+    flex-shrink: 0;
+    flex-grow: 0;
+  }
