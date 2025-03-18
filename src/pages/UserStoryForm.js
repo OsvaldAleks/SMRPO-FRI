@@ -24,7 +24,7 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const newStory = {
       name,
       description,
@@ -34,35 +34,35 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
       projectId,     // automatically passed in from props
       sprintId: [],  // default to an empty array
     };
-
+  
     try {
       // Validate the story
       if (!validateStory(newStory)) {
         throw new Error("Invalid story data. Please check all fields.");
       }
-
+  
       // Create the story
       const response = await createUserStory(newStory);
       if (response.error) {
         setError(response.message);
-      }
-      else {
-      // Reset form fields
-      setName('');
-      setDescription('');
-      setAcceptanceCriteria(['']);
-      setPriority('');
-      setBusinessValue('');
-      setError('');
-
-      // Notify parent component
-      onStoryAdded();
+      } else {
+        // Reset form fields
+        setName('');
+        setDescription('');
+        setAcceptanceCriteria(['']);
+        setPriority('');
+        setBusinessValue('');
+        setError('');
+  
+        // Notify parent component
+        onStoryAdded(); // Ensure this is called
       }
     } catch (err) {
       // Display error message
-      setError(err.message || "Failed to create user story. Please try again.");
+      setError(err.message == 'A user story with the same name already exists in this project.' ? 'User stories should have unique names' : err.message || "Failed to create user story. Please try again.");
     }
   };
+  
 
   return (
     <div className="center--box">

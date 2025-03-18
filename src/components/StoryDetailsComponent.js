@@ -81,13 +81,31 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [] })
 
   const handleClaim = async (taskIndex) => {
     try {
+      console.log("Attempting to claim subtask at index:", taskIndex);
+      console.log("User ID:", user.uid);
+  
+      const updatedSubtasks = subtasks.map((subtask, index) => {
+        if (index === taskIndex) {
+          return {
+            ...subtask,
+            developerId: subtask.developerId ? null : user.uid, // Toggle claim
+            isDone: subtask.isDone ?? false, // Ensure isDone is defined
+          };
+        }
+        return subtask;
+      });
+  
       await claimSubtask(story.id, user.uid, taskIndex);
-
+      console.log("Subtask claim request sent successfully.");
+  
       const updatedStory = await getUserStory(story.id);
+      console.log("Updated story fetched:", updatedStory);
+  
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
-
-      if (typeof onUpdate === 'function') {
+  
+      if (typeof onUpdate === "function") {
+        console.log("Triggering onUpdate callback.");
         onUpdate(story);
       }
     } catch (err) {
@@ -95,7 +113,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [] })
       alert("Failed to claim/unclaim subtask.");
     }
   };
-
+  
   const handleMarkSubtaskAsDone = async (subtaskIndex) => {
     try {
       await markSubtaskAsDone(story.id, subtaskIndex);

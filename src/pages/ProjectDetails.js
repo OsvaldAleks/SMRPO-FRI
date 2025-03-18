@@ -140,20 +140,20 @@ const ProjectDetails = () => {
       if (!project) {
         throw new Error("Project data is not available.");
       }
-
+  
       const storiesData = await getStoriesForProject(project.id);
-
+  
       const sortedStories = (storiesData.stories || []).sort((a, b) => {
         return a.name.localeCompare(b.name);
       });
-
+  
       setStories(sortedStories);
     } catch (error) {
       console.error("Failed to fetch stories:", error);
       setError("Failed to load stories. Please try again later.");
     }
   };
-
+  
   const handleSprintClick = (sprintId) => {
     navigate(`/project/${projectName}/sprint/${sprintId}`);
   };
