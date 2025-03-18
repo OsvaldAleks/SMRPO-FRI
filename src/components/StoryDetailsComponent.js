@@ -4,7 +4,7 @@ import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, m
 import Input from "./Input.js";
 import Button from './Button.js';
 
-const UserStoryDetails = ({ story, userRole, onUpdate }) => {
+const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [] }) => {
   const { user, loading } = useAuth();
 
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
@@ -70,8 +70,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
       setSubtasks(updatedStory.subtasks || []);
 
       story.status = updatedStory.status;
-
-      if (typeof onUpdate === 'function') {
+      if (typeof onUpdate === "function") {
         onUpdate(story);
       }
     } catch (err) {
@@ -211,7 +210,9 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
                       </td>
                       <td>{sub.description}</td>
                       <td>{sub.timeEstimate}</td>
-                      <td>{sub.devName || "N/A"}</td>
+                      <td style={{ fontWeight: sub.devName ? 'bold' : 'normal', color: sub.suggestedDevName && !sub.devName ? 'gray' : 'inherit' }}>
+                        {sub.devName || sub.suggestedDevName || "N/A"}
+                      </td>                 
                       {userRole === "devs" && (
                         <td>
                           <input
@@ -264,12 +265,19 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
               </div>
               <div style={{ marginBottom: "0.5rem" }}>
                 <label>Developer (optional): </label>
-                <Input
-                  type="text"
+                <select
                   value={subtaskDeveloper}
                   onChange={(e) => setSubtaskDeveloper(e.target.value)}
-                />
+                >
+                  <option value="N/A">Unassigned</option>
+                  {projectDevelopers.map((dev) => (
+                    <option key={dev} value={dev}>
+                      {dev}
+                    </option>
+                  ))}
+                </select>
               </div>
+
               <Button className="btn--block" onClick={handleAddSubtask}>
                 Save Subtask
               </Button>

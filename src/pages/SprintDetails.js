@@ -23,6 +23,7 @@ const SprintDetails = () => {
   const [role, setRole] = useState(null);
   const [showIncludeStories, setShowIncludeStories] = useState(false);
   const [selectedStory, setSelectedStory] = useState(null);
+  const [developers, setDevelopers] = useState([]);
 
   // Track which user stories are selected (checked) for adding to sprint
   const [selectedStories, setSelectedStories] = useState([]);
@@ -48,6 +49,9 @@ const SprintDetails = () => {
 
         const projectData = await getProject(projectName, user.uid);
         setProjectId(projectData.project.id);
+
+        setDevelopers(projectData.project.devs?.map((dev) => dev.username) || []);
+        console.log(projectData.project.devs?.map((dev) => dev.username));
 
         if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
           setRole("devs");
@@ -331,6 +335,7 @@ const SprintDetails = () => {
           story={selectedStory}
           userRole={role}
           onUpdate={updateStoryStatus}
+          projectDevelopers={developers} 
         />
       )}
     </>
