@@ -1,44 +1,56 @@
+.center--box.documentation{
+  width: 50%;
+}
 .documentation details {
-    margin-bottom: 20px;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .documentation details:last-of-type {
-    border-bottom: none;
-  }
-  
-  .documentation summary {
+  margin-bottom: 20px;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.documentation details:last-of-type {
+  border-bottom: none;
+}
+
+.documentation summary {
+  font-size: 1em;
+  margin-bottom: 1em;
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+.documentation p, .documentation ul {
+  font-size: 0.9em;
+  text-align: left;
+  margin: 5px 20px 5px 20px;
+}
+
+.documentation ol {
     font-size: 1em;
-    margin-bottom: 1em;
     text-align: left;
-    cursor: pointer;
-    color: var(--color-primary);
-    font-weight: bold;
   }
   
-  .documentation p, .documentation ul {
-    font-size: 0.9em;
-    text-align: left;
-    margin: 5px 20px 5px 20px;
-  }
+.documentation ol li {
+  margin-bottom: 10px;  
+}
   
-  .documentation ul {
-    list-style-type: disc;
-  }
-  
-  .documentation .image-container {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .documentation img {
-    max-width: 100%;
-    max-height: 200px; /* Set a maximum height */
-    object-fit: contain; /* Maintain aspect ratio */
-    height: auto;
-    display: block;
-    margin: 10px 0;
-    flex-shrink: 0;
-    flex-grow: 0;
-  }
+.documentation ul{
+  list-style-type: disc;
+}
+
+.documentation .image-container {
+  display: flex;
+  gap: 10px;
+}
+
+.documentation img {
+  max-width: 100%;
+  max-height: 200px; /* Set a maximum height */
+  object-fit: contain; /* Maintain aspect ratio */
+  height: auto;
+  display: block;
+  margin: 10px 0;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
