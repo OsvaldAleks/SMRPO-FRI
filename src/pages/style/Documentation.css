@@ -1,14 +1,14 @@
-.center--box details {
+.documentation details {
     margin-bottom: 20px;
     padding: 10px;
     border-bottom: 1px solid #ddd;
   }
   
-  .center--box details:last-of-type {
+  .documentation details:last-of-type {
     border-bottom: none;
   }
   
-  .center--box summary {
+  .documentation summary {
     font-size: 1em;
     margin-bottom: 1em;
     text-align: left;
@@ -17,24 +17,25 @@
     font-weight: bold;
   }
   
-  .center--box p, .center--box ul {
+  .documentation p, .documentation ul {
     font-size: 0.9em;
     text-align: left;
     margin: 5px 20px 5px 20px;
   }
   
-  .center--box ul {
+  .documentation ul {
     list-style-type: disc;
   }
   
-  .center--box .image-container {
+  .documentation .image-container {
     display: flex;
     gap: 10px;
   }
   
-  .center--box img {
+  .documentation img {
     max-width: 100%;
-    object-fit: contain;
+    max-height: 200px; /* Set a maximum height */
+    object-fit: contain; /* Maintain aspect ratio */
     height: auto;
     display: block;
     margin: 10px 0;
