@@ -5,7 +5,7 @@ const Documentation = () => {
   const { user } = useAuth();
 
   return (
-    <div className="center--box">
+    <div className="center--box documentation">
       <h1>User Documentation</h1>
       {user && user.system_rights === "Admin" && (
         <>
@@ -58,8 +58,8 @@ const Documentation = () => {
                 <li>Unique name for your user story</li>
                 <li>enter a description</li>
                 <li>a list of acceptance criteria</li>
-                <li>select a <strong>Priority</strong> and</li>
-                <li><strong>Business Value</strong></li>
+                <li>select a Priority and</li>
+                <li>Business Value</li>
             </ul>
             <p>then hit <strong>Add User Story</strong>.</p>
         </details>
