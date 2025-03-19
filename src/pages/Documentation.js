@@ -1,5 +1,7 @@
 import { useAuth } from "../context/AuthContext";
 import './style/Documentation.css';
+import './style/Dashboard.css'
+import Button from "../components/Button";
 
 const Documentation = () => {
   const { user } = useAuth();
@@ -121,6 +123,12 @@ const Documentation = () => {
           </ol>
         </details>
       )}
+      <Button 
+          className="btn--block" 
+          onClick={() => window.open("https://docs.google.com/document/d/1f9KTCd6mzECuDHWpRKeVL3lC0npLNOJZM9B0BDC7Hls/edit?tab=t.0", "_blank")}
+          >
+          User role help
+      </Button>
     </div>
   );
 };
