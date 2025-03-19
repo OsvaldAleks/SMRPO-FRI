@@ -107,7 +107,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
 
   const handleVelocityChange = (e) => {
     const value = e.target.value;
-    if (/^\d*\.?\d{0,2}$/.test(value)) {
+    if (/^-?\d*\.?\d{0,2}$/.test(value)) {
       setVelocity(value);
     }
   };

@@ -22,9 +22,22 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
     setAcceptanceCriteria([...acceptanceCriteria, '']);
   };
 
+  const validateBusinessValue = (value) => {
+    const num = parseFloat(value);
+    if (isNaN(num) || num <= 0) return false;
+    if (!/^\d+(\.\d{1,2})?$/.test(value)) return false;
+    return true;
+  };
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
   
+    if (!validateBusinessValue(businessValue)) {
+      setError("Business value must be positive.");
+      return;
+    }  
+
     const newStory = {
       name,
       description,
@@ -129,8 +142,16 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
           <Input
             className="block--element"
             type="number"
+            step="0.01"
             value={businessValue} 
-            onChange={(e) => setBusinessValue(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+          
+              if (/^-?\d*\.?\d{0,2}$/.test(value)) {
+                setBusinessValue(value);
+              }
+            }}
+          
             required
             placeholder="Enter the business value"
           />
