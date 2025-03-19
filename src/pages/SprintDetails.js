@@ -150,10 +150,10 @@ const SprintDetails = () => {
   // Reset selectedStory if we hide the table
   useEffect(() => {
     if (!showIncludeStories && selectedStory) {
-      const notInThisSprint = stories.filter(
-        (story) => !story.sprintId?.includes(sprintId)
+      const notInAnySprint = stories.filter(
+        (story) => !story.sprintId || story.sprintId.length === 0
       );
-      if (notInThisSprint.some((story) => story.id === selectedStory.id)) {
+      if (notInAnySprint.some((story) => story.id === selectedStory.id)) {
         setSelectedStory(null);
       }
     }
@@ -169,8 +169,8 @@ const SprintDetails = () => {
    * because we can’t add them again. The 'hasPoints' check below
    * will disable the checkbox if missing story points.
    */
-  const notInThisSprint = stories.filter(
-    (story) => !story.sprintId?.includes(sprintId)
+  const notInAnySprint = stories.filter(
+    (story) => !story.sprintId || story.sprintId.length === 0
   );
 
   // Determine the maximum number of rows needed
@@ -190,7 +190,7 @@ const SprintDetails = () => {
                 </tr>
               </thead>
               <tbody>
-                {notInThisSprint.map((story) => {
+                {notInAnySprint.map((story) => {
                   const hasPoints =
                     story.storyPoints !== undefined && story.storyPoints !== null;
 
