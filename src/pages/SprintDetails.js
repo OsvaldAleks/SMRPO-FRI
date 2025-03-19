@@ -62,17 +62,13 @@ const SprintDetails = () => {
         const projectData = await getProject(projectName, user.uid);
         setProjectId(projectData.project.id);
 
-<<<<<<< HEAD
-        // Preverimo, ali je user dev, scrumMaster ali productManager
-        if (projectData.project.productManagers?.some(pm => pm.id === user.uid)) {
-          setRole("productManagers");
-        } else if (projectData.project.devs?.some(dev => dev.id === user.uid)) {
-=======
         setDevelopers(projectData.project.devs?.map((dev) => dev.username) || []);
         console.log(projectData.project.devs?.map((dev) => dev.username));
 
-        if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
->>>>>>> 4f053f42502d8461c7a0393d0d021c9721cd3d40
+        // Preverimo, ali je user dev, scrumMaster ali productManager
+        if (projectData.project.productManagers?.some(pm => pm.id === user.uid)) {
+          setRole("productManagers");
+        } else if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
           setRole("devs");
         } else if (projectData.project.scrumMasters?.some(sm => sm.id === user.uid)) {
           setRole("scrumMasters");
@@ -184,20 +180,8 @@ const SprintDetails = () => {
     return <div>Loading...</div>;
   }
 
-<<<<<<< HEAD
-  // Filtriramo zgodbe, ki NISO v tem sprintu (za dodajanje)
-  const notInThisSprint = stories.filter(
-    (story) => !story.sprintId?.includes(sprintId)
-=======
-  /**
-   * We no longer filter out stories missing storyPoints.
-   * We only filter out stories that are already in this sprint
-   * because we can’t add them again. The 'hasPoints' check below
-   * will disable the checkbox if missing story points.
-   */
   const notInAnySprint = stories.filter(
     (story) => !story.sprintId || story.sprintId.length === 0
->>>>>>> 4f053f42502d8461c7a0393d0d021c9721cd3d40
   );
 
   return (

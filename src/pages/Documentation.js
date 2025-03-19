@@ -108,6 +108,33 @@ const Documentation = () => {
               <li>Click <strong>SAVE SUBTASK</strong>.</li>
             </ol>
           </details>
+          <details>
+           <summary>Claim a task</summary>
+           <p>You need to be a <strong>developer</strong> in order to claim a Task.</p>
+           <p>In the Story overview under the Subtasks rubric claim a task, by selecting the <strong>checkmark</strong> in the Claim column.</p>
+         </details>
+         <details>
+           <summary>Unclaim a task</summary>
+           <p>You need to be a <strong>developer</strong> in order to claim a Task.</p>
+           <p>The task must be currently <strong>claimed by you</strong> for you to be able to unclaim it.</p>
+           <p>In the Story overview under the Subtasks rubric claim a task, by unselecting the <strong>checkmark</strong> in the Claim column.</p>
+         </details>
+         <details>
+           <summary>Mark a task as completed</summary>
+           <p>You need to be a <strong>developer</strong> in order to claim a Task.</p>
+           <p>The task must be currently <strong>claimed by you</strong> for you to be able to mark it as completed.</p>
+           <p>In the Story overview under the Subtasks rubric mark a task as completed, by selecting the <strong>checkmark</strong> in the Done column.</p>
+         </details>
+         <details>
+          <summary>Accept or reject a User Story</summary>
+          <p><em>You need to be a <strong>Product Manager</strong> to accept or reject a User Story.</em></p>
+          <p><em>The story must be in a past sprint.</em></p>
+          <p><em>The story must have the <strong>Done</strong> status.</em></p>
+          <p>Select a story with status <strong>Done</strong></p>
+          <p>Click on the <strong>Accept</strong> or <strong>Reject</strong> button.</p>
+          <p>Confirm selection by pressing <strong>Confirm Accept</strong> or  <strong>Confirm Reject</strong></p>
+        </details>
+
         </>
       ) : (
         <details>
