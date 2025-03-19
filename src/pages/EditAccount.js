@@ -33,6 +33,11 @@ const EditAccount = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [previousOnline, setPreviousOnline] = useState(null); // Store previous online time
 
+  // States for toggling password visibility
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const auth = getAuth();
   const navigate = useNavigate();
 
@@ -101,20 +106,17 @@ const EditAccount = () => {
       setLoading(false);
     }
   };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-  
-    // Extract day, month, year, hours, and minutes
-    const day = String(date.getUTCDate()).padStart(2, '0'); // Ensure two digits
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
     const year = date.getUTCFullYear();
     const hours = String(date.getUTCHours()).padStart(2, '0');
     const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-  
-    // Format the date string
     return `${day}. ${month}. ${year}. (${hours}:${minutes})`;
   };
-  
+
   const handlePasswordChangeInput = (e) => {
     setNewPassword(e.target.value);
     setSuccessMessage("");
@@ -139,15 +141,59 @@ const EditAccount = () => {
         )}
         <div className={"block--element"}>
           <label className={"block--element"}>Current Password</label>
-          <Input type="password" className={"block--element"} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+          <Input
+            type={showCurrentPassword ? "text" : "password"} // Toggle visibility
+            className={"block--element"}
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+          />
+          <label style={{ marginTop: "8px", display: "block" }}>
+            <input
+              type="checkbox"
+              checked={showCurrentPassword}
+              onChange={() => setShowCurrentPassword(!showCurrentPassword)}
+            />
+            Show Current Password
+          </label>
         </div>
         <div className={"block--element"}>
           <label className={"block--element"}>New Password</label>
-          <Input type="password" className={"block--element"} value={newPassword} onChange={handlePasswordChangeInput} onFocus={() => handleFieldFocus("newPassword")} required />
+          <Input
+            type={showNewPassword ? "text" : "password"} // Toggle visibility
+            className={"block--element"}
+            value={newPassword}
+            onChange={handlePasswordChangeInput}
+            onFocus={() => handleFieldFocus("newPassword")}
+            required
+          />
+          <label style={{ marginTop: "8px", display: "block" }}>
+            <input
+              type="checkbox"
+              checked={showNewPassword}
+              onChange={() => setShowNewPassword(!showNewPassword)}
+            />
+            Show New Password
+          </label>
         </div>
         <div className={"block--element"}>
           <label className={"block--element"}>Confirm New Password</label>
-          <Input type="password" className={"block--element"} value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} onFocus={() => handleFieldFocus("confirmNewPassword")} required />
+          <Input
+            type={showConfirmPassword ? "text" : "password"} // Toggle visibility
+            className={"block--element"}
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            onFocus={() => handleFieldFocus("confirmNewPassword")}
+            required
+          />
+          <label style={{ marginTop: "8px", display: "block" }}>
+            <input
+              type="checkbox"
+              checked={showConfirmPassword}
+              onChange={() => setShowConfirmPassword(!showConfirmPassword)}
+            />
+            Show Confirm Password
+          </label>
         </div>
         <div className={"block--element"} style={{ width: "500px" }}>
           {touchedFields.newPassword && newPassword.length < 12 && <p style={{ color: "red" }}>Password must be at least 12 characters long.</p>}

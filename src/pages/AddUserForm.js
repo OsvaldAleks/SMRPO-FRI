@@ -32,6 +32,7 @@ const AddUserForm = () => {
   const [success, setSuccess] = useState("");
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [passwordStrengthLabel, setPasswordStrengthLabel] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State for toggling password visibility
   const navigate = useNavigate();
 
   const isPasswordVulnerable = (password) => {
@@ -58,60 +59,59 @@ const AddUserForm = () => {
       setPasswordError("");
       return;
     }
-  
+
     if (password.length < 12 || password.length > 128) {
       setPasswordError("Password must be between 12 and 128 characters.");
       setPasswordStrength(0);
       return;
     }
-  
+
     const result = zxcvbn(password);
     setPasswordStrength(result.score);
     setPasswordStrengthLabel(result.feedback.suggestions.join(" "));
-  
+
     if (result.score < 1) {
       setPasswordError("Password is too weak. Please choose a stronger password.");
       return;
     }
-  
+
     if (isPasswordVulnerable(password)) {
       setPasswordError("This password is too common.");
       return;
     }
-  
+
     setPasswordError(""); // Clear error if everything is fine
   };
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Clear previous feedback before showing new feedback
-    setError(""); 
-    setSuccess(""); 
-    setPasswordError(""); 
-  
+    setError("");
+    setSuccess("");
+    setPasswordError("");
+
     // Validation checks
     if (!user.name || !user.surname || !user.email || !user.username || !user.password) {
       setError("All fields are required");
       return;
     }
-  
+
     if (passwordError) {
       return;
     }
-  
+
     const userData = {
       ...user,
       system_rights: user.system_rights ? "Admin" : "User",
     };
-  
+
     try {
       const response = await registerUser(userData);
-  
+
       if (response.user) {
-        setSuccess(response.message);  // Set success feedback
-        
+        setSuccess(response.message); // Set success feedback
+
         // Reset form state and password-related states
         setUser({
           name: "",
@@ -122,22 +122,21 @@ const AddUserForm = () => {
           status: "Active",
           system_rights: false,
         });
-        
-        setPasswordStrength(0);  // Reset password strength
-        setPasswordStrengthLabel("");  // Clear password strength label
-        setPasswordError("");  // Clear any password error message
+
+        setPasswordStrength(0); // Reset password strength
+        setPasswordStrengthLabel(""); // Clear password strength label
+        setPasswordError(""); // Clear any password error message
       } else {
-        setError(response.message || response.error);  // Set error feedback if any
-        setSuccess("");  // Clear success message if error occurs
-        console.log(response)
+        setError(response.message || response.error); // Set error feedback if any
+        setSuccess(""); // Clear success message if error occurs
+        console.log(response);
       }
     } catch (err) {
       setError("An error occurred while registering the user");
-      setSuccess("");  // Clear success message in case of error
+      setSuccess(""); // Clear success message in case of error
     }
   };
-  
-  
+
   const goBackHandler = () => {
     navigate(-1);
   };
@@ -202,12 +201,23 @@ const AddUserForm = () => {
           <label className="block--element">Password</label>
           <Input
             className="block--element"
-            type="password"
+            type={showPassword ? "text" : "password"} // Toggle between text and password
             name="password"
             placeholder="Enter Password"
             value={user.password}
             onChange={handleChange}
           />
+          {/* Show Password Toggle */}
+          <div style={{ marginTop: "8px" }}>
+            <label>
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={() => setShowPassword(!showPassword)}
+              />
+              Show Password
+            </label>
+          </div>
           {passwordError && <p style={{ color: "red" }}>{passwordError}</p>}
           {passwordStrengthLabel && <p>{passwordStrengthLabel}</p>}
           <p>Password Strength: {["Weak", "Fair", "Good", "Strong", "Very Strong"][passwordStrength]}</p>

@@ -15,6 +15,10 @@
   box-shadow: 0px 4px 8px rgba(63, 65, 70, 0.204);
  }
 
+ .center--box p{
+  margin: 1rem;
+ }
+
  .block--element{
   display: block;
   width: 100%;
