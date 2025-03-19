@@ -24,6 +24,7 @@ const ProjectDetails = () => {
 
   const navigate = useNavigate();
 
+  // Ob vsaki spremembi parametra projectName resetiramo state
   useEffect(() => {
     setProject(null);
     setSprints([]);
@@ -34,6 +35,7 @@ const ProjectDetails = () => {
     setError(null);
   }, [projectName]);
 
+  // Ko se user spremeni (auth) ali projectName, preberemo projekt
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -49,6 +51,7 @@ const ProjectDetails = () => {
     return () => unsubscribe();
   }, [projectName]);
 
+  // Ko imamo project, naložimo sprinte in user stories
   useEffect(() => {
     if (project) {
       fetchSprints();
@@ -57,34 +60,41 @@ const ProjectDetails = () => {
     }
   }, [project]);
 
+  // Naložimo "online/offline" status za vse člane projekta
   useEffect(() => {
     const fetchUserStatuses = async () => {
       if (!project) return;
-      const users = [...(project.devs || []), ...(project.scrumMasters || []), ...(project.productManagers || [])];
+      const users = [
+        ...(project.devs || []),
+        ...(project.scrumMasters || []),
+        ...(project.productManagers || []),
+      ];
       const statuses = {};
-      
-      for (const user of users) {
-        const statusData = await getUserStatus(user.id);
-        statuses[user.id] = statusData.status === "online";
+
+      for (const usr of users) {
+        const statusData = await getUserStatus(usr.id);
+        statuses[usr.id] = statusData.status === "online";
       }
-      
+
       setUserStatuses(statuses);
     };
-    
+
     fetchUserStatuses();
   }, [project]);
 
-  const renderUserWithStatus = (user) => (
-    <li key={user.id}>
-      <span style={{
-        height: "10px",
-        width: "10px",
-        backgroundColor: userStatuses[user.id] ? "green" : "red",
-        borderRadius: "50%",
-        display: "inline-block",
-        marginRight: "8px"
-      }}></span>
-      {user.username}
+  const renderUserWithStatus = (usr) => (
+    <li key={usr.id}>
+      <span
+        style={{
+          height: "10px",
+          width: "10px",
+          backgroundColor: userStatuses[usr.id] ? "green" : "red",
+          borderRadius: "50%",
+          display: "inline-block",
+          marginRight: "8px",
+        }}
+      />
+      {usr.username}
     </li>
   );
 
@@ -92,6 +102,7 @@ const ProjectDetails = () => {
     setShowForm((prev) => (prev === formType ? 0 : formType));
   };
 
+  // Preberemo projekt iz backenda
   const fetchProject = async (uid) => {
     try {
       if (!projectName) {
@@ -100,10 +111,11 @@ const ProjectDetails = () => {
 
       const projectData = await getProject(projectName, uid);
 
+      // Preverimo, ali je user Scrum Master ali Product Manager
       if (projectData.project.scrumMasters?.some((sm) => sm.id === uid)) {
         setIsScrumMaster(true);
       }
-      if (projectData.project.productManagers?.some((sm) => sm.id === uid)) {
+      if (projectData.project.productManagers?.some((pm) => pm.id === uid)) {
         setIsProductManager(true);
       }
 
@@ -116,6 +128,7 @@ const ProjectDetails = () => {
     }
   };
 
+  // Naložimo sprinte
   const fetchSprints = async () => {
     try {
       if (!project) {
@@ -124,9 +137,9 @@ const ProjectDetails = () => {
 
       const sprintsData = await getSprintsForProject(project.id);
 
-      const sortedSprints = (sprintsData.sprint || []).sort((a, b) => {
-        return a.start_date.localeCompare(b.start_date);
-      });
+      const sortedSprints = (sprintsData.sprint || []).sort((a, b) =>
+        a.start_date.localeCompare(b.start_date)
+      );
 
       setSprints(sortedSprints);
     } catch (error) {
@@ -135,6 +148,7 @@ const ProjectDetails = () => {
     }
   };
 
+  // Naložimo user stories
   const fetchStories = async () => {
     try {
       if (!project) {
@@ -143,9 +157,9 @@ const ProjectDetails = () => {
 
       const storiesData = await getStoriesForProject(project.id);
 
-      const sortedStories = (storiesData.stories || []).sort((a, b) => {
-        return a.name.localeCompare(b.name);
-      });
+      const sortedStories = (storiesData.stories || []).sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
 
       setStories(sortedStories);
     } catch (error) {
@@ -178,13 +192,21 @@ const ProjectDetails = () => {
     return <div>Project not found.</div>;
   }
 
-  const storiesWithSprint = stories.filter(story => story.sprintId && story.sprintId.length > 0);
-  const storiesWithoutSprint = stories.filter(story => !story.sprintId || story.sprintId.length === 0);
+  // Filtri za prikaz
+  const completedStories = stories.filter((story) => story.status === "Completed");
+  const storiesWithSprint = stories.filter(
+    (story) => story.sprintId && story.sprintId.length > 0 && story.status !== "Completed"
+  );
+  const storiesWithoutSprint = stories.filter(
+    (story) => (!story.sprintId || story.sprintId.length === 0) && story.status !== "Completed"
+  );
 
   return (
     <>
       <div className="center--box">
         <h1>{project.name}</h1>
+
+        {/* --- Members --- */}
         <h2>Members</h2>
         <div className="roles-grid">
           {/* Product Managers */}
@@ -224,6 +246,7 @@ const ProjectDetails = () => {
           </div>
         </div>
 
+        {/* --- Sprints --- */}
         <div>
           <h2>Sprints</h2>
           <div className="grid-container">
@@ -235,8 +258,12 @@ const ProjectDetails = () => {
                   onClick={() => handleSprintClick(sprint.id)}
                 >
                   <h2>Sprint #{index + 1}</h2>
-                  <p><strong>Start Date:</strong> {formatDate(sprint.start_date)}</p>
-                  <p><strong>End Date:</strong> {formatDate(sprint.end_date)}</p>
+                  <p>
+                    <strong>Start Date:</strong> {formatDate(sprint.start_date)}
+                  </p>
+                  <p>
+                    <strong>End Date:</strong> {formatDate(sprint.end_date)}
+                  </p>
                 </div>
               ))
             ) : (
@@ -253,12 +280,14 @@ const ProjectDetails = () => {
             )}
           </div>
 
+          {/* --- Stories --- */}
           <div>
             <h2>Stories</h2>
-              <h3>Stories not in Sprints</h3>
-              <div className="grid-container">
+
+            <h3>Stories not in Sprints</h3>
+            <div className="grid-container">
               {storiesWithoutSprint.length > 0 ? (
-                storiesWithoutSprint.map((story, index) => (
+                storiesWithoutSprint.map((story) => (
                   <div
                     key={story.id}
                     className="grid-item story"
@@ -268,9 +297,11 @@ const ProjectDetails = () => {
                     <p>{story.description}</p>
                   </div>
                 ))
-              ) : (!(isScrumMaster || isProductManager) && (
-                <p>No stories without sprint found for this project.</p>
-              ))}
+              ) : (
+                !(isScrumMaster || isProductManager) && (
+                  <p>No stories without sprint found for this project.</p>
+                )
+              )}
               {/* Add Story Button */}
               {(isScrumMaster || isProductManager) && (
                 <button
@@ -280,12 +311,12 @@ const ProjectDetails = () => {
                   <span className={showForm === 2 ? "rotated" : ""}>+</span>
                 </button>
               )}
+            </div>
 
-              </div>
-              <h3>Stories in Sprints</h3>
-              <div className="grid-container">
+            <h3>Stories in Sprints</h3>
+            <div className="grid-container">
               {storiesWithSprint.length > 0 ? (
-                storiesWithSprint.map((story, index) => (
+                storiesWithSprint.map((story) => (
                   <div
                     key={story.id}
                     className="grid-item story"
@@ -298,11 +329,31 @@ const ProjectDetails = () => {
               ) : (
                 <p>No stories with sprint found for this project.</p>
               )}
-              </div>
+            </div>
+
+            {/* --- NEW: Completed Stories --- */}
+            <h3>Completed Stories</h3>
+            <div className="grid-container">
+              {completedStories.length > 0 ? (
+                completedStories.map((story) => (
+                  <div
+                    key={story.id}
+                    className="grid-item story"
+                    onClick={() => handleStoryClick(story.id)}
+                  >
+                    <h2>{story.name}</h2>
+                    <p>{story.description}</p>
+                  </div>
+                ))
+              ) : (
+                <p>No completed stories found for this project.</p>
+              )}
             </div>
           </div>
         </div>
+      </div>
 
+      {/* --- Add Sprint Form (pop-up) --- */}
       {showForm === 1 && (
         <AddSprintForm
           projectId={project.id}
@@ -314,6 +365,7 @@ const ProjectDetails = () => {
         />
       )}
 
+      {/* --- Add Story Form (pop-up) --- */}
       {showForm === 2 && (
         <UserStoryForm
           projectId={project.id}

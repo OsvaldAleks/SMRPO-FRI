@@ -440,3 +440,26 @@ export const markSubtaskAsDone = async (storyId, subtaskIndex) => {
     throw error;
   }
 };
+
+export const evaluateUserStory = async (storyId, isAccepted, comment, userId) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/evaluate`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        isAccepted,
+        comment,
+        userId,        // <-- tukaj le userId
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to evaluate user story");
+    }
+    return data;
+  } catch (error) {
+    console.error("Error evaluating user story:", error);
+    throw error;
+  }
+};

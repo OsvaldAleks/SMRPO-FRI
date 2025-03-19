@@ -319,8 +319,115 @@ async function completeSubtask(storyId, subtaskIndex) {
   }
 }
 
+async function evaluateUserStory(storyId, isAccepted, comment, productManagerId) {
+  // 1) Preverimo, ali imamo vse podatke
+  if (!storyId) {
+    throw new Error("Story ID is required.");
+  }
+  if (typeof isAccepted !== "boolean") {
+    throw new Error("isAccepted mora biti true ali false.");
+  }
 
+  // 2) Dobimo user story iz baze
+  const storyRef = db.collection("userStories").doc(storyId);
+  const storyDoc = await storyRef.get();
+  if (!storyDoc.exists) {
+    throw new Error("User story not found.");
+  }
+  const storyData = storyDoc.data();
 
+  // 3) Mora imeti vsaj en sprintId, da ga lahko ocenjujemo
+  if (!storyData.sprintId || storyData.sprintId.length === 0) {
+    throw new Error("User story ni v nobenem sprintu.");
+  }
+
+  // 4) Preverimo, ali je sprint že končan
+  //    Ker je v zgodbi lahko več sprintov, bomo preverili,
+  //    ali je vsaj eden od njih zares zaključen (end_date < zdaj).
+  const sprintIds = storyData.sprintId;
+  const now = new Date();
+
+  const sprintsSnap = await db
+    .collection("sprints")
+    .where(admin.firestore.FieldPath.documentId(), "in", sprintIds)
+    .get();
+
+  if (sprintsSnap.empty) {
+    throw new Error("Noben sprint znotraj user storyja ne obstaja v bazi.");
+  }
+
+  // Preverimo, ali obstaja vsaj en sprint, ki je končan
+  let sprintEnded = false;
+  sprintsSnap.forEach((doc) => {
+    const sprintData = doc.data();
+    if (sprintData.end_date && sprintData.end_date < now.toISOString()) {
+      sprintEnded = true;
+    }
+  });
+
+  if (!sprintEnded) {
+    throw new Error("Sprint še ni končan, ocenjevanje ni mogoče.");
+  }
+
+  // 5) Glede na isAccepted = true/false pripravimo posodobitvena polja
+  const updateData = {
+    evaluatedAt: new Date().toISOString(),
+    evaluatedBy: productManagerId || null, // Lahko shranimo, kdo je ocenil
+  };
+
+  if (isAccepted) {
+    // Sprejeta zgodba -> recimo, da v bazi nastavimo "acceptanceStatus" ali "status"
+    // in jo označimo kot končano ter pustimo sprintId zaradi zgodovine.
+    // Za prikaz na "Completed stories" bo dovolj recimo "acceptanceStatus = ACCEPTED"
+    updateData.acceptanceStatus = "ACCEPTED";
+    updateData.rejectionComment = admin.firestore.FieldValue.delete(); // brišemo morebitni stari komentar
+    updateData.status = "Completed"; // ali kakšen drug status po želji
+  } else {
+    // Zavrnjena zgodba -> nujno shranimo comment, da se vidi v podrobnem pogledu
+    // in jo odstranimo iz sprinta, da se vrne v "stories not in sprint"
+    updateData.acceptanceStatus = "REJECTED";
+    updateData.rejectionComment = comment || "No comment provided";
+    updateData.status = "Rejected";
+
+    // Zgodbo odstranimo iz polja sprintId
+    // Če jih je več, jih vse odstranimo
+    for (const sId of sprintIds) {
+      await storyRef.update({
+        sprintId: FieldValue.arrayRemove(sId),
+      });
+    }
+  }
+
+  // 6) Izvedemo update
+  await storyRef.set(updateData, { merge: true });
+
+  return {
+    success: true,
+    message: isAccepted
+      ? "User story je bila uspešno sprejeta."
+      : "User story je bila zavrnjena.",
+  };
+}
+
+async function forceAssignUserStoryToSprint(storyId, sprintId) {
+  if (!storyId || !sprintId) {
+    throw new Error("Story ID and Sprint ID are required.");
+  }
+
+  const storyRef = db.collection("userStories").doc(storyId);
+  const storyDoc = await storyRef.get();
+  if (!storyDoc.exists) {
+    throw new Error("User story not found.");
+  }
+
+  // Bypass any date checks:
+  await storyRef.update({
+    sprintId: FieldValue.arrayUnion(sprintId),
+    status: "Sprint backlog", // ali po želji
+  });
+
+  return { message: "User story forcibly assigned to sprint (even if ended)." };
+}
 
 module.exports = { 
   createUserStory, 
@@ -331,7 +438,9 @@ module.exports = {
   updateStoryPoints,
   addSubtaskToUserStory,
   claimSubtask,
-  completeSubtask
+  completeSubtask,
+  evaluateUserStory,
+  forceAssignUserStoryToSprint
 };
 
 

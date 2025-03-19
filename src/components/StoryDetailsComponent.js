@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, markSubtaskAsDone } from "../api.js";
+import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, markSubtaskAsDone, evaluateUserStory } from "../api.js";
 import Input from "./Input.js";
 import Button from './Button.js';
 
-const UserStoryDetails = ({ story, userRole, onUpdate }) => {
+const UserStoryDetails = ({ story, userRole, onUpdate, fromSprintView = false, sprintEnded = false, }) => {
   const { user, loading } = useAuth();
 
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
   const [originalStoryPointValue, setOriginalStoryPointValue] = useState(story.storyPoints || "");
   const [subtasks, setSubtasks] = useState(story.subtasks || []);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const [showAcceptForm, setShowAcceptForm] = useState(false);
+  const [acceptComment, setAcceptComment] = useState("");
+
+  const [showRejectForm, setShowRejectForm] = useState(false);
+  const [rejectComment, setRejectComment] = useState("");
 
   useEffect(() => {
     setStoryPointValue(story.storyPoints || "");
@@ -100,10 +106,10 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
   const handleMarkSubtaskAsDone = async (subtaskIndex) => {
     try {
       await markSubtaskAsDone(story.id, subtaskIndex);
-  
+
       // Fetch the updated story to refresh the subtasks
       const updatedStory = await getUserStory(story.id);
-      setSubtasks(updatedStory.subtasks || []);  
+      setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
 
       // Notify the parent component (if needed)
@@ -115,15 +121,50 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
       setErrorMessage(err.message);
     }
   };
-  
 
-  //TODO implement the following functions
-  const confirmStoryAsDone = async () => {
-    console.log("done");
-  }
-  const rejectStory = async () => {
-    console.log("reject");
-  }
+
+  const confirmStoryAsDone = () => {
+    setShowAcceptForm(true);  // Odpremo formo za accept
+    setAcceptComment("");     // Resetiramo komentar
+  };
+
+  const handleAcceptSubmit = async () => {
+    try {
+      // Pokličemo evaluateUserStory
+      await evaluateUserStory(story.id, true, acceptComment);
+      const updatedStory = await getUserStory(story.id);
+      if (typeof onUpdate === 'function') {
+        onUpdate(updatedStory);
+      }
+      alert("Story accepted!");
+    } catch (error) {
+      setErrorMessage(error.message);
+    } finally {
+      setShowAcceptForm(false);
+      setAcceptComment("");
+    }
+  };
+
+  const rejectStory = () => {
+    setShowRejectForm(true);
+    setRejectComment("");
+  };
+
+  const handleRejectSubmit = async () => {
+    try {
+      await evaluateUserStory(story.id, false, rejectComment);
+      const updatedStory = await getUserStory(story.id);
+      if (typeof onUpdate === 'function') {
+        onUpdate(updatedStory);
+      }
+      alert("Story rejected!");
+    } catch (error) {
+      setErrorMessage(error.message);
+    } finally {
+      setShowRejectForm(false);
+      setRejectComment("");
+    }
+  };
 
   return (
     <div className="center--box">
@@ -132,6 +173,13 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
       <p><strong>Priority:</strong> {story.priority}</p>
       <p><strong>Business Value:</strong> {story.businessValue}</p>
       <p><strong>Status:</strong> {story.status}</p>
+
+      {/* 1) Dodamo prikaz, če je status Rejected in obstaja rejectionComment */}
+      {story.status === "Rejected" && story.rejectionComment && (
+        <p>
+          <strong>Rejection Comment:</strong> {story.rejectionComment}
+        </p>
+      )}
 
       <div>
         <label>
@@ -278,14 +326,48 @@ const UserStoryDetails = ({ story, userRole, onUpdate }) => {
           )}
         </div>
       )}
-      {(userRole === "productManagers" && story.status === "Done") && (
-          <>
-          <Button className="btn--block" onClick={() => confirmStoryAsDone(true)}>Accept Story</Button>
-          <Button className="btn--block" onClick={() => rejectStory(true)}>Reject Story</Button>
-          </>
-        )}
+      {/* Accept/Reject buttons, if in sprint view + sprint ended + user is product manager */}
+      {fromSprintView && sprintEnded && userRole === "productManagers" && (
+        <div style={{ marginTop: "1rem", display: "flex", gap: "1rem" }}>
+          <Button onClick={confirmStoryAsDone}>Accept Story</Button>
+          <Button onClick={rejectStory}>Reject Story</Button>
+        </div>
+      )}
+
+      {/* Forma za Accept Story: */}
+      {showAcceptForm && (
+        <div style={{ marginTop: "1rem" }}>
+          <h4>Accept Story</h4>
+          <label>Comment (optional):</label>
+          <Input
+            type="text"
+            value={acceptComment}
+            onChange={(e) => setAcceptComment(e.target.value)}
+          />
+          <div style={{ marginTop: "0.5rem", display: "flex", gap: "1rem" }}>
+            <Button onClick={handleAcceptSubmit}>Confirm Accept</Button>
+            <Button onClick={() => setShowAcceptForm(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Forma za Reject Story: */}
+      {showRejectForm && (
+        <div style={{ marginTop: "1rem" }}>
+          <h4>Reject Story</h4>
+          <label>Reason:</label>
+          <Input
+            type="text"
+            value={rejectComment}
+            onChange={(e) => setRejectComment(e.target.value)}
+          />
+          <div style={{ marginTop: "0.5rem", display: "flex", gap: "1rem" }}>
+            <Button onClick={handleRejectSubmit}>Confirm Reject</Button>
+            <Button onClick={() => setShowRejectForm(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
 export default UserStoryDetails;

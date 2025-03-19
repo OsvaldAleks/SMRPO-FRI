@@ -7,10 +7,10 @@ import {
   getStoriesForProject,
   assignUserStoryToSprint,
 } from "../api.js";
-import Button from '../components/Button.js'
+import Button from '../components/Button.js';
 import { formatDate } from "../utils/storyUtils.js";
 import "./style/SprintDetails.css";
-import StoryDetailsComponent from '../components/StoryDetailsComponent.js'
+import StoryDetailsComponent from '../components/StoryDetailsComponent.js';
 
 const SprintDetails = () => {
   const { projectName, sprintId } = useParams();
@@ -27,6 +27,17 @@ const SprintDetails = () => {
   // Track which user stories are selected (checked) for adding to sprint
   const [selectedStories, setSelectedStories] = useState([]);
 
+  // Ugotovimo, ali je sprint končan
+  let sprintEnded = false;
+  if (sprint && sprint.end_date) {
+    // Če je end_date string, preverimo, ali je manjši od trenutnega datuma
+    const endAsDate = new Date(sprint.end_date);
+    if (endAsDate < new Date()) {
+      sprintEnded = true;
+    }
+  }
+
+  // Fetch Sprint Data
   useEffect(() => {
     if (sprintId) {
       const fetchSprintData = async () => {
@@ -41,6 +52,7 @@ const SprintDetails = () => {
     }
   }, [sprintId]);
 
+  // Fetch Project Info, da ugotovimo projectId in vlogo (role)
   useEffect(() => {
     const fetchProjectInfo = async () => {
       try {
@@ -49,9 +61,12 @@ const SprintDetails = () => {
         const projectData = await getProject(projectName, user.uid);
         setProjectId(projectData.project.id);
 
-        if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
+        // Preverimo, ali je user dev, scrumMaster ali productManager
+        if (projectData.project.productManagers?.some(pm => pm.id === user.uid)) {
+          setRole("productManagers");
+        } else if (projectData.project.devs?.some(dev => dev.id === user.uid)) {
           setRole("devs");
-        } else if (projectData.project.scrumMasters?.some((sm) => sm.id === user.uid)) {
+        } else if (projectData.project.scrumMasters?.some(sm => sm.id === user.uid)) {
           setRole("scrumMasters");
         } else {
           setRole(null);
@@ -64,8 +79,8 @@ const SprintDetails = () => {
     fetchProjectInfo();
   }, [projectName, user]);
 
+  // Ko imamo projectId, pridobimo user stories
   useEffect(() => {
-    // Now that we have projectId, fetch user stories
     fetchStories();
   }, [projectId]);
 
@@ -79,11 +94,12 @@ const SprintDetails = () => {
     }
   };
 
+  // Če posodobimo status zgodbe, po potrebi reloadamo stories
   const updateStoryStatus = (storyId) => {
     setStories((prevStories) =>
       prevStories.map((story) => {
         if (story.id === storyId) {
-          // Determine the new status based on current status
+          // Poljubno spreminjamo status, če bi želeli
           let newStatus;
           if (["Backlog", "Product backlog"].includes(story.status)) {
             newStatus = "In progress";
@@ -92,7 +108,6 @@ const SprintDetails = () => {
           } else {
             newStatus = "Done"; // Stays "Done" if already done
           }
-
           return { ...story, status: newStatus };
         }
         return story;
@@ -101,24 +116,22 @@ const SprintDetails = () => {
     fetchStories();
   };
 
-  // Group them by status dynamically from updated stories state
+  // Filtriramo zgodbe, ki so v tem sprintu
   const sprintStories = stories.filter((story) => story.sprintId?.includes(sprintId));
 
+  // Razdelimo v stolpce
   const todoStories = sprintStories.filter((story) =>
     ["Backlog", "Product backlog"].includes(story.status)
   );
-  const doingStories = sprintStories.filter((story) =>
-    story.status === "In progress"
-  );
-  const doneStories = sprintStories.filter((story) =>
-    story.status === "Done"
-  );
+  const doingStories = sprintStories.filter((story) => story.status === "In progress");
+  const doneStories = sprintStories.filter((story) => story.status === "Done");
 
+  // Klik na zgodbo -> prikaz ali zapiranje detail pogleda
   const handleStoryClick = (story) => {
     setSelectedStory((prevStory) => (prevStory?.id === story.id ? null : story));
   };
 
-  // Handle checkbox changes in the "Add story to sprint" panel
+  // Checkbox za dodajanje zgodb
   const handleCheckboxChange = (storyId) => {
     setSelectedStories((prevSelected) =>
       prevSelected.includes(storyId)
@@ -127,6 +140,7 @@ const SprintDetails = () => {
     );
   };
 
+  // Gumb -> dodaj zgodbice v sprint
   const handleAddToSprint = async () => {
     if (!sprintId || selectedStories.length === 0) return;
 
@@ -136,14 +150,14 @@ const SprintDetails = () => {
       }
       setSelectedStories([]);
       setShowIncludeStories(false);
-      fetchStories(); // re-fetch to see updated statuses
+      fetchStories();
     } catch (err) {
       console.error("Failed to add stories to sprint:", err);
       setError("Failed to add selected stories to sprint. Check console.");
     }
   };
 
-  // Reset selectedStory if we hide the table
+  // Če zapremo panel showIncludeStories in je bila izbrana zgodba takšna, ki ni v tem sprintu, jo deselectamo
   useEffect(() => {
     if (!showIncludeStories && selectedStory) {
       const notInThisSprint = stories.filter(
@@ -155,22 +169,17 @@ const SprintDetails = () => {
     }
   }, [showIncludeStories, selectedStory, stories, sprintId]);
 
+  // Izračun, koliko vrstic rabimo
+  const maxRows = Math.max(todoStories.length, doingStories.length, doneStories.length);
+
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  /**
-   * We no longer filter out stories missing storyPoints.
-   * We only filter out stories that are already in this sprint
-   * because we can’t add them again. The 'hasPoints' check below
-   * will disable the checkbox if missing story points.
-   */
+  // Filtriramo zgodbe, ki NISO v tem sprintu (za dodajanje)
   const notInThisSprint = stories.filter(
     (story) => !story.sprintId?.includes(sprintId)
   );
-
-  // Determine the maximum number of rows needed
-  const maxRows = Math.max(todoStories.length, doingStories.length, doneStories.length);
 
   return (
     <>
@@ -189,7 +198,6 @@ const SprintDetails = () => {
                 {notInThisSprint.map((story) => {
                   const hasPoints =
                     story.storyPoints !== undefined && story.storyPoints !== null;
-
                   return (
                     <tr
                       key={story.id}
@@ -198,7 +206,7 @@ const SprintDetails = () => {
                       <td>
                         <input
                           type="checkbox"
-                          disabled={!hasPoints} // disable if missing story points
+                          disabled={!hasPoints}
                           checked={selectedStories.includes(story.id)}
                           onChange={() => handleCheckboxChange(story.id)}
                           style={{ cursor: hasPoints ? "pointer" : "not-allowed" }}
@@ -221,7 +229,9 @@ const SprintDetails = () => {
               </tbody>
             </table>
           </div>
-          <Button className="btn--block" onClick={handleAddToSprint}>Add Selected -></Button>
+          <Button className="btn--block" onClick={handleAddToSprint}>
+            Add Selected ->
+          </Button>
         </div>
       )}
 
@@ -261,15 +271,15 @@ const SprintDetails = () => {
               </tr>
             </thead>
             <tbody>
-              {/* Render stories in rows */}
               {Array.from({ length: maxRows }).map((_, rowIndex) => (
                 <tr key={rowIndex}>
                   <td>
                     {todoStories[rowIndex] && (
                       <div
                         onClick={() => handleStoryClick(todoStories[rowIndex])}
-                        className={`userStory ${selectedStory?.id === todoStories[rowIndex].id ? "selected" : ""
-                          }`}
+                        className={`userStory ${
+                          selectedStory?.id === todoStories[rowIndex].id ? "selected" : ""
+                        }`}
                       >
                         <h2>{todoStories[rowIndex].name}</h2>
                         <p>Priority: {todoStories[rowIndex].priority}</p>
@@ -281,8 +291,9 @@ const SprintDetails = () => {
                     {doingStories[rowIndex] && (
                       <div
                         onClick={() => handleStoryClick(doingStories[rowIndex])}
-                        className={`userStory ${selectedStory?.id === doingStories[rowIndex].id ? "selected" : ""
-                          }`}
+                        className={`userStory ${
+                          selectedStory?.id === doingStories[rowIndex].id ? "selected" : ""
+                        }`}
                       >
                         <h2>{doingStories[rowIndex].name}</h2>
                         <p>Priority: {doingStories[rowIndex].priority}</p>
@@ -294,8 +305,9 @@ const SprintDetails = () => {
                     {doneStories[rowIndex] && (
                       <div
                         onClick={() => handleStoryClick(doneStories[rowIndex])}
-                        className={`userStory ${selectedStory?.id === doneStories[rowIndex].id ? "selected" : ""
-                          }`}
+                        className={`userStory ${
+                          selectedStory?.id === doneStories[rowIndex].id ? "selected" : ""
+                        }`}
                       >
                         <h2>{doneStories[rowIndex].name}</h2>
                         <p>Priority: {doneStories[rowIndex].priority}</p>
@@ -310,8 +322,9 @@ const SprintDetails = () => {
                 <tr>
                   <td>
                     <div
-                      className={`userStory plus-button ${showIncludeStories ? "selected" : ""
-                        }`}
+                      className={`userStory plus-button ${
+                        showIncludeStories ? "selected" : ""
+                      }`}
                       onClick={() => setShowIncludeStories((prev) => !prev)}
                     >
                       <span>+</span>
@@ -330,6 +343,8 @@ const SprintDetails = () => {
         <StoryDetailsComponent
           story={selectedStory}
           userRole={role}
+          fromSprintView={true}
+          sprintEnded={sprintEnded}
           onUpdate={updateStoryStatus}
         />
       )}

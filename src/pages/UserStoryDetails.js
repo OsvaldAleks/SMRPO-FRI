@@ -13,6 +13,11 @@ const UserStoryDetails = () => {
   const { projects, loading: projectsLoading } = useContext(ProjectsContext);
   const [role, setRole] = useState(null);
 
+  const [showAcceptForm, setShowAcceptForm] = useState(false);
+  const [acceptComment, setAcceptComment] = useState("");
+  const [showRejectForm, setShowRejectForm] = useState(false);
+  const [rejectComment, setRejectComment] = useState("");
+
   useEffect(() => {
     if (!storyId) return;
 
@@ -43,7 +48,7 @@ const UserStoryDetails = () => {
   if (!story) return <p>Loading story details...</p>;
 
   return (
-    <StoryDetailsComponent story={story} userRole={role}/>
+    <StoryDetailsComponent story={story} userRole={role} />
   );
 };
 
