@@ -4,7 +4,7 @@ import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, m
 import Input from "./Input.js";
 import Button from './Button.js';
 
-const UserStoryDetails = ({ story, userRole, onUpdate, fromSprintView = false, sprintEnded = false, }) => {
+const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], fromSprintView = false, sprintEnded = false, }) => {
   const { user, loading } = useAuth();
 
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
@@ -59,6 +59,11 @@ const UserStoryDetails = ({ story, userRole, onUpdate, fromSprintView = false, s
       return;
     }
 
+    if (subtaskTime < 0) {
+      setErrorMessage("Time estimate cannot be negative.");
+      return;
+    }
+
     try {
       await addSubtaskToUserStory(story.id, {
         description: subtaskDescription,
@@ -76,8 +81,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, fromSprintView = false, s
       setSubtasks(updatedStory.subtasks || []);
 
       story.status = updatedStory.status;
-
-      if (typeof onUpdate === 'function') {
+      if (typeof onUpdate === "function") {
         onUpdate(story);
       }
     } catch (err) {
@@ -88,13 +92,31 @@ const UserStoryDetails = ({ story, userRole, onUpdate, fromSprintView = false, s
 
   const handleClaim = async (taskIndex) => {
     try {
+      console.log("Attempting to claim subtask at index:", taskIndex);
+      console.log("User ID:", user.uid);
+  
+      const updatedSubtasks = subtasks.map((subtask, index) => {
+        if (index === taskIndex) {
+          return {
+            ...subtask,
+            developerId: subtask.developerId ? null : user.uid, // Toggle claim
+            isDone: subtask.isDone ?? false, // Ensure isDone is defined
+          };
+        }
+        return subtask;
+      });
+  
       await claimSubtask(story.id, user.uid, taskIndex);
-
+      console.log("Subtask claim request sent successfully.");
+  
       const updatedStory = await getUserStory(story.id);
+      console.log("Updated story fetched:", updatedStory);
+  
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
-
-      if (typeof onUpdate === 'function') {
+  
+      if (typeof onUpdate === "function") {
+        console.log("Triggering onUpdate callback.");
         onUpdate(story);
       }
     } catch (err) {
@@ -102,7 +124,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, fromSprintView = false, s
       alert("Failed to claim/unclaim subtask.");
     }
   };
-
+  
   const handleMarkSubtaskAsDone = async (subtaskIndex) => {
     try {
       await markSubtaskAsDone(story.id, subtaskIndex);
@@ -259,7 +281,9 @@ const UserStoryDetails = ({ story, userRole, onUpdate, fromSprintView = false, s
                       </td>
                       <td>{sub.description}</td>
                       <td>{sub.timeEstimate}</td>
-                      <td>{sub.devName || "N/A"}</td>
+                      <td style={{ fontWeight: sub.devName ? 'bold' : 'normal', color: sub.suggestedDevName && !sub.devName ? 'gray' : 'inherit' }}>
+                        {sub.devName || sub.suggestedDevName || "N/A"}
+                      </td>                 
                       {userRole === "devs" && (
                         <td>
                           <input
@@ -307,17 +331,35 @@ const UserStoryDetails = ({ story, userRole, onUpdate, fromSprintView = false, s
                 <Input
                   type="number"
                   value={subtaskTime}
-                  onChange={(e) => setSubtaskTime(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                
+                    // Allow negative numbers with up to 2 decimal places
+                        if (/^-?\d*\.?\d{0,2}$/.test(value)) {
+                          setSubtaskTime(e.target.value);
+                        }
+                      }
+                    }
                 />
               </div>
               <div style={{ marginBottom: "0.5rem" }}>
                 <label>Developer (optional): </label>
-                <Input
-                  type="text"
-                  value={subtaskDeveloper}
-                  onChange={(e) => setSubtaskDeveloper(e.target.value)}
-                />
+                <div className="select-container">
+                  <select
+                    className="select"
+                    value={subtaskDeveloper}
+                    onChange={(e) => setSubtaskDeveloper(e.target.value)}
+                  >
+                    <option value="N/A">Unassigned</option>
+                    {projectDevelopers.map((dev) => (
+                      <option key={dev} value={dev}>
+                        {dev}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
               <Button className="btn--block" onClick={handleAddSubtask}>
                 Save Subtask
               </Button>

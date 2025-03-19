@@ -23,6 +23,7 @@ const SprintDetails = () => {
   const [role, setRole] = useState(null);
   const [showIncludeStories, setShowIncludeStories] = useState(false);
   const [selectedStory, setSelectedStory] = useState(null);
+  const [developers, setDevelopers] = useState([]);
 
   // Track which user stories are selected (checked) for adding to sprint
   const [selectedStories, setSelectedStories] = useState([]);
@@ -61,10 +62,17 @@ const SprintDetails = () => {
         const projectData = await getProject(projectName, user.uid);
         setProjectId(projectData.project.id);
 
+<<<<<<< HEAD
         // Preverimo, ali je user dev, scrumMaster ali productManager
         if (projectData.project.productManagers?.some(pm => pm.id === user.uid)) {
           setRole("productManagers");
         } else if (projectData.project.devs?.some(dev => dev.id === user.uid)) {
+=======
+        setDevelopers(projectData.project.devs?.map((dev) => dev.username) || []);
+        console.log(projectData.project.devs?.map((dev) => dev.username));
+
+        if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
+>>>>>>> 4f053f42502d8461c7a0393d0d021c9721cd3d40
           setRole("devs");
         } else if (projectData.project.scrumMasters?.some(sm => sm.id === user.uid)) {
           setRole("scrumMasters");
@@ -160,10 +168,10 @@ const SprintDetails = () => {
   // Če zapremo panel showIncludeStories in je bila izbrana zgodba takšna, ki ni v tem sprintu, jo deselectamo
   useEffect(() => {
     if (!showIncludeStories && selectedStory) {
-      const notInThisSprint = stories.filter(
-        (story) => !story.sprintId?.includes(sprintId)
+      const notInAnySprint = stories.filter(
+        (story) => !story.sprintId || story.sprintId.length === 0
       );
-      if (notInThisSprint.some((story) => story.id === selectedStory.id)) {
+      if (notInAnySprint.some((story) => story.id === selectedStory.id)) {
         setSelectedStory(null);
       }
     }
@@ -176,9 +184,20 @@ const SprintDetails = () => {
     return <div>Loading...</div>;
   }
 
+<<<<<<< HEAD
   // Filtriramo zgodbe, ki NISO v tem sprintu (za dodajanje)
   const notInThisSprint = stories.filter(
     (story) => !story.sprintId?.includes(sprintId)
+=======
+  /**
+   * We no longer filter out stories missing storyPoints.
+   * We only filter out stories that are already in this sprint
+   * because we can’t add them again. The 'hasPoints' check below
+   * will disable the checkbox if missing story points.
+   */
+  const notInAnySprint = stories.filter(
+    (story) => !story.sprintId || story.sprintId.length === 0
+>>>>>>> 4f053f42502d8461c7a0393d0d021c9721cd3d40
   );
 
   return (
@@ -195,7 +214,7 @@ const SprintDetails = () => {
                 </tr>
               </thead>
               <tbody>
-                {notInThisSprint.map((story) => {
+                {notInAnySprint.map((story) => {
                   const hasPoints =
                     story.storyPoints !== undefined && story.storyPoints !== null;
                   return (
@@ -346,6 +365,7 @@ const SprintDetails = () => {
           fromSprintView={true}
           sprintEnded={sprintEnded}
           onUpdate={updateStoryStatus}
+          projectDevelopers={developers} 
         />
       )}
     </>

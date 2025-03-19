@@ -194,7 +194,9 @@ const CreateProject = () => {
                     <td>{user.email}</td>
                     <td>
                       {checkedUsers[user.id] ? (
+                        <div className="select-container">
                         <select
+                          className="select select--short"
                           onChange={(e) => handleRoleChange(user.id, e.target.value)}
                           defaultValue="devs"
                         >
@@ -202,6 +204,7 @@ const CreateProject = () => {
                           <option value="productManagers">Product Manager</option>
                           <option value="scrumMasters">SCRUM Master</option>
                         </select>
+                      </div>
                       ) : (
                         <span>Select to assign role</span>
                       )}

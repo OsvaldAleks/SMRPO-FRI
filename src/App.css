@@ -15,6 +15,10 @@
   box-shadow: 0px 4px 8px rgba(63, 65, 70, 0.204);
  }
 
+ .center--box p{
+  margin: 1rem;
+ }
+
  .block--element{
   display: block;
   width: 100%;
@@ -123,15 +127,6 @@ position: absolute;
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
-}
-
-.responsive-table td select {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  border: 0;
-  background-color: #fff;
-  color: #333;
 }
 
 

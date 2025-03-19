@@ -181,7 +181,7 @@ async function addSubtaskToUserStory(storyId, subtaskData) {
   const newSubtask = {
     description: subtaskData.description,
     timeEstimate: Number(subtaskData.timeEstimate),
-    devName: subtaskData.developer || null,
+    suggestedDevName: subtaskData.developer || null,
   };
 
   // Check the status and update it if necessary
@@ -204,7 +204,6 @@ async function addSubtaskToUserStory(storyId, subtaskData) {
 
 async function claimSubtask(storyId, userId, taskIndex) {
   if (!storyId || !userId || taskIndex === undefined) {
-    console.error("Invalid storyId, userId, or taskIndex.");
     throw new Error("Invalid storyId, userId, or taskIndex.");
   }
 
@@ -212,7 +211,6 @@ async function claimSubtask(storyId, userId, taskIndex) {
   const storyDoc = await storyRef.get();
 
   if (!storyDoc.exists) {
-    console.error(`User story not found for ID: ${storyId}`);
     throw new Error("User story not found.");
   }
 
@@ -220,7 +218,6 @@ async function claimSubtask(storyId, userId, taskIndex) {
   const subtasks = storyData.subtasks || [];
 
   if (taskIndex < 0 || taskIndex >= subtasks.length) {
-    console.error(`Invalid subtask index: ${taskIndex}`);
     throw new Error("Invalid subtask index.");
   }
 
@@ -232,45 +229,43 @@ async function claimSubtask(storyId, userId, taskIndex) {
     try {
       const userRef = db.collection("users").doc(newDeveloperId);
       const userDoc = await userRef.get();
-      if (!userDoc.exists) throw new Error(`User not found for ID: ${newDeveloperId}`);
-
-      newDevName = userDoc.data().name || "Unknown Developer";
+      if (!userDoc.exists) {
+        throw new Error(`User not found for ID: ${newDeveloperId}`);
+      }
+      newDevName = userDoc.data().username || "Unknown Developer";
     } catch (error) {
-      console.error("Failed to fetch user details:", error);
     }
   }
 
-  // If the subtask is unclaimed, set its isDone to false (initialize if undefined)
   const updatedSubtask = {
     ...subtask,
     developerId: newDeveloperId,
-    devName: newDevName,
-    isDone: newDeveloperId ? subtask.isDone : (subtask.isDone !== undefined ? subtask.isDone : false), // Default to false if isDone doesn't exist
+    devName: newDevName || null,
+    isDone: subtask.isDone ?? false, // Fix: Avoid Firestore rejecting 'undefined'
   };
 
-  // Ensure no undefined values are present in subtasks
-  if (updatedSubtask.isDone === undefined || updatedSubtask.isDone) {
-    updatedSubtask.isDone = false; // Explicitly set to false if undefined
-  }
-
-  subtasks[taskIndex] = updatedSubtask;
+  const updatedSubtasks = subtasks.map((task, index) =>
+    index === taskIndex
+      ? updatedSubtask
+      : { ...task, isDone: task.isDone ?? false } // Fix: Ensure all subtasks have isDone
+  );
 
   let newStatus = storyData.status;
-
   if (newDeveloperId) {
     newStatus = "In progress";
   } else {
-    // If unclaimed, check if any subtasks still have a developer
-    const anyClaimed = subtasks.some(task => task.developerId);
+    const anyClaimed = updatedSubtasks.some(task => task.developerId);
     newStatus = anyClaimed ? "In progress" : "Product backlog";
   }
 
-  // Check if all subtasks are unclaimed to mark the story as undone
-  if (!subtasks.some(task => task.developerId)) {
-    newStatus = "In progress";
+  try {
+    await storyRef.set(
+      { subtasks: updatedSubtasks, status: newStatus },
+      { merge: true }
+    );
+  } catch (error) {
+    throw new Error("Database update failed.");
   }
-
-  await storyRef.update({ subtasks, status: newStatus });
 
   return {
     message: newDeveloperId ? "Subtask claimed successfully!" : "Subtask unclaimed successfully!",

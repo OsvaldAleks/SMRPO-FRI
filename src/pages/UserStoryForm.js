@@ -22,8 +22,21 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
     setAcceptanceCriteria([...acceptanceCriteria, '']);
   };
 
+  const validateBusinessValue = (value) => {
+    const num = parseFloat(value);
+    if (isNaN(num) || num <= 0) return false;
+    if (!/^\d+(\.\d{1,2})?$/.test(value)) return false;
+    return true;
+  };
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    if (!validateBusinessValue(businessValue)) {
+      setError("Business value must be positive.");
+      return;
+    }  
 
     const newStory = {
       name,
@@ -34,35 +47,35 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
       projectId,     // automatically passed in from props
       sprintId: [],  // default to an empty array
     };
-
+  
     try {
       // Validate the story
       if (!validateStory(newStory)) {
         throw new Error("Invalid story data. Please check all fields.");
       }
-
+  
       // Create the story
       const response = await createUserStory(newStory);
       if (response.error) {
         setError(response.message);
-      }
-      else {
-      // Reset form fields
-      setName('');
-      setDescription('');
-      setAcceptanceCriteria(['']);
-      setPriority('');
-      setBusinessValue('');
-      setError('');
-
-      // Notify parent component
-      onStoryAdded();
+      } else {
+        // Reset form fields
+        setName('');
+        setDescription('');
+        setAcceptanceCriteria(['']);
+        setPriority('');
+        setBusinessValue('');
+        setError('');
+  
+        // Notify parent component
+        onStoryAdded(); // Ensure this is called
       }
     } catch (err) {
       // Display error message
-      setError(err.message || "Failed to create user story. Please try again.");
+      setError(err.message == 'A user story with the same name already exists in this project.' ? 'User stories should have unique names' : err.message || "Failed to create user story. Please try again.");
     }
   };
+  
 
   return (
     <div className="center--box">
@@ -109,13 +122,19 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
 
         <div className="block--element">
           <label className="block--element">Priority:</label>
-          <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-            <option value="">Select Priority</option>
-            <option value="must have">Must Have</option>
-            <option value="could have">Could Have</option>
-            <option value="should have">Should Have</option>
-            <option value="won't have this time">Won't Have This Time</option>
-          </select>
+          <div className="select-container">
+            <select
+              className="select"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+            >
+              <option value="">Select Priority</option>
+              <option value="must have">Must Have</option>
+              <option value="should have">Should Have</option>
+              <option value="could have">Could Have</option>
+              <option value="won't have this time">Won't Have This Time</option>
+            </select>
+          </div>
         </div>
 
         <div className="block--element">
@@ -123,8 +142,16 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
           <Input
             className="block--element"
             type="number"
+            step="0.01"
             value={businessValue} 
-            onChange={(e) => setBusinessValue(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+          
+              if (/^-?\d*\.?\d{0,2}$/.test(value)) {
+                setBusinessValue(value);
+              }
+            }}
+          
             required
             placeholder="Enter the business value"
           />
