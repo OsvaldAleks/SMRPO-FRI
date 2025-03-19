@@ -53,6 +53,11 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [] })
       return;
     }
 
+    if (subtaskTime < 0) {
+      setErrorMessage("Time estimate cannot be negative.");
+      return;
+    }
+
     try {
       await addSubtaskToUserStory(story.id, {
         description: subtaskDescription,
@@ -278,7 +283,15 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [] })
                 <Input
                   type="number"
                   value={subtaskTime}
-                  onChange={(e) => setSubtaskTime(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                
+                    // Allow negative numbers with up to 2 decimal places
+                        if (/^-?\d*\.?\d{0,2}$/.test(value)) {
+                          setSubtaskTime(e.target.value);
+                        }
+                      }
+                    }
                 />
               </div>
               <div style={{ marginBottom: "0.5rem" }}>
