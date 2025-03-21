@@ -22,15 +22,39 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
     setEndDate(formatDate(oneWeekLater));
   }, []);
 
+  const getHolidaysForYear = (year) => {
+    return [
+      `${year}-01-01`, // New Year's Day
+      `${year}-07-04`, // Independence Day
+      `${year}-12-25`, // Christmas Day
+      `${year}-02-08`, // Presernov Dan
+      // Add more fixed-date holidays as needed
+    ];
+  };
+  
+  const isWeekend = (date) => {
+    const day = date.getDay();
+    return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
+  };
+  
+  const isHoliday = (date) => {
+    const year = date.getFullYear();
+    const holidays = getHolidaysForYear(year);
+    const formattedDate = date.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+    return holidays.includes(formattedDate);
+  };
+  
   const validateForm = () => {
     if (!startDate || !endDate || !velocity) {
       setError("All fields are required.");
       return false;
     }
-
+  
     const today = new Date();
     const selectedStartDate = new Date(startDate);
-
+    const selectedEndDate = new Date(endDate);
+  
+    // Check if start date is valid (not in the past)
     const isStartDateValid =
       selectedStartDate.getFullYear() > today.getFullYear() ||
       (selectedStartDate.getFullYear() === today.getFullYear() &&
@@ -38,31 +62,48 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
       (selectedStartDate.getFullYear() === today.getFullYear() &&
         selectedStartDate.getMonth() === today.getMonth() &&
         selectedStartDate.getDate() >= today.getDate());
-
+  
     if (!isStartDateValid) {
       setError("Start date cannot be in the past.");
       return false;
     }
-
-    if (new Date(startDate) >= new Date(endDate)) {
+  
+    // Check if start or end date is a weekend
+    if (isWeekend(selectedStartDate) || isWeekend(selectedEndDate)) {
+      setError("Start and end dates cannot be on a weekend.");
+      return false;
+    }
+  
+    // Check if start or end date is a holiday
+    if (isHoliday(selectedStartDate) || isHoliday(selectedEndDate)) {
+      setError("Start and end dates cannot be on a holiday.");
+      return false;
+    }
+  
+    // Check if end date is after start date
+    if (selectedStartDate >= selectedEndDate) {
       setError("End date must be after the start date.");
       return false;
     }
-
+  
+    // Check if velocity is a valid number
     if (isNaN(velocity) || velocity <= 0) {
       setError("Velocity must be a positive number.");
       return false;
     }
-
+  
+    // Ensure velocity has no more than 2 decimal places
     const decimalPlaces = (velocity.toString().split(".")[1] || []).length;
     if (decimalPlaces > 2) {
       setError("Velocity must have no more than 2 decimal places.");
       return false;
     }
-
+  
     setError("");
     return true;
   };
+  
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -145,7 +186,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
             className={"block--element"}
             value={velocity}
             onChange={handleVelocityChange}
-            placeholder="Enter velocity"
+            placeholder="Velocity in story points (positive number)"
             step="0.01"
             required
           />
