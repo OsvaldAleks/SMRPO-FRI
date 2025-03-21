@@ -9,8 +9,13 @@ async function addUser(userData) {
       throw new Error("All fields are required.");
     }
 
-    // Check if username already exists
-    const usernameQuery = await db.collection("users").where("username", "==", username).get();
+    const normalizedUsername = username.toLowerCase(); // Convert input username to lowercase
+
+    // Check if username already exists (case-insensitive)
+    const usernameQuery = await db.collection("users")
+      .where("username", "==", normalizedUsername) // Query in lowercase
+      .get();
+
     if (!usernameQuery.empty) {
       throw new Error("Username already exists.");
     }
@@ -22,13 +27,13 @@ async function addUser(userData) {
       displayName: `${name} ${surname}`,
     });
 
-    // Add user to Firestore
+    // Add user to Firestore with lowercase username
     await db.collection("users").doc(userRecord.uid).set({
       id: userRecord.uid,
       name,
       surname,
       email,
-      username,
+      username: normalizedUsername, // Store in lowercase
       system_rights,
       status,
       last_online: null,
@@ -52,6 +57,8 @@ async function addUser(userData) {
     };
   }
 }
+
+
 async function getUser(userId) {
   try {
     const userRef = db.collection("users").doc(userId);
