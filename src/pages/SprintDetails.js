@@ -28,14 +28,16 @@ const SprintDetails = () => {
   // Track which user stories are selected (checked) for adding to sprint
   const [selectedStories, setSelectedStories] = useState([]);
 
-  // Check if sprint has ended
-  let sprintEnded = false;
-  if (sprint && sprint.end_date) {
-    const endAsDate = new Date(sprint.end_date);
-    if (endAsDate < new Date()) {
-      sprintEnded = true;
-    }
-  }
+  // Check if sprint is currently active
+  const isSprintActive = () => {
+    if (!sprint || !sprint.start_date || !sprint.end_date) return false;
+
+    const currentDate = new Date();
+    const startDate = new Date(sprint.start_date);
+    const endDate = new Date(sprint.end_date);
+
+    return currentDate >= startDate && currentDate <= endDate;
+  };
 
   // Fetch Sprint Data
   useEffect(() => {
@@ -63,13 +65,13 @@ const SprintDetails = () => {
 
         setDevelopers(projectData.project.devs?.map((dev) => dev.username) || []);
 
-        // Determine user role
-        if (projectData.project.productManagers?.some(pm => pm.id === user.uid)) {
+        // Determine user role (prioritize Scrum Master role if user has multiple roles)
+        if (projectData.project.scrumMasters?.some(sm => sm.id === user.uid)) {
+          setRole("scrumMasters");
+        } else if (projectData.project.productManagers?.some(pm => pm.id === user.uid)) {
           setRole("productManagers");
         } else if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
           setRole("devs");
-        } else if (projectData.project.scrumMasters?.some(sm => sm.id === user.uid)) {
-          setRole("scrumMasters");
         } else {
           setRole(null);
         }
@@ -319,7 +321,7 @@ const SprintDetails = () => {
               ))}
 
               {/* Render the "+" button in a new row after the last TODO story */}
-              {role === "scrumMasters" && !sprintEnded && ( // Only show if sprint hasn't ended
+              {role === "scrumMasters" && isSprintActive() && ( // Only show if sprint is active
                 <tr>
                   <td>
                     <div
@@ -327,8 +329,9 @@ const SprintDetails = () => {
                         showIncludeStories ? "selected" : ""
                       }`}
                       onClick={() => setShowIncludeStories((prev) => !prev)}
+                      style={{ cursor: "pointer", textAlign: "center", padding: "10px" }}
                     >
-                      <span>+</span>
+                      <span style={{ fontSize: "24px", fontWeight: "bold" }}>+</span>
                     </div>
                   </td>
                   <td></td>
@@ -345,7 +348,7 @@ const SprintDetails = () => {
           story={selectedStory}
           userRole={role}
           fromSprintView={true}
-          sprintEnded={sprintEnded}
+          sprintEnded={!isSprintActive()} // Pass whether the sprint has ended
           onUpdate={updateStoryStatus}
           projectDevelopers={developers}
         />

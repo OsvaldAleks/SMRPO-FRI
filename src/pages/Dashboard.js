@@ -14,12 +14,7 @@ const Dashboard = () => {
       {user ? (
         <>
           <h1 >Welcome!</h1>
-          <h2>Select a project</h2>
-
           <UserProjects></UserProjects>
-          <div className="center--box">
-            <h2>Your ongoing sprints</h2>
-          </div>
         </>
       ) : (
         <div className="center--box">

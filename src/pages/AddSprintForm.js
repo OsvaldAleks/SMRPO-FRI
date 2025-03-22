@@ -186,7 +186,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
             className={"block--element"}
             value={velocity}
             onChange={handleVelocityChange}
-            placeholder="Velocity in story points (positive number)"
+            placeholder="Velocity in story points"
             step="0.01"
             required
           />

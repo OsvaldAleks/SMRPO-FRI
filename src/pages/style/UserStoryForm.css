@@ -15,12 +15,6 @@
     font-family: inherit;
   }
   
-  /* Style for error messages */
-  .p--alert {
-    color: red;
-    margin: 0.5rem 0;
-  }
-  
   /* Container for acceptance test fields */
   .acceptance-test-container {
     position: relative; /* Required for absolute positioning of the button */

@@ -7,7 +7,7 @@
 }
 
 .roles-grid div {
-  background-color: lightgray;
+  background-color: #b5c7bf;
   padding: 1rem;
   border-radius: var(--border-radius);
 }
@@ -20,11 +20,6 @@
 .roles-grid li {
   padding: 0.5rem;
   color: var(--color-primary);
-  border-bottom: 1px solid #ccc;
-}
-
-.roles-grid li:last-child {
-  border-bottom: none;
 }
 
 .grid-container {

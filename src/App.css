@@ -1,4 +1,6 @@
-
+body{
+  background-color: #f0f5f7;
+}
 .center--container{
   display: flex;
   justify-content: center;
@@ -7,6 +9,7 @@
 }
 
 .center--box{
+  background-color: #fff;
   border-radius: var(--border-radius);
   min-width: 350px;
   text-align: center;

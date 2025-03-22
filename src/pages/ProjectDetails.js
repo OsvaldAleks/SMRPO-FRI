@@ -90,7 +90,7 @@ const ProjectDetails = () => {
         style={{
           height: "10px",
           width: "10px",
-          backgroundColor: userStatuses[usr.id] ? "green" : "red",
+          backgroundColor: userStatuses[usr.id] ? 'var(--color-secondary)' : "var(--color-accent)",
           borderRadius: "50%",
           display: "inline-block",
           marginRight: "8px",
@@ -215,7 +215,7 @@ const ProjectDetails = () => {
 
   return (
     <>
-      <div className="center--box">
+      <div className="center--box dashboard--box">
         <h1>{project.name}</h1>
         <div className="project-description-container">
           {project.description && (
