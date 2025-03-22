@@ -177,3 +177,35 @@ position: absolute;
   justify-content: center;
   border-radius: 50%;
 }
+/* Match .input styles for .textarea */
+.textarea {
+  border-radius: var(--border-radius);
+  padding: 1rem 2rem;
+  border: 1px solid var(--color-borders);
+  color: var(--color-headings);
+  font-size: 1.5rem;
+  outline: 0;
+  width: 100%; /* Ensure it takes the full width of its container */
+  resize: none; /* Prevent resizing */
+  font-family: inherit; /* Match the font family of the input */
+  box-sizing: border-box; /* Ensure padding and border are included in the width */
+}
+
+/* Placeholder styling */
+.textarea::placeholder {
+  color: var(--color-body);
+  font-size: 1.2rem;
+}
+
+/* Media query for larger screens */
+@media screen and (min-width: 1024px) {
+  .textarea {
+      font-size: 1.5rem;
+  }
+}
+/* Media query for larger screens */
+@media screen and (min-width: 1024px) {
+  .textarea {
+      font-size: 1.5rem;
+  }
+}

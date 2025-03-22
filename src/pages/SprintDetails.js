@@ -28,10 +28,9 @@ const SprintDetails = () => {
   // Track which user stories are selected (checked) for adding to sprint
   const [selectedStories, setSelectedStories] = useState([]);
 
-  // Ugotovimo, ali je sprint končan
+  // Check if sprint has ended
   let sprintEnded = false;
   if (sprint && sprint.end_date) {
-    // Če je end_date string, preverimo, ali je manjši od trenutnega datuma
     const endAsDate = new Date(sprint.end_date);
     if (endAsDate < new Date()) {
       sprintEnded = true;
@@ -53,7 +52,7 @@ const SprintDetails = () => {
     }
   }, [sprintId]);
 
-  // Fetch Project Info, da ugotovimo projectId in vlogo (role)
+  // Fetch Project Info
   useEffect(() => {
     const fetchProjectInfo = async () => {
       try {
@@ -63,9 +62,8 @@ const SprintDetails = () => {
         setProjectId(projectData.project.id);
 
         setDevelopers(projectData.project.devs?.map((dev) => dev.username) || []);
-        console.log(projectData.project.devs?.map((dev) => dev.username));
 
-        // Preverimo, ali je user dev, scrumMaster ali productManager
+        // Determine user role
         if (projectData.project.productManagers?.some(pm => pm.id === user.uid)) {
           setRole("productManagers");
         } else if (projectData.project.devs?.some((dev) => dev.id === user.uid)) {
@@ -83,7 +81,7 @@ const SprintDetails = () => {
     fetchProjectInfo();
   }, [projectName, user]);
 
-  // Ko imamo projectId, pridobimo user stories
+  // Fetch stories when projectId is available
   useEffect(() => {
     fetchStories();
   }, [projectId]);
@@ -98,12 +96,11 @@ const SprintDetails = () => {
     }
   };
 
-  // Če posodobimo status zgodbe, po potrebi reloadamo stories
+  // Update story status
   const updateStoryStatus = (storyId) => {
     setStories((prevStories) =>
       prevStories.map((story) => {
         if (story.id === storyId) {
-          // Poljubno spreminjamo status, če bi želeli
           let newStatus;
           if (["Backlog", "Product backlog"].includes(story.status)) {
             newStatus = "In progress";
@@ -120,22 +117,22 @@ const SprintDetails = () => {
     fetchStories();
   };
 
-  // Filtriramo zgodbe, ki so v tem sprintu
+  // Filter stories in the current sprint
   const sprintStories = stories.filter((story) => story.sprintId?.includes(sprintId));
 
-  // Razdelimo v stolpce
+  // Split stories into columns
   const todoStories = sprintStories.filter((story) =>
     ["Backlog", "Product backlog"].includes(story.status)
   );
   const doingStories = sprintStories.filter((story) => story.status === "In progress");
   const doneStories = sprintStories.filter((story) => story.status === "Done");
 
-  // Klik na zgodbo -> prikaz ali zapiranje detail pogleda
+  // Handle story click
   const handleStoryClick = (story) => {
     setSelectedStory((prevStory) => (prevStory?.id === story.id ? null : story));
   };
 
-  // Checkbox za dodajanje zgodb
+  // Handle checkbox change for adding stories to sprint
   const handleCheckboxChange = (storyId) => {
     setSelectedStories((prevSelected) =>
       prevSelected.includes(storyId)
@@ -144,7 +141,7 @@ const SprintDetails = () => {
     );
   };
 
-  // Gumb -> dodaj zgodbice v sprint
+  // Handle adding stories to sprint
   const handleAddToSprint = async () => {
     if (!sprintId || selectedStories.length === 0) return;
 
@@ -161,7 +158,7 @@ const SprintDetails = () => {
     }
   };
 
-  // Če zapremo panel showIncludeStories in je bila izbrana zgodba takšna, ki ni v tem sprintu, jo deselectamo
+  // Deselect story if it's not in the current sprint
   useEffect(() => {
     if (!showIncludeStories && selectedStory) {
       const notInAnySprint = stories.filter(
@@ -173,7 +170,7 @@ const SprintDetails = () => {
     }
   }, [showIncludeStories, selectedStory, stories, sprintId]);
 
-  // Izračun, koliko vrstic rabimo
+  // Calculate the number of rows needed
   const maxRows = Math.max(todoStories.length, doingStories.length, doneStories.length);
 
   if (loading) {
@@ -321,7 +318,8 @@ const SprintDetails = () => {
                 </tr>
               ))}
 
-              {role === "scrumMasters" && (
+              {/* Render the "+" button in a new row after the last TODO story */}
+              {role === "scrumMasters" && !sprintEnded && ( // Only show if sprint hasn't ended
                 <tr>
                   <td>
                     <div
@@ -349,7 +347,7 @@ const SprintDetails = () => {
           fromSprintView={true}
           sprintEnded={sprintEnded}
           onUpdate={updateStoryStatus}
-          projectDevelopers={developers} 
+          projectDevelopers={developers}
         />
       )}
     </>

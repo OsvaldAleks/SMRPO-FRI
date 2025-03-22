@@ -205,13 +205,16 @@ const ProjectDetails = () => {
     <>
       <div className="center--box">
         <h1>{project.name}</h1>
+        {project.description && (
+          <p className="project-description">{project.description}</p>
+        )}
 
         {/* --- Members --- */}
         <h2>Members</h2>
         <div className="roles-grid">
           {/* Product Managers */}
           <div>
-            <h2>Product Managers</h2>
+            <h2>Product Owners</h2>
             <ul>
               {project.productManagers && project.productManagers.length > 0 ? (
                 project.productManagers.map(renderUserWithStatus)

@@ -8,13 +8,10 @@ router.post("/", async (req, res) => {
   try {
     console.log("Received project data:", req.body); // Log incoming request body
 
-    const { name, devs, scrumMasters, productManagers, owner } = req.body;
+    const { name, description, devs, scrumMasters, productOwners, owner } = req.body;
 
-    if (!name || !devs || !scrumMasters || !productManagers || !owner) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    const project = await createProject(name, devs, scrumMasters, productManagers, owner);
+    // Create the project
+    const project = await createProject(name, description, devs, scrumMasters, productOwners, owner);
     res.status(201).json({ message: "Project created successfully", project });
 
   } catch (error) {

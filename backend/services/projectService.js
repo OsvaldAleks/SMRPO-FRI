@@ -1,11 +1,13 @@
 const { db } = require("../firebase");
 const userService = require('./userService');
 
-async function createProject(name, devs, scrumMasters, productManagers, owner) {
-  if (!name || !devs || !scrumMasters || !productManagers) {
+async function createProject(name, description, devs, scrumMasters, productManagers, owner) {
+  // Validate required fields
+  if (!name || !description) {
     throw new Error("All fields are required");
   }
 
+  // Validate at least one developer, scrum master, and product manager
   let valid = true;
   let err = "At least one";
 
@@ -14,7 +16,7 @@ async function createProject(name, devs, scrumMasters, productManagers, owner) {
     err += " developer";
   }
 
-  if (scrumMasters.length === 0) {
+  if (!scrumMasters) {
     valid = false;
     if (!err.endsWith("one")) {
       err += ",";
@@ -22,7 +24,7 @@ async function createProject(name, devs, scrumMasters, productManagers, owner) {
     err += " scrum master";
   }
 
-  if (productManagers.length === 0) {
+  if (!productManagers) {
     valid = false;
     if (!err.endsWith("one")) {
       err += ",";
@@ -39,30 +41,38 @@ async function createProject(name, devs, scrumMasters, productManagers, owner) {
     throw new Error(err + " must be assigned to the project.");
   }
 
-  const existingProject = await db.collection("projects").where("name", "==", name).get();
-  if (!existingProject.empty) {
+  // Check if project name already exists (case-insensitive)
+  const existingProjects = await db.collection("projects").get();
+  const isNameTaken = existingProjects.docs.some(
+    (doc) => doc.data().name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (isNameTaken) {
     throw new Error("Project name already exists. Please choose another name.");
   }
 
+  // Generate a new project ID
   const projectId = db.collection("projects").doc().id;
 
+  // Create the new project object
   const newProject = {
     id: projectId,
     name,
+    description,
     devs,
     scrumMasters,
     productManagers,
-    owner,  // <-- Store owner in database
+    owner,
     createdAt: new Date(),
   };
 
   try {
+    // Save the project to the database
     await db.collection("projects").doc(projectId).set(newProject);
     return newProject;
   } catch (error) {
     throw new Error("Error saving project to database: " + error.message);
   }
-
 }
 
 async function getUserProjects(userId) {
@@ -77,24 +87,26 @@ async function getUserProjects(userId) {
 
   projectsSnapshot.forEach((doc) => {
     const projectData = doc.data();
-    const { devs, productManagers, scrumMasters } = projectData;
+    const { devs, productManagers, scrumMasters, owner } = projectData;
 
     let userRole = '';
 
-    // Determine the user's role
-    if (devs.includes(userId)) {
-      userRole = 'devs';
-    } else if (productManagers.includes(userId)) {
-      userRole = 'productManagers';
-
-    } else if (scrumMasters.includes(userId)) {
+   if (scrumMasters.includes(userId)) {
       userRole = 'scrumMasters';
+  } else if (devs.includes(userId)) {
+      userRole = 'devs';
+  } else if (productManagers.includes(userId)) {
+     userRole = 'productManagers';
+  } else if (owner === userId) {
+    userRole = 'owner';
+  }
 
-    }
-    if (userRole != '') {
+    // If the user has a role (owner, dev, product manager, or scrum master), add the project to the list
+    if (userRole !== '') {
       userProjects.push({
         projectId: doc.id,
         projectName: projectData.name,
+        projectDescription: projectData.description,
         userRole: userRole,
       });
     }

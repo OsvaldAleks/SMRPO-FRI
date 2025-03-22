@@ -7,14 +7,16 @@ import { ProjectsContext } from "../context/ProjectsContext";
 
 const CreateProject = () => {
   const [input1, setInput1] = useState("");
+  const [description, setDescription] = useState("");
   const [users, setUsers] = useState([]);
   const [checkedUsers, setCheckedUsers] = useState({});
   const [loading, setLoading] = useState(true);
   const [roleAssignments, setRoleAssignments] = useState({
     devs: [],
     scrumMasters: [],
-    productManagers: [],
+    productOwners: [],
   });
+  const [selectedRoles, setSelectedRoles] = useState({}); // Track selected role for each user
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
   const [success, setSuccess] = useState("");
@@ -61,7 +63,7 @@ const CreateProject = () => {
       if (isChecked && !roleAssignments.devs.includes(userId)) {
         setRoleAssignments((prevRoles) => {
           // Add to devs if not already included in any other role
-          if (!prevRoles.devs.includes(userId) && !prevRoles.scrumMasters.includes(userId) && !prevRoles.productManagers.includes(userId)) {
+          if (!prevRoles.devs.includes(userId) && !prevRoles.scrumMasters.includes(userId) && !prevRoles.productOwners.includes(userId)) {
             return {
               ...prevRoles,
               devs: [...prevRoles.devs, userId]
@@ -69,6 +71,7 @@ const CreateProject = () => {
           }
           return prevRoles;
         });
+        setSelectedRoles((prev) => ({ ...prev, [userId]: "devs" })); // Set default role
       } else if (!isChecked) {
         // Remove the user from all roles if unchecked
         setRoleAssignments((prevRoles) => {
@@ -78,12 +81,16 @@ const CreateProject = () => {
           });
           return updatedRoles;
         });
+        setSelectedRoles((prev) => {
+          const updated = { ...prev };
+          delete updated[userId]; // Remove the user's selected role
+          return updated;
+        });
       }
 
       return updatedCheckedUsers;
     });
   };
-
 
   const handleRoleChange = (userId, role) => {
     setRoleAssignments((prev) => {
@@ -96,57 +103,91 @@ const CreateProject = () => {
 
       updatedAssignments[role] = [...updatedAssignments[role], userId];
 
-      console.log("Role change:", role, updatedAssignments[role]);
       return updatedAssignments;
     });
-  };
 
+    // Update the selected role for the user
+    setSelectedRoles((prev) => ({ ...prev, [userId]: role }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!input1) {
       setError("Project name is required.");
       return;
     }
-
+  
     if (!user || !user.uid) {
       setError("User is not authenticated.");
       return;
     }
-
+  
+    // Include Scrum Masters in the devs list
+    const devsWithScrumMasters = [...new Set([...roleAssignments.devs, ...roleAssignments.scrumMasters])];
+  
     const projectData = {
       name: input1,
-      devs: roleAssignments.devs,
+      description,
+      devs: devsWithScrumMasters, // Include Scrum Masters in the devs list
       scrumMasters: roleAssignments.scrumMasters,
-      productManagers: roleAssignments.productManagers,
+      productOwners: roleAssignments.productOwners,
       owner: user.uid,
     };
-
+  
+    console.log("Project data:", projectData);
+  
     try {
       console.log("Submitting project data:", projectData);
       const result = await createProject(projectData);
-
+  
       if (result.error) {
         setError(result.message || "An error occurred while creating the project.");
         setSuccess("");
       } else {
         setSuccess("Project created successfully!");
         setError("");
-
+  
         console.log("Fetching updated projects for user:", user.uid);
         const updatedProjects = await getUserProjects(user.uid);
         setProjects(updatedProjects);
-
+  
         // Reset form
         setInput1("");
+        setDescription("");
         setCheckedUsers({});
-        setRoleAssignments({ devs: [], scrumMasters: [], productManagers: [] });
+        setRoleAssignments({ devs: [], scrumMasters: [], productOwners: [] });
+        setSelectedRoles({});
       }
     } catch (err) {
       setError(err.message || "Network error occurred while creating project.");
       setSuccess("");
     }
+  };
+  
+  // Helper function to determine available roles for a user
+  const getAvailableRoles = (userId) => {
+    const availableRoles = [
+      { value: "devs", label: "Developer" },
+    ];
+
+    // Add Scrum Master option only if no one is assigned yet or the current user is the assigned Scrum Master
+    if (
+      roleAssignments.scrumMasters.length === 0 ||
+      roleAssignments.scrumMasters.includes(userId)
+    ) {
+      availableRoles.push({ value: "scrumMasters", label: "SCRUM Master" });
+    }
+
+    // Add Product Owner option only if no one is assigned yet or the current user is the assigned Product Owner
+    if (
+      roleAssignments.productOwners.length === 0 ||
+      roleAssignments.productOwners.includes(userId)
+    ) {
+      availableRoles.push({ value: "productOwners", label: "Product Owner" });
+    }
+
+    return availableRoles;
   };
 
   return (
@@ -160,6 +201,16 @@ const CreateProject = () => {
             className="block--element"
             value={input1}
             onChange={(e) => setInput1(e.target.value)}
+          />
+        </div>
+        <div className="block--element grid">
+          <label className="block--element">Project Description:</label>
+          <textarea
+            className="textarea"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            placeholder="Enter project description..."
           />
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
@@ -195,16 +246,18 @@ const CreateProject = () => {
                     <td>
                       {checkedUsers[user.id] ? (
                         <div className="select-container">
-                        <select
-                          className="select select--short"
-                          onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                          defaultValue="devs"
-                        >
-                          <option value="devs">Developer</option>
-                          <option value="productManagers">Product Manager</option>
-                          <option value="scrumMasters">SCRUM Master</option>
-                        </select>
-                      </div>
+                          <select
+                            className="select select--short"
+                            value={selectedRoles[user.id] || "devs"} // Use the selected role
+                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                          >
+                            {getAvailableRoles(user.id).map((role) => (
+                              <option key={role.value} value={role.value}>
+                                {role.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       ) : (
                         <span>Select to assign role</span>
                       )}
