@@ -3,57 +3,64 @@ import { createUserStory } from '../api';
 import { validateStory } from '../utils/storyUtils.js';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import './style/UserStoryForm.css'; // Add this for custom styles
 
 const UserStoryForm = ({ projectId, onStoryAdded }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [acceptanceCriteria, setAcceptanceCriteria] = useState(['']); // Initialize with one empty field
+  const [acceptanceTests, setAcceptanceTests] = useState(['']); // Initialize with one empty field
   const [priority, setPriority] = useState('');
-  const [businessValue, setBusinessValue] = useState('');
+  const [businessValue, setBusinessValue] = useState(''); // Default to empty
   const [error, setError] = useState(''); // State to store error messages
 
-  const handleAcceptanceCriteriaChange = (index, value) => {
-    const updatedCriteria = [...acceptanceCriteria];
-    updatedCriteria[index] = value;
-    setAcceptanceCriteria(updatedCriteria);
-  };
-
-  const addAcceptanceCriteriaField = () => {
-    setAcceptanceCriteria([...acceptanceCriteria, '']);
-  };
-
-  const validateBusinessValue = (value) => {
-    const num = parseFloat(value);
-    if (isNaN(num) || num <= 0) return false;
-    if (!/^\d+(\.\d{1,2})?$/.test(value)) return false;
-    return true;
+  const handleAcceptanceTestChange = (index, value) => {
+    const updatedTests = [...acceptanceTests];
+    updatedTests[index] = value;
+    setAcceptanceTests(updatedTests);
   };
   
+  const addAcceptanceTestField = () => {
+    setAcceptanceTests([...acceptanceTests, '']);
+  };
+
+  const removeAcceptanceTestField = (index) => {
+    const updatedTests = acceptanceTests.filter((_, i) => i !== index);
+    setAcceptanceTests(updatedTests);
+  };
+
+  const handleBusinessValueChange = (value) => {
+    // Allow only numbers between 0 and 10
+    if (/^\d*$/.test(value) && (value === '' || (parseInt(value, 10) >= 0 && parseInt(value, 10) <= 10))) {
+      setBusinessValue(value);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    if (!validateBusinessValue(businessValue)) {
-      setError("Business value must be positive.");
+
+    // Validate business value
+    const businessValueNum = parseInt(businessValue, 10);
+    if (isNaN(businessValueNum)) {
+      setError("Business value must be a number between 0 and 10.");
       return;
-    }  
+    }
 
     const newStory = {
       name,
       description,
-      acceptanceCriteria: acceptanceCriteria.filter(item => item.trim() !== ''), 
+      acceptanceCriteria: acceptanceTests.filter((item) => item.trim() !== ''),
       priority,
-      businessValue: parseInt(businessValue, 10),
-      projectId,     // automatically passed in from props
-      sprintId: [],  // default to an empty array
+      businessValue: businessValueNum,
+      projectId, // Automatically passed in from props
+      sprintId: [], // Default to an empty array
     };
-  
+
     try {
       // Validate the story
       if (!validateStory(newStory)) {
-        throw new Error("Invalid story data. Please check all fields.");
+        throw new Error('Invalid story data. Please check all fields.');
       }
-  
+
       // Create the story
       const response = await createUserStory(newStory);
       if (response.error) {
@@ -62,20 +69,23 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
         // Reset form fields
         setName('');
         setDescription('');
-        setAcceptanceCriteria(['']);
+        setAcceptanceTests(['']);
         setPriority('');
         setBusinessValue('');
         setError('');
-  
+
         // Notify parent component
         onStoryAdded(); // Ensure this is called
       }
     } catch (err) {
       // Display error message
-      setError(err.message == 'A user story with the same name already exists in this project.' ? 'User stories should have unique names' : err.message || "Failed to create user story. Please try again.");
+      setError(
+        err.message === 'A user story with the same name already exists in this project.'
+          ? 'User stories should have unique names'
+          : err.message || 'Failed to create user story. Please try again.'
+      );
     }
   };
-  
 
   return (
     <div className="center--box">
@@ -86,45 +96,58 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
           <Input
             className="block--element"
             type="text"
-            value={name} 
+            value={name}
             onChange={(e) => setName(e.target.value)}
             required
             placeholder="Enter story name"
           />
         </div>
-        
+
         <div className="block--element">
           <label className="block--element">Description</label>
-          <Input
-            className="block--element"
-            value={description} 
+          <textarea
+            className="block--element textarea"
+            value={description}
             onChange={(e) => setDescription(e.target.value)}
+            rows={3} // 3 lines for multiline input
             required
             placeholder="Enter the description"
           />
-        </div> 
+        </div>
 
         <div className="block--element">
-          <label className="block--element">Acceptance Criteria</label>
-          {acceptanceCriteria.map((criteria, index) => (
-            <div key={index} className="block--element">
-              <Input
-                className="block--element"
-                value={criteria}
-                onChange={(e) => handleAcceptanceCriteriaChange(index, e.target.value)}
+          <label className="block--element">Acceptance Tests</label>
+          {acceptanceTests.map((test, index) => (
+            <div key={index} className="acceptance-test-container">
+              <textarea
+                className="block--element textarea acceptance-test"
+                value={test}
+                onChange={(e) => handleAcceptanceTestChange(index, e.target.value)}
+                rows={3} // 3 lines for multiline input
                 required
-                placeholder={`Enter acceptance criteria ${index + 1}`}
+                placeholder={`Enter acceptance test ${index + 1}`}
               />
+              {acceptanceTests.length > 1 && ( // Show remove button only if there are multiple fields
+                <Button
+                  className="btn--remove"
+                  type="button"
+                  onClick={() => removeAcceptanceTestField(index)}
+                >
+                  -
+                </Button>
+              )}
             </div>
-          ))} 
-          <Button className="btn--block" type="button" onClick={addAcceptanceCriteriaField}>+</Button>
+          ))}
+          <Button className="btn--block" type="button" onClick={addAcceptanceTestField}>
+            +
+          </Button>
         </div>
 
         <div className="block--element">
           <label className="block--element">Priority:</label>
           <div className="select-container">
             <select
-              className="select"
+              className="select select--full-width" // Add class for full width
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
             >
@@ -142,22 +165,19 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
           <Input
             className="block--element"
             type="number"
-            step="0.01"
-            value={businessValue} 
-            onChange={(e) => {
-              const value = e.target.value;
-          
-              if (/^-?\d*\.?\d{0,2}$/.test(value)) {
-                setBusinessValue(value);
-              }
-            }}
-          
+            min="0"
+            max="10"
+            value={businessValue}
+            onChange={(e) => handleBusinessValueChange(e.target.value)}
             required
-            placeholder="Enter the business value"
+            placeholder="Enter business value (0-10)"
           />
         </div>
-        {error && <div className="p--alert">{error}</div>} {/* Display error message */}
-        <Button className="btn--block" type="submit">Add User Story</Button>
+
+        {error && <div className="p--alert">{error}</div>}
+        <Button className="btn--block" type="submit">
+          Add User Story
+        </Button>
       </form>
     </div>
   );

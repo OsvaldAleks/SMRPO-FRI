@@ -49,9 +49,10 @@ const UserProjects = () => {
             {otherProjects.map((project) => (
               <Card
                 key={project.projectName}
-                projectName={project.projectName}
-                projectDescription={project.projectDescription}
-                userRole={project.userRole || []}
+                title={project.projectName}
+                description={project.projectDescription}
+                extraText="Your role"
+                extraContent={project.userRole == "devs" ? 'Developer': project.userRole=="scrumMasters" ? 'SCRUM master' : 'Product Owner' || []}
                 onClick={() => handleProjectClick(project.projectName)}
               />
             ))}
@@ -66,8 +67,8 @@ const UserProjects = () => {
             {ownerProjects.map((project) => (
               <Card
                 key={project.projectName}
-                projectName={project.projectName}
-                projectDescription={project.projectDescription}
+                title={project.projectName}
+                description={project.projectDescription}
                 onClick={() => handleProjectClick(project.projectName)}
               />
             ))}

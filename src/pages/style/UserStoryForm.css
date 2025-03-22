@@ -1,0 +1,49 @@
+
+  /* Style for acceptance tests textareas */
+  .acceptance-test {
+    border: 2px solid var(--color-primary); /* Blue border for acceptance tests */
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Style for priority dropdown */
+  .select-container {
+    width: 100%; /* Make the container full width */
+  }
+  
+  .select--full-width {
+    width: 100%; /* Make the select element full width */
+    font-family: inherit;
+  }
+  
+  /* Style for error messages */
+  .p--alert {
+    color: red;
+    margin: 0.5rem 0;
+  }
+  
+  /* Container for acceptance test fields */
+  .acceptance-test-container {
+    position: relative; /* Required for absolute positioning of the button */
+    margin-bottom: 0.5rem; /* Space between fields */
+  }
+  
+  /* Style for remove button */
+  .btn--remove {
+    position: absolute; /* Overlay the button */
+    top: 0.2rem; /* Adjust vertical position */
+    right: 0.2rem; /* Adjust horizontal position */
+    background-color: var(--color-accent); /* Red color for remove button */
+    color: white;
+    border: none;
+    width: 24px; /* Tiny square button */
+    height: 24px; /* Tiny square button */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0; /* Remove default padding */
+  }
+  
+  .btn--remove:hover {
+    background-color: #936e6e; /* Darker red on hover */
+  }

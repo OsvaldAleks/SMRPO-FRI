@@ -4,7 +4,7 @@ import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, m
 import Input from "./Input.js";
 import Button from './Button.js';
 
-const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], fromSprintView = false, sprintEnded = false, }) => {
+const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], fromSprintView = false, sprintEnded = false }) => {
   const { user, loading } = useAuth();
 
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
@@ -94,7 +94,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
     try {
       console.log("Attempting to claim subtask at index:", taskIndex);
       console.log("User ID:", user.uid);
-  
+
       const updatedSubtasks = subtasks.map((subtask, index) => {
         if (index === taskIndex) {
           return {
@@ -105,16 +105,16 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
         }
         return subtask;
       });
-  
+
       await claimSubtask(story.id, user.uid, taskIndex);
       console.log("Subtask claim request sent successfully.");
-  
+
       const updatedStory = await getUserStory(story.id);
       console.log("Updated story fetched:", updatedStory);
-  
+
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
-  
+
       if (typeof onUpdate === "function") {
         console.log("Triggering onUpdate callback.");
         onUpdate(story);
@@ -124,7 +124,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
       alert("Failed to claim/unclaim subtask.");
     }
   };
-  
+
   const handleMarkSubtaskAsDone = async (subtaskIndex) => {
     try {
       await markSubtaskAsDone(story.id, subtaskIndex);
@@ -143,7 +143,6 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
       setErrorMessage(err.message);
     }
   };
-
 
   const confirmStoryAsDone = () => {
     setShowAcceptForm(true);  // Odpremo formo za accept
@@ -191,7 +190,9 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
   return (
     <div className="center--box">
       <h1>{story.name}</h1>
-      <p><strong>Description:</strong> {story.description}</p>
+      <p><strong>Description:</strong></p>
+      <p style={{ maxWidth: "400px", wordWrap: "break-word", overflow: "hidden", textOverflow: "ellipsis", textAlign: "justify" }}>
+      {story.description}</p>
       <p><strong>Priority:</strong> {story.priority}</p>
       <p><strong>Business Value:</strong> {story.businessValue}</p>
       <p><strong>Status:</strong> {story.status}</p>
@@ -233,20 +234,22 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
         )}
       </div>
 
-      <h3>Acceptance Criteria</h3>
+      <h3>Acceptance Tests</h3>
       <div className="responsive-table-container3">
         <table className="responsive-table">
           <thead>
             <tr>
               <th>#</th>
-              <th>Criterion</th>
+              <th>Test</th>
             </tr>
           </thead>
           <tbody>
             {story.acceptanceCriteria.map((criteria, index) => (
               <tr key={index}>
                 <td>{index + 1}</td>
-                <td>{criteria}</td>
+                <td style={{ maxWidth: "200px", wordWrap: "break-word", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {criteria}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -283,7 +286,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
                       <td>{sub.timeEstimate}</td>
                       <td style={{ fontWeight: sub.devName ? 'bold' : 'normal', color: sub.suggestedDevName && !sub.devName ? 'gray' : 'inherit' }}>
                         {sub.devName || sub.suggestedDevName || "N/A"}
-                      </td>                 
+                      </td>
                       {userRole === "devs" && (
                         <td>
                           <input
@@ -333,13 +336,12 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
                   value={subtaskTime}
                   onChange={(e) => {
                     const value = e.target.value;
-                
+
                     // Allow negative numbers with up to 2 decimal places
-                        if (/^-?\d*\.?\d{0,2}$/.test(value)) {
-                          setSubtaskTime(e.target.value);
-                        }
-                      }
+                    if (/^-?\d*\.?\d{0,2}$/.test(value)) {
+                      setSubtaskTime(e.target.value);
                     }
+                  }}
                 />
               </div>
               <div style={{ marginBottom: "0.5rem" }}>
@@ -368,6 +370,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
           )}
         </div>
       )}
+
       {/* Accept/Reject buttons, if in sprint view + sprint ended + user is product manager */}
       {fromSprintView && sprintEnded && userRole === "productManagers" && (
         <div style={{ marginTop: "1rem", display: "flex", gap: "1rem" }}>
@@ -412,4 +415,5 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
     </div>
   );
 };
+
 export default UserStoryDetails;

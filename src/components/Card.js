@@ -3,25 +3,25 @@ import { Link } from "react-router-dom";
 import clsx from "clsx";
 import "./style/Card.css"; 
 
-const Card = ({ projectName, userRole, projectDescription, onClick }) => {
+const Card = ({ title, extraContent, extraText, description, onClick }) => {
   return (
     <div
-      className={clsx("card", { "card--no-role": !userRole })}
+      className={clsx("card", { "card--no-role": !extraContent })}
       onClick={onClick}
     >
       <div className="card--header">
         <div className="card--header--left">
-          <h2 className="card--title">{projectName}</h2>
+          <h2 className="card--title">{title}</h2>
           <p className="card--description">
-            {projectDescription} 
+            {description} 
           </p>
         </div>
       </div>
-      {userRole && (
+      {extraContent && (
       <div className="card--team">
         <span>
-          <strong>Your role: </strong> 
-          {userRole=="devs" ? 'Developer': userRole=="scrumMasters" ? 'SCRUM master' : 'Product Owner'}
+          <strong>{extraText} </strong> 
+          {extraContent}
           </span>
       </div>
       )}

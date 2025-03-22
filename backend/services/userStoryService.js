@@ -12,31 +12,30 @@ async function createUserStory(
   businessValue,
   sprintId = [] // <-- default to empty array
 ) {
-  // Validate required fields
   if (!projectId || !name || !description || !acceptanceCriteria || !priority || businessValue === undefined) {
     throw new Error("All fields except sprintId are required.");
   }
 
-  // Validate acceptance criteria
   if (!Array.isArray(acceptanceCriteria) || acceptanceCriteria.length === 0) {
     throw new Error("Acceptance criteria must be a non-empty array.");
   }
 
-  // Validate business value
   if (typeof businessValue !== "number" || businessValue < 0) {
     throw new Error("Business value must be a positive number.");
   }
 
-  // Check if the project exists
   const projectRef = db.collection("projects").doc(projectId);
   const projectDoc = await projectRef.get();
   if (!projectDoc.exists) throw new Error("Project not found.");
 
-  // Check if a story with the same name already exists in the project
+  // Convert name to lowercase for case-insensitive comparison
+  const lowercaseName = name.toLowerCase();
+
+  // Check if a story with the same name (case-insensitive) already exists
   const storiesSnapshot = await db
     .collection("userStories")
     .where("projectId", "==", projectId)
-    .where("name", "==", name)
+    .where("lowercaseName", "==", lowercaseName) // Query against lowercase name
     .get();
 
   if (!storiesSnapshot.empty) {
@@ -50,11 +49,12 @@ async function createUserStory(
     projectId,
     sprintId,
     name,
+    lowercaseName, // Store lowercase version for future lookups
     description,
     acceptanceCriteria,
     priority,
     businessValue,
-    status: "Backlog", // Initial status
+    status: "Backlog",
   };
 
   await storyRef.set(story);

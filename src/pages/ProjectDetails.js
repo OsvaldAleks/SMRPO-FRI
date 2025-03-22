@@ -4,7 +4,8 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getProject, getSprintsForProject, getStoriesForProject } from "../api";
 import { getUserStatus } from "../api";
 import { formatDate } from "../utils/storyUtils.js";
-import Input from '../components/Input.js';
+import Button from '../components/Button.js';
+import Card from '../components/Card.js';
 import './style/ProjectDetails.css';
 import AddSprintForm from "./AddSprintForm";
 import UserStoryForm from "./UserStoryForm";
@@ -21,6 +22,7 @@ const ProjectDetails = () => {
   const [isProductManager, setIsProductManager] = useState(false);
   const [showForm, setShowForm] = useState(0);
   const [userStatuses, setUserStatuses] = useState({});
+  const [showWontHaveStories, setShowWontHaveStories] = useState(false); // State for dropdown visibility
 
   const navigate = useNavigate();
 
@@ -154,20 +156,20 @@ const ProjectDetails = () => {
       if (!project) {
         throw new Error("Project data is not available.");
       }
-  
+
       const storiesData = await getStoriesForProject(project.id);
-  
+
       const sortedStories = (storiesData.stories || []).sort((a, b) => {
         return a.name.localeCompare(b.name);
       });
-  
+
       setStories(sortedStories);
     } catch (error) {
       console.error("Failed to fetch stories:", error);
       setError("Failed to load stories. Please try again later.");
     }
   };
-  
+
   const handleSprintClick = (sprintId) => {
     navigate(`/project/${projectName}/sprint/${sprintId}`);
   };
@@ -192,12 +194,22 @@ const ProjectDetails = () => {
     return <div>Project not found.</div>;
   }
 
-  // Filtri za prikaz
-  const completedStories = stories.filter((story) => story.status === "Completed");
-  const storiesWithSprint = stories.filter(
+  // Filter stories with priority "won't have this time" (case-insensitive)
+  const wontHaveStories = stories.filter(
+    (story) => story.priority?.toLowerCase() === "won't have this time"
+  );
+
+  // Filter out "won't have this time" stories from other sections
+  const filteredStories = stories.filter(
+    (story) => story.priority?.toLowerCase() !== "won't have this time"
+  );
+
+  // Filtri za prikaz (excluding "won't have this time" stories)
+  const completedStories = filteredStories.filter((story) => story.status === "Completed");
+  const storiesWithSprint = filteredStories.filter(
     (story) => story.sprintId && story.sprintId.length > 0 && story.status !== "Completed"
   );
-  const storiesWithoutSprint = stories.filter(
+  const storiesWithoutSprint = filteredStories.filter(
     (story) => (!story.sprintId || story.sprintId.length === 0) && story.status !== "Completed"
   );
 
@@ -205,9 +217,11 @@ const ProjectDetails = () => {
     <>
       <div className="center--box">
         <h1>{project.name}</h1>
-        {project.description && (
-          <p className="project-description">{project.description}</p>
-        )}
+        <div className="project-description-container">
+          {project.description && (
+            <p className="project-description">{project.description}</p>
+          )}
+        </div>
 
         {/* --- Members --- */}
         <h2>Members</h2>
@@ -252,6 +266,20 @@ const ProjectDetails = () => {
         {/* --- Sprints --- */}
         <div>
           <h2>Sprints</h2>
+          {isScrumMaster && (
+            <div className="btn-container">
+              <div className="btn--left"></div>
+              <div className="btn--right">
+                <Button
+                  variant={"secondary"}
+                  onClick={() => handleToggleForm(1)}
+                  className={showForm === 1 ? "add-button selected" : "add-button"}
+                >
+                  <span className={showForm === 1 ? "rotated" : ""}>+</span>
+                </Button>
+              </div>
+            </div>
+          )}
           <div className="grid-container">
             {sprints.length > 0 ? (
               sprints.map((sprint, index) => (
@@ -272,62 +300,76 @@ const ProjectDetails = () => {
             ) : (
               !isScrumMaster && <p>No sprints found for this project.</p>
             )}
-            {/* Add Sprint Button */}
-            {isScrumMaster && (
-              <button
-                className={showForm === 1 ? "add-button selected" : "add-button"}
-                onClick={() => handleToggleForm(1)}
-              >
-                <span className={showForm === 1 ? "rotated" : ""}>+</span>
-              </button>
-            )}
           </div>
 
           {/* --- Stories --- */}
           <div>
             <h2>Stories</h2>
-
-            <h3>Stories not in Sprints</h3>
-            <div className="grid-container">
-              {storiesWithoutSprint.length > 0 ? (
-                storiesWithoutSprint.map((story) => (
-                  <div
-                    key={story.id}
-                    className="grid-item story"
-                    onClick={() => handleStoryClick(story.id)}
+            {(isScrumMaster || isProductManager) && (
+              <div className="btn-container">
+                <div className="btn--left"></div>
+                <div className="btn--right">
+                  <Button
+                    variant={"secondary"}
+                    onClick={() => handleToggleForm(2)}
+                    className={showForm === 2 ? "add-button selected" : "add-button"}
                   >
-                    <h2>{story.name}</h2>
-                    <p>{story.description}</p>
-                  </div>
-                ))
-              ) : (
-                !(isScrumMaster || isProductManager) && (
-                  <p>No stories without sprint found for this project.</p>
-                )
-              )}
-              {/* Add Story Button */}
-              {(isScrumMaster || isProductManager) && (
-                <button
-                  className={showForm === 2 ? "add-button selected" : "add-button"}
-                  onClick={() => handleToggleForm(2)}
-                >
-                  <span className={showForm === 2 ? "rotated" : ""}>+</span>
-                </button>
+                    <span className={showForm === 2 ? "rotated" : ""}>+</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Dropdown for "won't have this time" stories */}
+            <div style={{ marginBottom: "1rem" }}>
+              <h3
+                style={{ cursor: "pointer"}}
+                onClick={() => setShowWontHaveStories(!showWontHaveStories)}
+              >
+                {showWontHaveStories ? "▼" : "▶"} Won't Have This Time Stories
+              </h3>
+              {showWontHaveStories && (
+                <div className="project-list">
+                  {wontHaveStories.length > 0 ? (
+                    wontHaveStories.map((story) => (
+                      <Card
+                        key={story.id}
+                        title={story.name}
+                        description={story.description}
+                        onClick={() => handleStoryClick(story.id)}
+                      />
+                    ))
+                  ) : (
+                    <p>No stories with priority "won't have this time".</p>
+                  )}
+                </div>
               )}
             </div>
 
+            <h3>Stories not in Sprints</h3>
+            <div className="project-list">
+              {storiesWithoutSprint.map((story) => (
+                <Card
+                  key={story.id}
+                  title={story.name}
+                  description={story.description}
+                  onClick={() => handleStoryClick(story.id)}
+                  extraText="Story Points: "
+                  extraContent={story.storyPoints || "unset"}
+                />
+              ))}
+            </div>
+
             <h3>Stories in Sprints</h3>
-            <div className="grid-container">
+            <div className="project-list">
               {storiesWithSprint.length > 0 ? (
                 storiesWithSprint.map((story) => (
-                  <div
+                  <Card
                     key={story.id}
-                    className="grid-item story"
+                    title={story.name}
+                    description={story.description}
                     onClick={() => handleStoryClick(story.id)}
-                  >
-                    <h2>{story.name}</h2>
-                    <p>{story.description}</p>
-                  </div>
+                  />
                 ))
               ) : (
                 <p>No stories with sprint found for this project.</p>
@@ -336,17 +378,15 @@ const ProjectDetails = () => {
 
             {/* --- NEW: Completed Stories --- */}
             <h3>Completed Stories</h3>
-            <div className="grid-container">
+            <div className="project-list">
               {completedStories.length > 0 ? (
                 completedStories.map((story) => (
-                  <div
+                  <Card
                     key={story.id}
-                    className="grid-item story"
+                    title={story.name}
+                    description={story.description}
                     onClick={() => handleStoryClick(story.id)}
-                  >
-                    <h2>{story.name}</h2>
-                    <p>{story.description}</p>
-                  </div>
+                  />
                 ))
               ) : (
                 <p>No completed stories found for this project.</p>
