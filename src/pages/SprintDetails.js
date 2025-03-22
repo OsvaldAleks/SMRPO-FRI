@@ -39,6 +39,30 @@ const SprintDetails = () => {
     return currentDate >= startDate && currentDate <= endDate;
   };
 
+  // Calculate the total story points of stories already in the sprint
+  const calculateSprintStoryPoints = () => {
+    return sprintStories.reduce((total, story) => {
+      return total + (story.storyPoints || 0);
+    }, 0);
+  };
+
+  // Calculate the total story points of the selected stories
+  const calculateSelectedStoryPoints = () => {
+    return selectedStories.reduce((total, storyId) => {
+      const story = stories.find((s) => s.id === storyId);
+      return total + (story?.storyPoints || 0);
+    }, 0);
+  };
+
+  // Check if adding a story would exceed the sprint's velocity
+  const wouldExceedVelocity = (storyId) => {
+    const story = stories.find((s) => s.id === storyId);
+    const sprintPoints = calculateSprintStoryPoints();
+    const selectedPoints = calculateSelectedStoryPoints();
+    const totalPoints = sprintPoints + selectedPoints + (story?.storyPoints || 0);
+    return totalPoints > sprint.velocity;
+  };
+
   // Fetch Sprint Data
   useEffect(() => {
     if (sprintId) {
@@ -136,11 +160,17 @@ const SprintDetails = () => {
 
   // Handle checkbox change for adding stories to sprint
   const handleCheckboxChange = (storyId) => {
-    setSelectedStories((prevSelected) =>
-      prevSelected.includes(storyId)
-        ? prevSelected.filter((id) => id !== storyId)
-        : [...prevSelected, storyId]
-    );
+    if (selectedStories.includes(storyId)) {
+      // Allow unselecting regardless of velocity
+      setSelectedStories((prevSelected) =>
+        prevSelected.filter((id) => id !== storyId)
+      );
+    } else {
+      // Prevent selecting if it would exceed velocity
+      if (!wouldExceedVelocity(storyId)) {
+        setSelectedStories((prevSelected) => [...prevSelected, storyId]);
+      }
+    }
   };
 
   // Handle adding stories to sprint
@@ -200,6 +230,15 @@ const SprintDetails = () => {
                 {notInAnySprint.map((story) => {
                   const hasPoints =
                     story.storyPoints !== undefined && story.storyPoints !== null;
+                  const isDisabled =
+                    !selectedStories.includes(story.id) &&
+                    (wouldExceedVelocity(story.id) || !hasPoints);
+                  const tooltip = isDisabled
+                    ? wouldExceedVelocity(story.id)
+                      ? "Cannot add story, because sprint velocity would be exceeded"
+                      : "Missing story points"
+                    : "";
+
                   return (
                     <tr
                       key={story.id}
@@ -208,10 +247,11 @@ const SprintDetails = () => {
                       <td>
                         <input
                           type="checkbox"
-                          disabled={!hasPoints}
+                          disabled={isDisabled}
                           checked={selectedStories.includes(story.id)}
                           onChange={() => handleCheckboxChange(story.id)}
-                          style={{ cursor: hasPoints ? "pointer" : "not-allowed" }}
+                          style={{ cursor: isDisabled ? "not-allowed" : "pointer" }}
+                          title={tooltip} // Add tooltip here
                         />
                       </td>
                       <td
@@ -220,7 +260,7 @@ const SprintDetails = () => {
                       >
                         {story.name}
                         {!hasPoints && (
-                          <span style={{ marginLeft: "8px", color: "red" }}>
+                          <span style={{ marginLeft: "8px", color: "var(--color-accent)" }}>
                             (Missing story points)
                           </span>
                         )}
