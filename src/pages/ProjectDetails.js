@@ -320,7 +320,7 @@ const ProjectDetails = () => {
               </div>
             )}
 
-            {/* Dropdown for "won't have this time" stories */}
+            {wontHaveStories.length > 0 && (
             <div style={{ marginBottom: "1rem" }}>
               <h3
                 style={{ cursor: "pointer"}}
@@ -330,7 +330,7 @@ const ProjectDetails = () => {
               </h3>
               {showWontHaveStories && (
                 <div className="project-list">
-                  {wontHaveStories.length > 0 ? (
+                  {wontHaveStories.length > 0 && (
                     wontHaveStories.map((story) => (
                       <Card
                         key={story.id}
@@ -339,59 +339,62 @@ const ProjectDetails = () => {
                         onClick={() => handleStoryClick(story.id)}
                       />
                     ))
-                  ) : (
-                    <p>No stories with priority "won't have this time".</p>
                   )}
                 </div>
               )}
-            </div>
+              </div>
+            )}
 
-            <h3>Stories not in Sprints</h3>
-            <div className="project-list">
-              {storiesWithoutSprint.map((story) => (
-                <Card
+            {storiesWithoutSprint.length > 0 && (
+            <>
+              <h3>Stories not in Sprints</h3>
+              <div className="project-list">
+                {storiesWithoutSprint.map((story) => (
+                  <Card
                   key={story.id}
                   title={story.name}
                   description={story.description}
                   onClick={() => handleStoryClick(story.id)}
                   extraText="Story Points: "
                   extraContent={story.storyPoints || "unset"}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {storiesWithSprint.length > 0 && (
+            <>
+              <h3>Stories in Sprints</h3>
+              <div className="project-list">
+                {storiesWithSprint.map((story) => (
+                  <Card
+                    key={story.id}
+                    title={story.name}
+                    description={story.description}
+                    onClick={() => handleStoryClick(story.id)}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+
+          {completedStories.length > 0 && (
+            <>
+              <h3>Completed Stories</h3>
+              <div className="project-list">
+                {completedStories.map((story) => (
+                  <Card
+                    key={story.id}
+                    title={story.name}
+                    description={story.description}
+                    onClick={() => handleStoryClick(story.id)}
                 />
-              ))}
-            </div>
-
-            <h3>Stories in Sprints</h3>
-            <div className="project-list">
-              {storiesWithSprint.length > 0 ? (
-                storiesWithSprint.map((story) => (
-                  <Card
-                    key={story.id}
-                    title={story.name}
-                    description={story.description}
-                    onClick={() => handleStoryClick(story.id)}
-                  />
-                ))
-              ) : (
-                <p>No stories with sprint found for this project.</p>
-              )}
-            </div>
-
-            {/* --- NEW: Completed Stories --- */}
-            <h3>Completed Stories</h3>
-            <div className="project-list">
-              {completedStories.length > 0 ? (
-                completedStories.map((story) => (
-                  <Card
-                    key={story.id}
-                    title={story.name}
-                    description={story.description}
-                    onClick={() => handleStoryClick(story.id)}
-                  />
-                ))
-              ) : (
-                <p>No completed stories found for this project.</p>
-              )}
-            </div>
+                ))}
+              </div>
+            </>
+          )}
           </div>
         </div>
       </div>

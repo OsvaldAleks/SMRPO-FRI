@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getUserStory } from "../api.js";
+import { getUserStory, getProject } from "../api.js";
 import { useParams } from "react-router-dom";
 import StoryDetailsComponent from '../components/StoryDetailsComponent.js';
 import { ProjectsContext } from "../context/ProjectsContext.js";
@@ -12,11 +12,7 @@ const UserStoryDetails = () => {
   const [error, setError] = useState(null);
   const { projects, loading: projectsLoading } = useContext(ProjectsContext);
   const [role, setRole] = useState(null);
-
-  const [showAcceptForm, setShowAcceptForm] = useState(false);
-  const [acceptComment, setAcceptComment] = useState("");
-  const [showRejectForm, setShowRejectForm] = useState(false);
-  const [rejectComment, setRejectComment] = useState("");
+  const [developers, setDevelopers] = useState([]);
 
   useEffect(() => {
     if (!storyId) return;
@@ -36,6 +32,12 @@ const UserStoryDetails = () => {
 
         if (currentProject) {
           setRole(currentProject.userRole);
+          // Fetch the project details to get the list of developers
+          getProject(currentProject.projectName, user.uid)
+            .then((projectData) => {
+              setDevelopers(projectData.project.devs.map(dev => dev.username) || []);
+            })
+            .catch((err) => setError(err.message));
         } else {
           setRole(null);
         }
@@ -48,7 +50,7 @@ const UserStoryDetails = () => {
   if (!story) return <p>Loading story details...</p>;
 
   return (
-    <StoryDetailsComponent story={story} userRole={role} />
+    <StoryDetailsComponent story={story} userRole={role} projectDevelopers={developers} />
   );
 };
 

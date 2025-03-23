@@ -322,7 +322,9 @@ async function evaluateUserStory(storyId, isAccepted, comment, productManagerId)
   if (typeof isAccepted !== "boolean") {
     throw new Error("isAccepted mora biti true ali false.");
   }
-
+  if (!isAccepted && (!comment || comment.trim().length === 0)) {
+    throw new Error("Komentar je obvezen, če je zgodba zavrnjena.");
+  }
   // 2) Dobimo user story iz baze
   const storyRef = db.collection("userStories").doc(storyId);
   const storyDoc = await storyRef.get();
@@ -340,7 +342,6 @@ async function evaluateUserStory(storyId, isAccepted, comment, productManagerId)
   //    Ker je v zgodbi lahko več sprintov, bomo preverili,
   //    ali je vsaj eden od njih zares zaključen (end_date < zdaj).
   const sprintIds = storyData.sprintId;
-  const now = new Date();
 
   const sprintsSnap = await db
     .collection("sprints")
@@ -349,19 +350,6 @@ async function evaluateUserStory(storyId, isAccepted, comment, productManagerId)
 
   if (sprintsSnap.empty) {
     throw new Error("Noben sprint znotraj user storyja ne obstaja v bazi.");
-  }
-
-  // Preverimo, ali obstaja vsaj en sprint, ki je končan
-  let sprintEnded = false;
-  sprintsSnap.forEach((doc) => {
-    const sprintData = doc.data();
-    if (sprintData.end_date && sprintData.end_date < now.toISOString()) {
-      sprintEnded = true;
-    }
-  });
-
-  if (!sprintEnded) {
-    throw new Error("Sprint še ni končan, ocenjevanje ni mogoče.");
   }
 
   // 5) Glede na isAccepted = true/false pripravimo posodobitvena polja
@@ -381,7 +369,7 @@ async function evaluateUserStory(storyId, isAccepted, comment, productManagerId)
     // Zavrnjena zgodba -> nujno shranimo comment, da se vidi v podrobnem pogledu
     // in jo odstranimo iz sprinta, da se vrne v "stories not in sprint"
     updateData.acceptanceStatus = "REJECTED";
-    updateData.rejectionComment = comment || "No comment provided";
+    updateData.rejectionComment = comment;
     updateData.status = "Rejected";
 
     // Zgodbo odstranimo iz polja sprintId

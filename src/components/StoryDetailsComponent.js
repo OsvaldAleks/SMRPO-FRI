@@ -3,18 +3,15 @@ import { useAuth } from "../context/AuthContext";
 import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, markSubtaskAsDone, evaluateUserStory } from "../api.js";
 import Input from "./Input.js";
 import Button from './Button.js';
+import { type } from "@testing-library/user-event/dist/type/index.js";
 
-const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], fromSprintView = false, sprintEnded = false }) => {
+const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = []}) => {
   const { user, loading } = useAuth();
 
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
   const [originalStoryPointValue, setOriginalStoryPointValue] = useState(story.storyPoints || "");
   const [subtasks, setSubtasks] = useState(story.subtasks || []);
   const [errorMessage, setErrorMessage] = useState("");
-
-  const [showAcceptForm, setShowAcceptForm] = useState(false);
-  const [acceptComment, setAcceptComment] = useState("");
-
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [rejectComment, setRejectComment] = useState("");
 
@@ -144,25 +141,18 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
     }
   };
 
-  const confirmStoryAsDone = () => {
-    setShowAcceptForm(true);  // Odpremo formo za accept
-    setAcceptComment("");     // Resetiramo komentar
-  };
-
-  const handleAcceptSubmit = async () => {
+  const confirmStoryAsDone = async () => {
     try {
-      // Pokličemo evaluateUserStory
-      await evaluateUserStory(story.id, true, acceptComment);
+      await evaluateUserStory(story.id, true, "");
       const updatedStory = await getUserStory(story.id);
       if (typeof onUpdate === 'function') {
         onUpdate(updatedStory);
       }
-      alert("Story accepted!");
-    } catch (error) {
+      if(typeof onUpdate === 'function') {
+        onUpdate(updatedStory);
+      }
+      } catch (error) {
       setErrorMessage(error.message);
-    } finally {
-      setShowAcceptForm(false);
-      setAcceptComment("");
     }
   };
 
@@ -172,13 +162,20 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
   };
 
   const handleRejectSubmit = async () => {
+    if (!rejectComment) {
+      setErrorMessage("Rejection comment is required.");
+      return;
+    }
+
     try {
       await evaluateUserStory(story.id, false, rejectComment);
       const updatedStory = await getUserStory(story.id);
       if (typeof onUpdate === 'function') {
         onUpdate(updatedStory);
       }
-      alert("Story rejected!");
+      if(typeof onUpdate === 'function') {
+        onUpdate(updatedStory);
+      }    
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -186,6 +183,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
       setRejectComment("");
     }
   };
+
 
   return (
     <div className="center--box">
@@ -267,7 +265,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
                   <th>Description</th>
                   <th>Time[h]</th>
                   <th>Dev</th>
-                  {userRole === "devs" && <th>Claim</th>}
+                  {(userRole === "devs" || userRole === "scrumMasters") && <th>Claim</th>}
                 </tr>
               </thead>
               <tbody>
@@ -287,7 +285,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
                       <td style={{ fontWeight: sub.devName ? 'bold' : 'normal', color: sub.suggestedDevName && !sub.devName ? 'gray' : 'inherit' }}>
                         {sub.devName || sub.suggestedDevName || "N/A"}
                       </td>
-                      {userRole === "devs" && (
+                      {(userRole === "devs" || userRole === "scrumMasters") && (
                         <td>
                           <input
                             type="checkbox"
@@ -301,7 +299,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={userRole === "devs" ? "6" : "5"}>No subtasks yet.</td>
+                    <td colSpan={(userRole === "devs" || userRole === "scrumMasters") ? "6" : "5"}>No subtasks yet.</td>
                   </tr>
                 )}
               </tbody>
@@ -310,7 +308,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
         </>
       )}
 
-      {(userRole === "scrumMasters" || userRole === "devs") && (
+      {(userRole === "scrumMasters" || userRole === "devs") && story.sprintId.length != 0 && (
         <div style={{ marginTop: "1rem" }}>
           {!showSubtaskForm ? (
             <Button className="btn--block" onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</Button>
@@ -372,27 +370,10 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
       )}
 
       {/* Accept/Reject buttons, if in sprint view + sprint ended + user is product manager */}
-      {fromSprintView && sprintEnded && userRole === "productManagers" && (
-        <div style={{ marginTop: "1rem", display: "flex", gap: "1rem" }}>
-          <Button onClick={confirmStoryAsDone}>Accept Story</Button>
-          <Button onClick={rejectStory}>Reject Story</Button>
-        </div>
-      )}
-
-      {/* Forma za Accept Story: */}
-      {showAcceptForm && (
-        <div style={{ marginTop: "1rem" }}>
-          <h4>Accept Story</h4>
-          <label>Comment (optional):</label>
-          <Input
-            type="text"
-            value={acceptComment}
-            onChange={(e) => setAcceptComment(e.target.value)}
-          />
-          <div style={{ marginTop: "0.5rem", display: "flex", gap: "1rem" }}>
-            <Button onClick={handleAcceptSubmit}>Confirm Accept</Button>
-            <Button onClick={() => setShowAcceptForm(false)}>Cancel</Button>
-          </div>
+      {story.sprintId.length != 0 && userRole === "productManagers" && story.status != 'Completed' && (
+        <div style={{ marginTop: "1rem", display: "flex", gap: "0" }}>
+          <Button className={story.status === 'Done' ? 'btn--accent btn--half' : "btn--accent btn--block"} onClick={rejectStory}>Reject</Button>
+          {story.status === 'Done' && <Button className="btn--half" onClick={confirmStoryAsDone}>Accept</Button>}
         </div>
       )}
 
@@ -401,14 +382,16 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], f
         <div style={{ marginTop: "1rem" }}>
           <h4>Reject Story</h4>
           <label>Reason:</label>
-          <Input
-            type="text"
+          <textarea
+            className="textarea"
             value={rejectComment}
             onChange={(e) => setRejectComment(e.target.value)}
+            rows="4"
+            style={{ width: "100%" }}
           />
-          <div style={{ marginTop: "0.5rem", display: "flex", gap: "1rem" }}>
-            <Button onClick={handleRejectSubmit}>Confirm Reject</Button>
-            <Button onClick={() => setShowRejectForm(false)}>Cancel</Button>
+          <div style={{ marginTop: "0.5rem", display: "flex", gap: "0" }}>
+            <Button className="btn--half btn--accent" onClick={() => setShowRejectForm(false)}>Cancel</Button>
+            <Button className="btn--half" onClick={handleRejectSubmit}>Confirm Reject</Button>
           </div>
         </div>
       )}

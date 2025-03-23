@@ -209,8 +209,9 @@ const SprintDetails = () => {
     return <div>Loading...</div>;
   }
 
+  // Filter out "won't have this time" stories from the addition table
   const notInAnySprint = stories.filter(
-    (story) => !story.sprintId || story.sprintId.length === 0
+    (story) => (!story.sprintId || story.sprintId.length === 0) && story.priority?.toLowerCase() !== "won't have this time"
   );
 
   return (
