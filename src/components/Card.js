@@ -1,12 +1,11 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import clsx from "clsx";
 import "./style/Card.css"; 
 
-const Card = ({ title, extraContent, extraText, description, onClick }) => {
+const Card = ({ title, extraContent, extraText, description, onClick, colorScheme="card--default" }) => {
   return (
     <div
-      className={clsx("card", { "card--no-role": !extraContent })}
+      className={clsx("card", { "card--no-role": !extraContent }, colorScheme)}
       onClick={onClick}
     >
       <div className="card--header">

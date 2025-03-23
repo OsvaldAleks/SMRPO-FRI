@@ -7,7 +7,7 @@
 }
 
 .roles-grid div {
-  background-color: #b5c7bf;
+  background-color: #cbd8df;
   padding: 1rem;
   border-radius: var(--border-radius);
 }
@@ -94,4 +94,29 @@ color: #fff;
   word-wrap: break-word;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.header-with-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.header-with-button h2 {
+  margin: 0;
+  margin-bottom: 2rem;
+}
+
+.add-button {
+  position: absolute;
+  right: 0;
+}
+
+.add-button.selected {
+  background-color: var(--color-accent);
+}
+
+.add-button span.rotated {
+  transform: rotate(45deg);
 }

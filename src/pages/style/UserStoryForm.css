@@ -24,8 +24,8 @@
   /* Style for remove button */
   .btn--remove {
     position: absolute; /* Overlay the button */
-    top: 0.2rem; /* Adjust vertical position */
-    right: 0.2rem; /* Adjust horizontal position */
+    top: 0; /* Adjust vertical position */
+    right: 0.8rem; /* Adjust horizontal position */
     background-color: var(--color-accent); /* Red color for remove button */
     color: white;
     border: none;

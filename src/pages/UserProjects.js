@@ -29,18 +29,19 @@ const UserProjects = () => {
         <Button variant="goback" onClick={goBackHandler} />
       </span>
       <h1>Projects</h1>
-      <h2>Select your project</h2>
-      <div className="btn-container">
-        <div className="btn--left">
-          <Input type="text" placeholder="Search" />
-        </div>
-        <div className="btn--right">
-          {user?.system_rights === "Admin" && !loading && (
-            <Button variant={"secondary"} onClick={() => navigate(`/newProject`)}>
+      <div className="block--element">
+      <div className="header-with-button">
+        <h2>Select your project</h2>
+        <Input type="text" placeholder="Search" hidden />
+        {user?.system_rights === "Admin" && !loading && (
+            <Button 
+            variant={"secondary"} 
+            onClick={() => navigate(`/newProject`)}
+            className="add-button">
               +
             </Button>
           )}
-        </div>
+      </div>
       </div>
       
       {otherProjects.length > 0 && (

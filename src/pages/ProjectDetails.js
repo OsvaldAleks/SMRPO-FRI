@@ -225,6 +225,7 @@ const ProjectDetails = () => {
 
         {/* --- Members --- */}
         <h2>Members</h2>
+        <div className="block--element">
         <div className="roles-grid">
           {/* Product Managers */}
           <div>
@@ -262,24 +263,23 @@ const ProjectDetails = () => {
             </ul>
           </div>
         </div>
+        </div>
 
         {/* --- Sprints --- */}
         <div>
-          <h2>Sprints</h2>
-          {isScrumMaster && (
-            <div className="btn-container">
-              <div className="btn--left"></div>
-              <div className="btn--right">
-                <Button
-                  variant={"secondary"}
-                  onClick={() => handleToggleForm(1)}
-                  className={showForm === 1 ? "add-button selected" : "add-button"}
-                >
-                  <span className={showForm === 1 ? "rotated" : ""}>+</span>
-                </Button>
-              </div>
-            </div>
-          )}
+        <div className="block--element">
+          <div className="header-with-button">
+            <h2>Sprints</h2>
+            {isScrumMaster && (
+              <Button
+                variant={"secondary"}
+                onClick={() => handleToggleForm(1)}
+                className={showForm === 1 ? "add-button selected" : "add-button"}
+              >
+                <span className={showForm === 1 ? "rotated" : ""}>+</span>
+              </Button>
+            )}
+          </div>
           <div className="grid-container">
             {sprints.length > 0 ? (
               sprints.map((sprint, index) => (
@@ -301,100 +301,101 @@ const ProjectDetails = () => {
               !isScrumMaster && <p>No sprints found for this project.</p>
             )}
           </div>
-
+        </div>
           {/* --- Stories --- */}
-          <div>
-            <h2>Stories</h2>
-            {(isScrumMaster || isProductManager) && (
-              <div className="btn-container">
-                <div className="btn--left"></div>
-                <div className="btn--right">
-                  <Button
-                    variant={"secondary"}
-                    onClick={() => handleToggleForm(2)}
-                    className={showForm === 2 ? "add-button selected" : "add-button"}
-                  >
-                    <span className={showForm === 2 ? "rotated" : ""}>+</span>
-                  </Button>
-                </div>
-              </div>
-            )}
+          <div className="block--element">
+            <div className="header-with-button">
+              <h2>Stories</h2>
+              {(isScrumMaster || isProductManager) && (
+                <Button
+                  variant={"secondary"}
+                  onClick={() => handleToggleForm(2)}
+                  className={showForm === 2 ? "add-button selected" : "add-button"}
+                >
+                  <span className={showForm === 2 ? "rotated" : ""}>+</span>
+                </Button>
+              )}
+            </div>
 
             {wontHaveStories.length > 0 && (
-            <div style={{ marginBottom: "1rem" }}>
-              <h3
-                style={{ cursor: "pointer"}}
-                onClick={() => setShowWontHaveStories(!showWontHaveStories)}
-              >
-                {showWontHaveStories ? "▼" : "▶"} Won't Have This Time Stories
-              </h3>
-              {showWontHaveStories && (
-                <div className="project-list">
-                  {wontHaveStories.length > 0 && (
-                    wontHaveStories.map((story) => (
-                      <Card
-                        key={story.id}
-                        title={story.name}
-                        description={story.description}
-                        onClick={() => handleStoryClick(story.id)}
-                      />
-                    ))
-                  )}
-                </div>
-              )}
+              <div style={{ marginBottom: "1rem" }}>
+                <h3
+                  style={{ cursor: "pointer"}}
+                  onClick={() => setShowWontHaveStories(!showWontHaveStories)}
+                >
+                  {showWontHaveStories ? "▼" : "▶"} Won't Have This Time Stories
+                </h3>
+                {showWontHaveStories && (
+                  <div className="project-list">
+                    {wontHaveStories.length > 0 && (
+                      wontHaveStories.map((story) => (
+                        <Card
+                          key={story.id}
+                          title={story.name}
+                          description={story.description}
+                          onClick={() => handleStoryClick(story.id)}
+                          colorScheme="card--primary"
+                          />
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
             {storiesWithoutSprint.length > 0 && (
-            <>
-              <h3>Stories not in Sprints</h3>
-              <div className="project-list">
-                {storiesWithoutSprint.map((story) => (
-                  <Card
-                  key={story.id}
-                  title={story.name}
-                  description={story.description}
-                  onClick={() => handleStoryClick(story.id)}
-                  extraText="Story Points: "
-                  extraContent={story.storyPoints || "unset"}
-                  />
-                ))}
-              </div>
-            </>
-          )}
+              <>
+                <h3>Stories not in Sprints</h3>
+                <div className="project-list">
+                  {storiesWithoutSprint.map((story) => (
+                    <Card
+                      key={story.id}
+                      title={story.name}
+                      description={story.description}
+                      onClick={() => handleStoryClick(story.id)}
+                      extraText="Story Points: "
+                      extraContent={story.storyPoints || "unset"}
+                      colorScheme="card--primary"
+                    />
+                  ))}
+                </div>
+              </>
+            )}
 
-          {storiesWithSprint.length > 0 && (
-            <>
-              <h3>Stories in Sprints</h3>
-              <div className="project-list">
-                {storiesWithSprint.map((story) => (
-                  <Card
-                    key={story.id}
-                    title={story.name}
-                    description={story.description}
-                    onClick={() => handleStoryClick(story.id)}
-                  />
-                ))}
-              </div>
-            </>
-          )}
+            {storiesWithSprint.length > 0 && (
+              <>
+                <h3>Stories in Sprints</h3>
+                <div className="project-list">
+                  {storiesWithSprint.map((story) => (
+                    <Card
+                      key={story.id}
+                      title={story.name}
+                      description={story.description}
+                      onClick={() => handleStoryClick(story.id)}
+                      colorScheme="card--primary"
+                    />
+                  ))}
+                </div>
+              </>
+            )}
 
 
-          {completedStories.length > 0 && (
-            <>
-              <h3>Completed Stories</h3>
-              <div className="project-list">
-                {completedStories.map((story) => (
-                  <Card
-                    key={story.id}
-                    title={story.name}
-                    description={story.description}
-                    onClick={() => handleStoryClick(story.id)}
-                />
-                ))}
-              </div>
-            </>
-          )}
+            {completedStories.length > 0 && (
+              <>
+                <h3>Completed Stories</h3>
+                <div className="project-list">
+                  {completedStories.map((story) => (
+                    <Card
+                      key={story.id}
+                      title={story.name}
+                      description={story.description}
+                      onClick={() => handleStoryClick(story.id)}
+                      colorScheme="card--primary"
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

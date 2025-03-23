@@ -1,4 +1,3 @@
-
 /* button */
 
 .btn {
@@ -13,12 +12,11 @@
     font-size: 1.8rem;
     font-weight: 600;
     padding: 1rem 3.5rem;
-    width: 200px;
     text-transform: uppercase;
     white-space: nowrap;
     text-decoration: none;
-    margin: 1rem;
     transition: 0.2s;
+    margin: 1rem auto; /* Center the button horizontally */
 }
 
 .btn--primery{
@@ -43,24 +41,25 @@
     background: #936e6e;
 }
 .btn--block{
-    width: 100%;
     display: block;
+    width: 90%;
+    margin: 1rem auto; /* Center the block button horizontally */
 }
 .btn--half {
     width: 50%;
-  }
+    margin: 1rem auto; /* Center the half-width button horizontally */
+}
 .btn--outline{
     background: #fff;
     color: var(--color-secondary);
     border: 2px solid var(--color-secondary); 
-
 }
 .btn--outline:hover{
     background: var(--color-secondary);
     color: #fff;
- }
+}
 
- .btn--goback{
+.btn--goback{
     position: absolute;
     width: 15px;
     height: 30px;
@@ -72,41 +71,35 @@
     justify-content: center;
     background-color: transparent;
     margin-top: 2rem;
- }
- .btn--goback::before{
+}
+.btn--goback::before{
     content: "←"; 
     font-size: 30px;
     transition: margin 0.15s;
-  }
-
-  .btn--goback:hover::before{
+}
+.btn--goback:hover::before{
     background-color: transparent;
     color: var(--color-accent);
-     margin-right: 20px;
-  }
+    margin-right: 20px;
+}
 
-  .btn-container {
+.btn-container {
     display: flex;
     justify-content: space-between; /* Space between buttons */
     align-items: center;
     width: 100%;
-  }
-  
+}
 
-  
-  .btn--left {
-   margin-left: 4.2rem;
-  }
-  
-  .btn--right {
-    margin-right:4rem;
-  }
-  
+.btn--left {
+    margin-left: 4.2rem;
+}
 
+.btn--right {
+    margin-right: 4rem;
+}
 
 @media screen and (max-width:1024px) {
     .btn {
         font-size: 2rem; 
-
     }
 }

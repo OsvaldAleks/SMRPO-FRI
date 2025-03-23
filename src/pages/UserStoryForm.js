@@ -138,7 +138,7 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
               )}
             </div>
           ))}
-          <Button className="btn--block" type="button" onClick={addAcceptanceTestField}>
+          <Button type="button" onClick={addAcceptanceTestField}>
             +
           </Button>
         </div>
