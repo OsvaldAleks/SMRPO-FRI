@@ -225,7 +225,6 @@ const ProjectDetails = () => {
 
         {/* --- Members --- */}
         <h2>Members</h2>
-        <div className="block--element">
         <div className="roles-grid">
           {/* Product Managers */}
           <div>
@@ -263,10 +262,8 @@ const ProjectDetails = () => {
             </ul>
           </div>
         </div>
-        </div>
 
         {/* --- Sprints --- */}
-        <div>
         <div className="block--element">
           <div className="header-with-button">
             <h2>Sprints</h2>
@@ -280,27 +277,22 @@ const ProjectDetails = () => {
               </Button>
             )}
           </div>
-          <div className="grid-container">
+          </div>
+          <div className="project-list">
             {sprints.length > 0 ? (
               sprints.map((sprint, index) => (
-                <div
+                <Card
                   key={sprint.id}
-                  className="grid-item sprint"
+                  title={'Sprint #'+(index + 1)}
                   onClick={() => handleSprintClick(sprint.id)}
-                >
-                  <h2>Sprint #{index + 1}</h2>
-                  <p>
-                    <strong>Start Date:</strong> {formatDate(sprint.start_date)}
-                  </p>
-                  <p>
-                    <strong>End Date:</strong> {formatDate(sprint.end_date)}
-                  </p>
-                </div>
-              ))
+                  colorScheme="card--secondary"
+                  extraText={["Start Date: ", "End Date: "]}
+                  extraContent={[formatDate(sprint.start_date), formatDate(sprint.end_date)]}
+                />
+            ))
             ) : (
-              !isScrumMaster && <p>No sprints found for this project.</p>
+              <p>No sprints found for this project.</p>
             )}
-          </div>
         </div>
           {/* --- Stories --- */}
           <div className="block--element">
@@ -315,6 +307,7 @@ const ProjectDetails = () => {
                   <span className={showForm === 2 ? "rotated" : ""}>+</span>
                 </Button>
               )}
+            </div>
             </div>
 
             {wontHaveStories.length > 0 && (
@@ -384,21 +377,25 @@ const ProjectDetails = () => {
               <>
                 <h3>Completed Stories</h3>
                 <div className="project-list">
-                  {completedStories.map((story) => (
-                    <Card
-                      key={story.id}
-                      title={story.name}
-                      description={story.description}
-                      onClick={() => handleStoryClick(story.id)}
-                      colorScheme="card--primary"
-                    />
-                  ))}
+                  {completedStories.map((story) => {
+                    const sprint = sprints.find((sprint) => sprint.id == story.sprintId);
+                    const sprintTitle = sprint ? `Sprint #${sprints.indexOf(sprint) + 1}` : "unset";
+                    return (
+                      <Card
+                        key={story.id}
+                        title={story.name}
+                        description={story.description}
+                        onClick={() => handleStoryClick(story.id)}
+                        colorScheme="card--primary"
+                        extraText={'Completed: '}
+                        extraContent={sprintTitle}
+                      />
+                    );
+                  })}
                 </div>
               </>
             )}
-          </div>
         </div>
-      </div>
 
       {/* --- Add Sprint Form (pop-up) --- */}
       {showForm === 1 && (

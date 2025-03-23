@@ -105,7 +105,8 @@ color: #fff;
 
 .header-with-button h2 {
   margin: 0;
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
 }
 
 .add-button {

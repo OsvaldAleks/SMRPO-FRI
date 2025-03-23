@@ -17,11 +17,21 @@ const Card = ({ title, extraContent, extraText, description, onClick, colorSchem
         </div>
       </div>
       {extraContent && (
-      <div className="card--team">
-        <span>
-          <strong>{extraText} </strong> 
-          {extraContent}
+      <div className="card--extra">
+        {Array.isArray(extraText) && Array.isArray(extraContent) ? (
+          extraText.map((text, index) => (
+            <p key={index}>
+              <strong>{text} </strong> 
+              {extraContent[index]}
+            </p>
+
+          ))
+        ) : (
+          <span>
+            <strong>{extraText} </strong> 
+            {extraContent}
           </span>
+        )}
       </div>
       )}
     </div>
