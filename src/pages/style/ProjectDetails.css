@@ -111,7 +111,14 @@ color: #fff;
 
 .add-button {
   position: absolute;
+}
+
+.add-button:not(.btn-left){
   right: 0;
+}
+
+.add-button.btn-left{
+  left: 0;
 }
 
 .add-button.selected {

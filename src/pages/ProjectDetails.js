@@ -22,11 +22,12 @@ const ProjectDetails = () => {
   const [isProductManager, setIsProductManager] = useState(false);
   const [showForm, setShowForm] = useState(0);
   const [userStatuses, setUserStatuses] = useState({});
-  const [showWontHaveStories, setShowWontHaveStories] = useState(false); // State for dropdown visibility
+  const [showWontHaveStories, setShowWontHaveStories] = useState(false);
+  const [showUncompletedStories, setShowUncompletedStories] = useState(true);
+  const [showCompletedStories, setShowCompletedStories] = useState(true);
 
   const navigate = useNavigate();
 
-  // Ob vsaki spremembi parametra projectName resetiramo state
   useEffect(() => {
     setProject(null);
     setSprints([]);
@@ -37,7 +38,6 @@ const ProjectDetails = () => {
     setError(null);
   }, [projectName]);
 
-  // Ko se user spremeni (auth) ali projectName, preberemo projekt
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -53,7 +53,6 @@ const ProjectDetails = () => {
     return () => unsubscribe();
   }, [projectName]);
 
-  // Ko imamo project, naložimo sprinte in user stories
   useEffect(() => {
     if (project) {
       fetchSprints();
@@ -62,7 +61,6 @@ const ProjectDetails = () => {
     }
   }, [project]);
 
-  // Naložimo "online/offline" status za vse člane projekta
   useEffect(() => {
     const fetchUserStatuses = async () => {
       if (!project) return;
@@ -104,7 +102,6 @@ const ProjectDetails = () => {
     setShowForm((prev) => (prev === formType ? 0 : formType));
   };
 
-  // Preberemo projekt iz backenda
   const fetchProject = async (uid) => {
     try {
       if (!projectName) {
@@ -113,7 +110,6 @@ const ProjectDetails = () => {
 
       const projectData = await getProject(projectName, uid);
 
-      // Preverimo, ali je user Scrum Master ali Product Manager
       if (projectData.project.scrumMasters?.some((sm) => sm.id === uid)) {
         setIsScrumMaster(true);
       }
@@ -130,7 +126,6 @@ const ProjectDetails = () => {
     }
   };
 
-  // Naložimo sprinte
   const fetchSprints = async () => {
     try {
       if (!project) {
@@ -150,7 +145,6 @@ const ProjectDetails = () => {
     }
   };
 
-  // Naložimo user stories
   const fetchStories = async () => {
     try {
       if (!project) {
@@ -194,17 +188,14 @@ const ProjectDetails = () => {
     return <div>Project not found.</div>;
   }
 
-  // Filter stories with priority "won't have this time" (case-insensitive)
   const wontHaveStories = stories.filter(
     (story) => story.priority?.toLowerCase() === "won't have this time"
   );
 
-  // Filter out "won't have this time" stories from other sections
   const filteredStories = stories.filter(
     (story) => story.priority?.toLowerCase() !== "won't have this time"
   );
 
-  // Filtri za prikaz (excluding "won't have this time" stories)
   const completedStories = filteredStories.filter((story) => story.status === "Completed");
   const storiesWithSprint = filteredStories.filter(
     (story) => story.sprintId && story.sprintId.length > 0 && story.status !== "Completed"
@@ -228,24 +219,24 @@ const ProjectDetails = () => {
         <div className="roles-grid">
           {/* Product Managers */}
           <div>
-            <h2>Product Owners</h2>
+            <h2>Product Owner</h2>
             <ul>
               {project.productManagers && project.productManagers.length > 0 ? (
                 project.productManagers.map(renderUserWithStatus)
               ) : (
-                <li>No managers assigned</li>
+                <li>No Product Owner assigned</li>
               )}
             </ul>
           </div>
 
           {/* SCRUM Masters */}
           <div>
-            <h2>SCRUM Masters</h2>
+            <h2>SCRUM Master</h2>
             <ul>
               {project.scrumMasters && project.scrumMasters.length > 0 ? (
                 project.scrumMasters.map(renderUserWithStatus)
               ) : (
-                <li>No SCRUM Masters assigned</li>
+                <li>No SCRUM Master assigned</li>
               )}
             </ul>
           </div>
@@ -310,72 +301,97 @@ const ProjectDetails = () => {
             </div>
             </div>
 
-            {wontHaveStories.length > 0 && (
-              <div style={{ marginBottom: "1rem" }}>
-                <h3
-                  style={{ cursor: "pointer"}}
-                  onClick={() => setShowWontHaveStories(!showWontHaveStories)}
-                >
-                  {showWontHaveStories ? "▼" : "▶"} Won't Have This Time Stories
-                </h3>
-                {showWontHaveStories && (
-                  <div className="project-list">
-                    {wontHaveStories.length > 0 && (
-                      wontHaveStories.map((story) => (
-                        <Card
-                          key={story.id}
-                          title={story.name}
-                          description={story.description}
-                          onClick={() => handleStoryClick(story.id)}
-                          colorScheme="card--primary"
+            {/* UNCOMPLETED STORIES DROPDOWN */}
+            {storiesWithSprint.length > 0 && storiesWithoutSprint.length > 0 && wontHaveStories.length > 0 && (
+              <>
+            <div style={{ marginBottom: "1rem" }}>
+              <h2
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowUncompletedStories(!showUncompletedStories)}
+              >
+                {showUncompletedStories ? "▼" : "▶"} UNCOMPLETED
+              </h2>
+
+                {showUncompletedStories && wontHaveStories.length > 0 && (
+                <div style={{ marginBottom: "1rem" }}>
+                  <h3
+                    style={{ cursor: "pointer"}}
+                    onClick={() => setShowWontHaveStories(!showWontHaveStories)}
+                  >
+                    {showWontHaveStories ? "▼" : "▶"} Won't Have This Time Stories
+                  </h3>
+                  {showWontHaveStories && (
+                    <div className="project-list">
+                      {wontHaveStories.length > 0 && (
+                        wontHaveStories.map((story) => (
+                          <Card
+                            key={story.id}
+                            title={story.name}
+                            description={story.description}
+                            onClick={() => handleStoryClick(story.id)}
+                            colorScheme="card--primary"
+                            />
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+
+              {showUncompletedStories && (
+                <>
+                  {storiesWithoutSprint.length > 0 && (
+                    <>
+                      <h3>Stories not in Sprints</h3>
+                      <div className="project-list">
+                        {storiesWithoutSprint.map((story) => (
+                          <Card
+                            key={story.id}
+                            title={story.name}
+                            description={story.description}
+                            onClick={() => handleStoryClick(story.id)}
+                            extraText="Story Points: "
+                            extraContent={story.storyPoints || "unset"}
+                            colorScheme="card--primary"
                           />
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                        ))}
+                      </div>
+                    </>
+                  )}
 
-            {storiesWithoutSprint.length > 0 && (
-              <>
-                <h3>Stories not in Sprints</h3>
-                <div className="project-list">
-                  {storiesWithoutSprint.map((story) => (
-                    <Card
-                      key={story.id}
-                      title={story.name}
-                      description={story.description}
-                      onClick={() => handleStoryClick(story.id)}
-                      extraText="Story Points: "
-                      extraContent={story.storyPoints || "unset"}
-                      colorScheme="card--primary"
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-
-            {storiesWithSprint.length > 0 && (
-              <>
-                <h3>Stories in Sprints</h3>
-                <div className="project-list">
-                  {storiesWithSprint.map((story) => (
-                    <Card
-                      key={story.id}
-                      title={story.name}
-                      description={story.description}
-                      onClick={() => handleStoryClick(story.id)}
-                      colorScheme="card--primary"
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-
-
+                  {storiesWithSprint.length > 0 && (
+                    <>
+                      <h3>Stories in Sprints</h3>
+                      <div className="project-list">
+                        {storiesWithSprint.map((story) => (
+                          <Card
+                            key={story.id}
+                            title={story.name}
+                            description={story.description}
+                            onClick={() => handleStoryClick(story.id)}
+                            colorScheme="card--primary"
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+            </>
+          )}
+            {/* COMPLETED STORIES DROPDOWN */}
             {completedStories.length > 0 && (
-              <>
-                <h3>Completed Stories</h3>
+            <div style={{ marginBottom: "1rem" }}>
+              <h2
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowCompletedStories(!showCompletedStories)}
+              >
+                {showCompletedStories ? "▼" : "▶"} COMPLETED
+              </h2>
+              
+              {showCompletedStories && (
                 <div className="project-list">
                   {completedStories.map((story) => {
                     const sprint = sprints.find((sprint) => sprint.id == story.sprintId);
@@ -393,10 +409,13 @@ const ProjectDetails = () => {
                     );
                   })}
                 </div>
-              </>
+              )}
+            </div>
             )}
+            {stories.length == 0 &&  
+              <p>No stories found for this project.</p>
+            }
         </div>
-
       {/* --- Add Sprint Form (pop-up) --- */}
       {showForm === 1 && (
         <AddSprintForm

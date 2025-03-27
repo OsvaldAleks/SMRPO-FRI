@@ -10,6 +10,7 @@ import {
 import Button from '../components/Button.js';
 import { formatDate } from "../utils/storyUtils.js";
 import "./style/SprintDetails.css";
+import './style/ProjectDetails.css';
 import StoryDetailsComponent from '../components/StoryDetailsComponent.js';
 
 const SprintDetails = () => {
@@ -279,7 +280,23 @@ const SprintDetails = () => {
       )}
 
       <div className="center--box">
+
         <h1>Sprint Details</h1>
+        <div className="block--element">
+        <div className="header-with-button">
+
+        {role === "scrumMasters" && isSprintActive() && (
+            <Button
+              variant={"secondary"}
+              onClick={() => setShowIncludeStories((prev) => !prev)}
+              className={
+                showIncludeStories ? "add-button btn-left selected" : "add-button btn-left"
+              }
+            > 
+              <span className={showIncludeStories ? "rotated" : ""}>+</span>
+            </Button>
+          )}
+
         {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
         {sprint ? (
@@ -303,6 +320,8 @@ const SprintDetails = () => {
         ) : (
           <p>Loading sprint data...</p>
         )}
+        </div>
+        </div>
 
         <div className="responsive-table-container-wide">
           <table className="responsive-table">
@@ -360,25 +379,6 @@ const SprintDetails = () => {
                   </td>
                 </tr>
               ))}
-
-              {/* Render the "+" button in a new row after the last TODO story */}
-              {role === "scrumMasters" && isSprintActive() && ( // Only show if sprint is active
-                <tr>
-                  <td>
-                    <div
-                      className={`userStory plus-button ${
-                        showIncludeStories ? "selected" : ""
-                      }`}
-                      onClick={() => setShowIncludeStories((prev) => !prev)}
-                      style={{ cursor: "pointer", textAlign: "center", padding: "10px" }}
-                    >
-                      <span style={{ fontSize: "24px", fontWeight: "bold" }}>+</span>
-                    </div>
-                  </td>
-                  <td></td>
-                  <td></td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
