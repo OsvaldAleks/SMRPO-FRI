@@ -302,7 +302,7 @@ const ProjectDetails = () => {
             </div>
 
             {/* UNCOMPLETED STORIES DROPDOWN */}
-            {storiesWithSprint.length > 0 && storiesWithoutSprint.length > 0 && wontHaveStories.length > 0 && (
+            {(storiesWithSprint.length > 0 || storiesWithoutSprint.length > 0 || wontHaveStories.length > 0) && (
               <>
             <div style={{ marginBottom: "1rem" }}>
               <h2
