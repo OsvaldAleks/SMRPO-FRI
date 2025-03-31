@@ -98,4 +98,29 @@ async function getSprintsByProjectId(projectId) {
   }
 }
 
-module.exports = { createSprint, getSprint, getSprintsByProjectId };
+async function deleteSprint(sprintId) {
+  try {
+    const sprintDoc = await db.collection("sprints").doc(sprintId).get();
+    
+    if (!sprintDoc.exists) {
+      throw new Error("Sprint not found.");
+    }
+    
+    const sprint = sprintDoc.data();
+    const currentDate = new Date();
+    const sprintStartDate = new Date(sprint.start_date);
+    
+    if (sprintStartDate <= currentDate) {
+      throw new Error("Sprint cannot be deleted because it has already started.");
+    }
+    
+    await db.collection("sprints").doc(sprintId).delete();
+    console.log("Sprint deleted successfully:", sprintId);
+    
+    return { success: true, message: "Sprint deleted successfully." };
+  } catch (error) {
+    console.error("Failed to delete sprint:", error.message);
+    return { success: false, message: error.message };
+  }
+}
+module.exports = { createSprint, getSprint, getSprintsByProjectId, deleteSprint };

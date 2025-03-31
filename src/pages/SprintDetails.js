@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   getSprintData,
   getProject,
@@ -12,6 +12,8 @@ import { formatDate } from "../utils/storyUtils.js";
 import "./style/SprintDetails.css";
 import './style/ProjectDetails.css';
 import StoryDetailsComponent from '../components/StoryDetailsComponent.js';
+import { FaEdit, FaTrash } from "react-icons/fa";
+import {deleteSprint} from '../api.js'
 
 const SprintDetails = () => {
   const { projectName, sprintId } = useParams();
@@ -25,6 +27,8 @@ const SprintDetails = () => {
   const [showIncludeStories, setShowIncludeStories] = useState(false);
   const [selectedStory, setSelectedStory] = useState(null);
   const [developers, setDevelopers] = useState([]);
+  const [canEdit, setCanEdit] = useState(false);
+  const navigate = useNavigate();
 
   // Track which user stories are selected (checked) for adding to sprint
   const [selectedStories, setSelectedStories] = useState([]);
@@ -39,6 +43,20 @@ const SprintDetails = () => {
 
     return currentDate >= startDate && currentDate <= endDate;
   };
+
+  const isSprintNotStarted = () => {
+    if (!sprint || !sprint.start_date) return false;
+    const currentDate = new Date();
+    const startDate = new Date(sprint.start_date);
+    return currentDate < startDate;
+  };
+
+  useEffect(() => {
+    if (sprint && role) {
+      setCanEdit(role === "scrumMasters" && isSprintNotStarted());
+    }
+  }, [sprint, role]);
+  
 
   // Calculate the total story points of stories already in the sprint
   const calculateSprintStoryPoints = () => {
@@ -206,6 +224,12 @@ const SprintDetails = () => {
   // Calculate the number of rows needed
   const maxRows = Math.max(todoStories.length, doingStories.length, doneStories.length);
 
+  const handleDelete = async() => {
+    let res = await deleteSprint(sprintId);
+    if (res.sprint.success)
+      navigate(-1);
+  }
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -281,7 +305,23 @@ const SprintDetails = () => {
 
       <div className="center--box">
 
+      <div className="card--header">
         <h1>Sprint Details</h1>
+        <div className="icons">
+          {canEdit && (
+            <>
+              <FaEdit 
+                title="Edit User Story" 
+              />
+              <FaTrash 
+                className="p--alert"
+                title="Delete User Story" 
+                onClick={handleDelete}
+              />
+            </>
+          )}
+        </div>
+      </div>
         <div className="block--element">
         <div className="header-with-button">
 

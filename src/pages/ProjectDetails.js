@@ -2,22 +2,25 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getProject, getSprintsForProject, getStoriesForProject } from "../api";
-import { getUserStatus } from "../api";
+import { getUserStatus, deleteProject } from "../api";
 import { formatDate } from "../utils/storyUtils.js";
 import Button from '../components/Button.js';
 import Card from '../components/Card.js';
 import './style/ProjectDetails.css';
 import AddSprintForm from "./AddSprintForm";
 import UserStoryForm from "./UserStoryForm";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
+
 
 const ProjectDetails = () => {
+  const { user } = useAuth();
   const { projectName } = useParams();
   const [project, setProject] = useState(null);
   const [sprints, setSprints] = useState([]);
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
   const [isScrumMaster, setIsScrumMaster] = useState(false);
   const [isProductManager, setIsProductManager] = useState(false);
   const [showForm, setShowForm] = useState(0);
@@ -42,10 +45,8 @@ const ProjectDetails = () => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser && projectName) {
-        setUser(currentUser);
         fetchProject(currentUser.uid);
       } else {
-        setUser(null);
         setLoading(false);
       }
     });
@@ -206,8 +207,20 @@ const ProjectDetails = () => {
 
   return (
     <>
-      <div className="center--box dashboard--box">
-        <h1>{project.name}</h1>
+      <div className="center--box">
+            <div className="card--header">
+              <h1>{project.name}</h1>
+              {/* Show edit icon only for SCRUM masters or project managers when story has no sprintId */}
+              <div className="icons">
+                {(user?.system_rights === 'Admin' || isScrumMaster) && (
+                  <>
+                    <FaEdit 
+                      title="Edit User Story" 
+                    />
+                  </>
+                )}
+              </div>
+            </div>
         <div className="project-description-container">
           {project.description && (
             <p className="project-description">{project.description}</p>

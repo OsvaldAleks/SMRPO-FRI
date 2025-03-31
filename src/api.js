@@ -510,3 +510,23 @@ export const updateUserStory = async (storyId, story) => {
     throw error;
   }
 };
+
+export const deleteSprint = async (sprintId) => {
+  try {
+    const response = await fetch(`${API_URL}/sprints/${sprintId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Failed to delete sprint");
+    }
+    const res = await response.json();
+    return res;
+  } catch (error) {
+    console.error("Error deleting sprint:", error);
+    throw error;
+  }
+};
+

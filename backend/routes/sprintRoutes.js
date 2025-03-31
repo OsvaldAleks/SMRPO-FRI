@@ -1,5 +1,5 @@
 const express = require("express");
-const { createSprint, getSprint, getSprintsByProjectId } = require("../services/sprintService");
+const { createSprint, getSprint, getSprintsByProjectId, deleteSprint } = require("../services/sprintService");
 
 const router = express.Router();
 
@@ -64,4 +64,12 @@ router.post("/validateDates", async (req, res) => {
   }
 });
 
+router.delete("/:sprintId", async (req, res) => {
+  try {
+    const sprint = await deleteSprint(req.params.sprintId);
+    res.status(200).json({ message: "Sprint deleted successfully!", sprint });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;
