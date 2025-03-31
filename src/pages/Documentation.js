@@ -2,6 +2,7 @@ import { useAuth } from "../context/AuthContext";
 import './style/Documentation.css';
 import './style/Dashboard.css'
 import Button from "../components/Button";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 const Documentation = () => {
   const { user } = useAuth();
@@ -74,6 +75,32 @@ const Documentation = () => {
               <li>Click <strong>Add User Story</strong>.</li>
             </ol>
           </details>
+          <details>
+            <summary>Edit a User Story</summary>
+            <p><em>You need to be a SCRUM master or a Product Manager to edit an existing User Story.</em></p>
+            <p><em>The User Story must not be assigned to a sprint.</em></p>
+            <ol>
+              <li>Within a project, click on the <strong><FaEdit/></strong> in the top right.</li>
+              <li>Change any of the following in the following details:</li>
+              <ul>
+                <li>Unique name for your user story</li>
+                <li>Description</li>
+                <li>List of acceptance criteria</li>
+                <li>Priority selection</li>
+                <li>Business Value</li>
+              </ul>
+              <li>Click <strong>UPDATE</strong>.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Delete a User Story</summary>
+            <p><em>You need to be a SCRUM master or a Product Manager to delete an existing User Story.</em></p>
+            <p><em>The User Story must not be assigned to a sprint.</em></p>
+            <ol>
+              <li>Within a project, click on the <strong className="p--alert"><FaTrash/></strong> in the top right.</li>
+            </ol>
+          </details>
+
           <details>
             <summary>Determine a Story Point value of a User Story</summary>
             <p><em>You need to be a SCRUM master to set a Story Point value.</em></p>

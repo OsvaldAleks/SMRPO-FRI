@@ -35,7 +35,8 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
   useEffect(() => {
     setStoryPointValue(story.storyPoints || "");
     setOriginalStoryPointValue(story.storyPoints || "");
-    setCanEditStory((userRole === "scrumMasters" || userRole === "projectManagers") && (story.sprintId).length == 0)
+    console.log(userRole)
+    setCanEditStory((userRole === "scrumMasters" || userRole === "productManagers") && (story.sprintId).length == 0)
     fetchLatestStory();
   }, [story]);
 
