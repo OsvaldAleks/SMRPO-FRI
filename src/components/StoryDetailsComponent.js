@@ -5,9 +5,10 @@ import Input from "./Input.js";
 import Button from './Button.js';
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import UserStoryForm from "../pages/UserStoryForm.js";
 
 
-const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], onEdit }) => {
+const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, projectDevelopers = []}) => {
   const { user, loading } = useAuth();
 
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
@@ -17,26 +18,24 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], o
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [rejectComment, setRejectComment] = useState("");
   const [canEditStory, setCanEditStory] = useState(false);
+  const [editView, setEditView] = useState(false);
+
   const navigate = useNavigate();
   
+  const fetchLatestStory = async () => {
+    try {
+      const updatedStory = await getUserStory(story.id);
+      setSubtasks(updatedStory.subtasks || []);
+    } catch (err) {
+      console.error("Failed to fetch latest subtasks:", err);
+    }
+  };
 
 
   useEffect(() => {
     setStoryPointValue(story.storyPoints || "");
     setOriginalStoryPointValue(story.storyPoints || "");
     setCanEditStory((userRole === "scrumMasters" || userRole === "projectManagers") && (story.sprintId).length == 0)
-    console.log(canEditStory)
-    console.log(userRole)
-    console.log(story)
-    const fetchLatestStory = async () => {
-      try {
-        const updatedStory = await getUserStory(story.id);
-        setSubtasks(updatedStory.subtasks || []);
-      } catch (err) {
-        console.error("Failed to fetch latest subtasks:", err);
-      }
-    };
-
     fetchLatestStory();
   }, [story]);
 
@@ -45,7 +44,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], o
   };
 
   const handleSaveStoryPoint = async () => {
-    await updateStoryPoints(story.id, storyPointValue);
+    story = await updateStoryPoints(story.id, storyPointValue);
     setOriginalStoryPointValue(storyPointValue);
     if (typeof onUpdate === 'function') {
       onUpdate(story);
@@ -193,15 +192,23 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], o
 
   const onDelete = async () => {
     await deleteUserStory(story.id);
-    if (typeof onUpdate === 'function') {
-      onUpdate(null);
-    }
-    else{
-      navigate(-1);
-    }
+    navigate(-1);
   }
+  
+  const handleEditComplete = async (updatedStory) => {
+    setEditView(false);
+    setStoryPointValue(updatedStory.storyPoints || "");
+    setOriginalStoryPointValue(updatedStory.storyPoints || "");
+    if (typeof onUpdate === 'function') {
+      onUpdate(updatedStory);
+    }
+    onUpdateStory(updatedStory);
+  };
+  
 
   return (
+    <>
+    {!editView ? (
     <div className="center--box">
       <div className="card--header">
         <h1>{story.name}</h1>
@@ -210,7 +217,7 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], o
           {canEditStory && (
             <>
               <FaEdit 
-                onClick={() => onEdit && onEdit(story)} 
+                onClick={() => setEditView(true)}
                 title="Edit User Story" 
               />
               <FaTrash 
@@ -429,8 +436,14 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], o
           </div>
         </div>
       )}
-    </div>
-  );
+    </div>)
+
+    :(<UserStoryForm 
+      projectId = {story.projectId} 
+      story = {story}
+      onStoryAdded = {handleEditComplete}
+      onCancel={()=>setEditView(false)}></UserStoryForm>)}
+  </>);
 };
 
-export default UserStoryDetails;
+export default StoryDetailsComponent;

@@ -1,17 +1,27 @@
-import React, { useState } from 'react';
-import { createUserStory } from '../api';
+import React, { useState,useEffect } from 'react';
+import { createUserStory, updateUserStory } from '../api';
 import { validateStory } from '../utils/storyUtils.js';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import './style/UserStoryForm.css'; // Add this for custom styles
 
-const UserStoryForm = ({ projectId, onStoryAdded }) => {
+const UserStoryForm = ({ projectId, story, onStoryAdded, onCancel }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [acceptanceTests, setAcceptanceTests] = useState(['']); // Initialize with one empty field
   const [priority, setPriority] = useState('');
   const [businessValue, setBusinessValue] = useState(''); // Default to empty
   const [error, setError] = useState(''); // State to store error messages
+
+  useEffect(() => {
+    if (story) {
+      setName(story.name || '');
+      setDescription(story.description || '');
+      setAcceptanceTests(story.acceptanceCriteria || ['']);
+      setPriority(story.priority || '');
+      setBusinessValue(story.businessValue?.toString() || '');
+    }
+  }, [story]);
 
   const handleAcceptanceTestChange = (index, value) => {
     const updatedTests = [...acceptanceTests];
@@ -37,48 +47,53 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     // Validate business value
     const businessValueNum = parseInt(businessValue, 10);
     if (isNaN(businessValueNum)) {
       setError("Business value must be a number between 0 and 10.");
       return;
     }
-
+  
     const newStory = {
       name,
       description,
       acceptanceCriteria: acceptanceTests.filter((item) => item.trim() !== ''),
       priority,
       businessValue: businessValueNum,
-      projectId, // Automatically passed in from props
-      sprintId: [], // Default to an empty array
+      projectId,
+      sprintId: story?.sprintId || [], // Preserve existing sprintId if editing
+      storyPoints: story?.storyPoints || 0 // Preserve existing story points if editing
     };
-
+  
     try {
-      // Validate the story
       if (!validateStory(newStory)) {
         throw new Error('Invalid story data. Please check all fields.');
       }
-
-      // Create the story
-      const response = await createUserStory(newStory);
-      if (response.error) {
-        setError(response.message);
+  
+      let response;
+      if (story) {
+        response = await updateUserStory(story.id, newStory);
+        if (response.error) {
+          setError(response.message.message);
+        } else {
+          onStoryAdded(response.userStory);
+        }
       } else {
-        // Reset form fields
-        setName('');
-        setDescription('');
-        setAcceptanceTests(['']);
-        setPriority('');
-        setBusinessValue('');
-        setError('');
-
-        // Notify parent component
-        onStoryAdded(); // Ensure this is called
+        response = await createUserStory(newStory);
+        if (response.error) {
+          setError(response.message);
+        } else {
+          setName('');
+          setDescription('');
+          setAcceptanceTests(['']);
+          setPriority('');
+          setBusinessValue('');
+          setError('');
+          onStoryAdded(response.story);
+        }
       }
     } catch (err) {
-      // Display error message
       setError(
         err.message === 'A user story with the same name already exists in this project.'
           ? 'User stories should have unique names'
@@ -86,10 +101,9 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
       );
     }
   };
-
   return (
     <div className="center--box">
-      <h1>Add New User Story</h1>
+      <h1> {story ? 'Update User Story' : 'Add New User Story'}</h1>
       <form onSubmit={handleSubmit}>
         <div className="block--element">
           <label className="block--element">Name</label>
@@ -175,9 +189,21 @@ const UserStoryForm = ({ projectId, onStoryAdded }) => {
         </div>
 
         {error && <div className="p--alert">{error}</div>}
-        <Button className="btn--block" type="submit">
-          Add User Story
+        {story ?
+        (
+        <div style={{ margin: "0.5rem", display: "flex", gap: "0" }}>
+        <Button className="btn--half btn--accent" onClick={(e) => {e.preventDefault();onCancel()}}>
+          CANCEL
         </Button>
+        <Button className="btn--half" type="submit">
+          UPDATE
+        </Button>
+        </div>
+        )
+        :(
+        <Button className="btn--block" type="submit">
+        Add User Story
+        </Button>)}
       </form>
     </div>
   );

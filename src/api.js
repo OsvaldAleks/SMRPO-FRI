@@ -482,3 +482,31 @@ export const deleteUserStory = async (storyId) => {
     throw error;
   }
 }
+
+export const updateUserStory = async (storyId, story) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/update`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(story),
+    });
+
+    const responseBody = await response.text();
+    let result;
+    try {
+      result = JSON.parse(responseBody);
+    } catch (error) {
+      result = { message: responseBody };
+    }
+
+    if (!response.ok) {
+      const errorMessage = result.message || result || "Failed to update user story";
+      throw new Error(errorMessage);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error updating user story:", error.message);
+    throw error;
+  }
+};

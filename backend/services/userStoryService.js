@@ -1,16 +1,16 @@
 const { db } = require("../firebase");
 const admin = require("firebase-admin");
+const { FieldPath } = require("firebase-admin").firestore;
 const FieldValue = admin.firestore.FieldValue;
 
-// Create a user story
-async function createUserStory(
+async function validateAndPrepareUserStory(
   projectId,
   name,
   description,
   acceptanceCriteria,
   priority,
   businessValue,
-  sprintId = [] // <-- default to empty array
+  excludeStoryId = null // Pass the ID of the story being updated
 ) {
   if (!projectId || !name || !description || !acceptanceCriteria || !priority || businessValue === undefined) {
     throw new Error("All fields except sprintId are required.");
@@ -31,35 +31,73 @@ async function createUserStory(
   // Convert name to lowercase for case-insensitive comparison
   const lowercaseName = name.toLowerCase();
 
-  // Check if a story with the same name (case-insensitive) already exists
-  const storiesSnapshot = await db
+  // Check for existing user stories with the same name (excluding the current story if updating)
+  let query = db
     .collection("userStories")
     .where("projectId", "==", projectId)
-    .where("lowercaseName", "==", lowercaseName) // Query against lowercase name
-    .get();
+    .where("lowercaseName", "==", lowercaseName);
+
+  if (excludeStoryId) {
+    query = query.where(FieldPath.documentId(), "!=", excludeStoryId); // Exclude the current story
+  }
+
+  const storiesSnapshot = await query.get();
 
   if (!storiesSnapshot.empty) {
     throw new Error("A user story with the same name already exists in this project.");
   }
 
-  // Create the new user story
-  const storyRef = db.collection("userStories").doc();
-  const story = {
-    id: storyRef.id,
+  return { projectId, name, lowercaseName, description, acceptanceCriteria, priority, businessValue };
+}
+
+async function createUserStory(projectId, name, description, acceptanceCriteria, priority, businessValue, sprintId = []) {
+  const validatedStory = await validateAndPrepareUserStory(
     projectId,
-    sprintId,
     name,
-    lowercaseName, // Store lowercase version for future lookups
     description,
     acceptanceCriteria,
     priority,
-    businessValue,
+    businessValue
+  );
+
+  const storyRef = db.collection("userStories").doc();
+  const story = {
+    id: storyRef.id,
+    sprintId,
     status: "Backlog",
+    ...validatedStory,
   };
 
   await storyRef.set(story);
   return story;
 }
+
+async function updateUserStory(storyId, name, description, acceptanceCriteria, priority, businessValue) {
+  const storyRef = db.collection("userStories").doc(storyId);
+  const storyDoc = await storyRef.get();
+  if (!storyDoc.exists) throw new Error("User story not found.");
+
+  const currentStory = storyDoc.data();
+  const validatedStory = await validateAndPrepareUserStory(
+    currentStory.projectId,
+    name,
+    description,
+    acceptanceCriteria,
+    priority,
+    businessValue,
+    storyId
+  );
+
+  const updatedStory = {
+    ...currentStory,
+    ...validatedStory,
+    id: storyId
+  };
+
+  await storyRef.update(validatedStory);
+  return updatedStory;
+}
+
 
 // Get a user story by its ID
 async function getUserStory(storyId) {
@@ -446,7 +484,8 @@ module.exports = {
   completeSubtask,
   evaluateUserStory,
   forceAssignUserStoryToSprint,
-  deleteUserStory
+  deleteUserStory,
+  updateUserStory
 };
 
 

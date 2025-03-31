@@ -14,15 +14,15 @@ const UserStoryDetails = () => {
   const [role, setRole] = useState(null);
   const [developers, setDevelopers] = useState([]);
 
+  const updateStory = (updatedStory) => {
+    setStory(updatedStory);
+  };
+
   useEffect(() => {
     if (!storyId) return;
-
-    // Fetch the user story
     getUserStory(storyId)
       .then((data) => {
         setStory(data);
-
-        // Wait for projects to be available before checking
         if (projects.length === 0) {
           console.log("Projects not loaded yet");
           return;
@@ -32,7 +32,6 @@ const UserStoryDetails = () => {
 
         if (currentProject) {
           setRole(currentProject.userRole);
-          // Fetch the project details to get the list of developers
           getProject(currentProject.projectName, user.uid)
             .then((projectData) => {
               setDevelopers(projectData.project.devs.map(dev => dev.username) || []);
@@ -50,7 +49,7 @@ const UserStoryDetails = () => {
   if (!story) return <p>Loading story details...</p>;
 
   return (
-    <StoryDetailsComponent story={story} userRole={role} projectDevelopers={developers} />
+    <StoryDetailsComponent story={story} userRole={role} projectDevelopers={developers} onUpdateStory={updateStory} />
   );
 };
 

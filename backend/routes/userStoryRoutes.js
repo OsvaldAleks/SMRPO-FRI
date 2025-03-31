@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory } = require("../services/userStoryService");
+const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory, updateUserStory } = require("../services/userStoryService");
 
 const router = express.Router();
 
@@ -157,10 +157,31 @@ router.delete("/:storyId", async (req, res) =>{
     const { storyId } = req.params;
     const result = await deleteUserStory(storyId);
     return res.status(200).json(result);
-  }catch{
+  }catch (error) {
     console.error("Error removing user story:", error);
     return res.status(404).json({ message: error.message });
   }
 });
+
+router.put("/:storyId/update", async (req, res) =>{
+  try{
+    const { storyId } = req.params;
+    console.log("story ", storyId)
+    const userStory = await updateUserStory(
+      storyId,
+      req.body.name,
+      req.body.description,
+      req.body.acceptanceCriteria,
+      req.body.priority,
+      req.body.businessValue,
+    );
+
+    res.status(201).json({ message: "User story updated successfully!", userStory });
+  }catch (error){
+    console.error("Error changing user story:", error);
+    return res.status(404).json({ message: error.message });
+  }
+});
+
 
 module.exports = router;
