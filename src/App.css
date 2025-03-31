@@ -22,6 +22,37 @@ body{
   margin: 1rem;
  }
 
+ .card--header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.card--header h1 {
+  text-align: center;
+  flex: 1;
+}
+
+.card--header .icons {
+  position: absolute;
+  right: 2rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.card--header .icons svg {
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+.card--header .icons svg:hover{
+  color:var(--color-primary);
+}
+
+.card--header .icons .p--alert:hover{
+  color:#936e6e;
+}
+
  .block--element{
   display: block;
   width: 100%;

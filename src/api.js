@@ -463,3 +463,22 @@ export const evaluateUserStory = async (storyId, isAccepted, comment, userId) =>
     throw error;
   }
 };
+
+export const deleteUserStory = async (storyId) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Failed to delete user story");
+    }
+    const res = await response.json();
+    return res;
+  } catch (error) {
+    console.error("Error deleting user story:", error);
+    throw error;
+  }
+}

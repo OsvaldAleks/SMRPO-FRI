@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory } = require("../services/userStoryService");
+const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory } = require("../services/userStoryService");
 
 const router = express.Router();
 
@@ -143,12 +143,22 @@ router.put("/:storyId/evaluate", async (req, res) => {
   try {
     const { storyId } = req.params;
     const { isAccepted, comment, userId } = req.body;
-    console.log(storyId)
     const result = await evaluateUserStory(storyId, isAccepted, comment, userId);
     return res.status(200).json(result);
   } catch (error) {
     console.error("Error evaluating user story:", error);
     // Vrnite recimo 400 ali 404
+    return res.status(404).json({ message: error.message });
+  }
+});
+
+router.delete("/:storyId", async (req, res) =>{
+  try{
+    const { storyId } = req.params;
+    const result = await deleteUserStory(storyId);
+    return res.status(200).json(result);
+  }catch{
+    console.error("Error removing user story:", error);
     return res.status(404).json({ message: error.message });
   }
 });

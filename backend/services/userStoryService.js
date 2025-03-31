@@ -412,6 +412,28 @@ async function forceAssignUserStoryToSprint(storyId, sprintId) {
   return { message: "User story forcibly assigned to sprint (even if ended)." };
 }
 
+async function deleteUserStory(storyId){
+  if (!storyId) {
+    throw new Error("Story ID is required.");
+  }
+
+  const storyRef = db.collection("userStories").doc(storyId);
+  const storyDoc = await storyRef.get();
+  if (!storyDoc.exists) {
+    throw new Error("User story not found.");
+  }
+
+  const storyData = storyDoc.data();
+
+  if (storyData.sprintId && storyData.sprintId.length > 0) {
+    throw new Error("Cannot delete a user story that is assigned to a sprint.");
+  }
+
+  await storyRef.delete();
+
+  return { message: "User story deleted successfully." };
+}
+
 module.exports = { 
   createUserStory, 
   getUserStory,
@@ -423,7 +445,8 @@ module.exports = {
   claimSubtask,
   completeSubtask,
   evaluateUserStory,
-  forceAssignUserStoryToSprint
+  forceAssignUserStoryToSprint,
+  deleteUserStory
 };
 
 

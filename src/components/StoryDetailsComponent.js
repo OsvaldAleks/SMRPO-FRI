@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, markSubtaskAsDone, evaluateUserStory } from "../api.js";
+import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, markSubtaskAsDone, evaluateUserStory, deleteUserStory } from "../api.js";
 import Input from "./Input.js";
 import Button from './Button.js';
-import { type } from "@testing-library/user-event/dist/type/index.js";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
 
-const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = []}) => {
+
+const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = [], onEdit }) => {
   const { user, loading } = useAuth();
 
   const [storyPointValue, setStoryPointValue] = useState(story.storyPoints || "");
@@ -14,10 +16,18 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = []}) 
   const [errorMessage, setErrorMessage] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [rejectComment, setRejectComment] = useState("");
+  const [canEditStory, setCanEditStory] = useState(false);
+  const navigate = useNavigate();
+  
+
 
   useEffect(() => {
     setStoryPointValue(story.storyPoints || "");
     setOriginalStoryPointValue(story.storyPoints || "");
+    setCanEditStory((userRole === "scrumMasters" || userRole === "projectManagers") && (story.sprintId).length == 0)
+    console.log(canEditStory)
+    console.log(userRole)
+    console.log(story)
     const fetchLatestStory = async () => {
       try {
         const updatedStory = await getUserStory(story.id);
@@ -173,9 +183,6 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = []}) 
       if (typeof onUpdate === 'function') {
         onUpdate(updatedStory);
       }
-      if(typeof onUpdate === 'function') {
-        onUpdate(updatedStory);
-      }    
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -184,10 +191,37 @@ const UserStoryDetails = ({ story, userRole, onUpdate, projectDevelopers = []}) 
     }
   };
 
+  const onDelete = async () => {
+    await deleteUserStory(story.id);
+    if (typeof onUpdate === 'function') {
+      onUpdate(null);
+    }
+    else{
+      navigate(-1);
+    }
+  }
 
   return (
     <div className="center--box">
-      <h1>{story.name}</h1>
+      <div className="card--header">
+        <h1>{story.name}</h1>
+        {/* Show edit icon only for SCRUM masters or project managers when story has no sprintId */}
+        <div className="icons">
+          {canEditStory && (
+            <>
+              <FaEdit 
+                onClick={() => onEdit && onEdit(story)} 
+                title="Edit User Story" 
+              />
+              <FaTrash 
+                className="p--alert"
+                onClick={() => onDelete && onDelete(story)} 
+                title="Delete User Story" 
+              />
+            </>
+          )}
+        </div>
+      </div>
       <p><strong>Description:</strong></p>
       <p style={{ maxWidth: "400px", wordWrap: "break-word", overflow: "hidden", textOverflow: "ellipsis", textAlign: "justify" }}>
       {story.description}</p>
