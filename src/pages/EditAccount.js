@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { getUser } from "../api"; // Use the API function to get user data
+import { getUser, getUsers, updateUserInfo, updateUserPassword } from "../api";
 import zxcvbn from "zxcvbn";
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -20,6 +20,7 @@ const top100VulnerablePasswords = [
 ];
 
 const EditAccount = () => {
+  // Existing password states
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -28,12 +29,24 @@ const EditAccount = () => {
   const [loading, setLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [passwordStrengthLabel, setPasswordStrengthLabel] = useState("");
-  const [touchedFields, setTouchedFields] = useState({ newPassword: false, confirmNewPassword: false });
+  const [touchedFields, setTouchedFields] = useState({ 
+    newPassword: false, 
+    confirmNewPassword: false,
+    username: false
+  });
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [previousOnline, setPreviousOnline] = useState(null); // Store previous online time
+  const [previousOnline, setPreviousOnline] = useState(null);
 
-  // States for toggling password visibility
+  // New states for user info
+  const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
+  const [username, setUsername] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
+  const [editMode, setEditMode] = useState(false);
+
+  // Password visibility toggles
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -50,10 +63,16 @@ const EditAccount = () => {
       if (user) {
         setUser(user);
         try {
-          const userData = await getUser(user.uid); // Fetch user data from API
+          const userData = await getUser(user.uid);
           if (userData) {
             setPreviousOnline(userData.previous_online || "No data available");
+            setName(userData.name || "");
+            setSurname(userData.surname || "");
+            setUsername(userData.username || "");
           }
+          // Fetch all users for username validation
+          const usersData = await getUsers();
+          setAllUsers(usersData);
         } catch (error) {
           console.error("Error fetching user data:", error);
         }
@@ -68,6 +87,44 @@ const EditAccount = () => {
 
   const handleFieldFocus = (field) => {
     setTouchedFields((prev) => ({ ...prev, [field]: true }));
+  };
+
+  const validateUsername = async (value) => {
+    if (!value) {
+      setUsernameError("Username is required");
+      return false;
+    }
+    if (value.length < 3) {
+      setUsernameError("Username must be at least 3 characters");
+      return false;
+    }
+    
+    // Convert to lowercase for comparison
+    const normalizedValue = value.toLowerCase();
+    const normalizedCurrent = username.toLowerCase();
+    
+    // Only check uniqueness if username changed (case-insensitive)
+    if (normalizedValue !== normalizedCurrent) {
+      const isTaken = allUsers.some(u => 
+        u.username.toLowerCase() === normalizedValue && 
+        u.id !== user?.uid
+      );
+      if (isTaken) {
+        setUsernameError("Username is already taken");
+        return false;
+      }
+    }
+    
+    setUsernameError("");
+    return true;
+  };
+
+  const handleUsernameChange = (e) => {
+    const value = e.target.value;
+    setUsername(value);
+    if (touchedFields.username) {
+      validateUsername(value);
+    }
   };
 
   const handlePasswordChange = async (e) => {
@@ -95,19 +152,43 @@ const EditAccount = () => {
     setError("");
 
     try {
-      const credential = EmailAuthProvider.credential(user.email, currentPassword);
-      await reauthenticateWithCredential(user, credential);
-      await updatePassword(user, newPassword);
+      await updateUserPassword(user.uid, newPassword);
       setSuccessMessage("Password updated successfully!");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setCurrentPassword("");
     } catch (err) {
       console.error(err);
-      setError("Error updating password. Please check your current password.");
+      setError(err.message || "Error updating password.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUserInfoUpdate = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+  
+    const isUsernameValid = await validateUsername(username);
+    if (!isUsernameValid) return;
+  
+    setLoading(true);
+    setError("");
+  
+    try {
+      await updateUserInfo(user.uid, { name, surname, username });
+      setSuccessMessage("Personal information updated successfully!");
+      setEditMode(false);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Error updating personal information.");
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (dateString) => {
+    if (!dateString || dateString === "No data available") return dateString;
     const date = new Date(dateString);
     const day = String(date.getUTCDate()).padStart(2, '0');
     const month = String(date.getUTCMonth() + 1).padStart(2, '0');
@@ -131,19 +212,93 @@ const EditAccount = () => {
 
   return (
     <div className="center--box">
-      <form onSubmit={handlePasswordChange}>
-        <h1>Edit Account</h1>
-        {user && (
-          <div className={"block--element"}>
-            <p>Email: <b>{user.email}</b></p>
-            <p>Last Login: <b>{formatDate(previousOnline)}</b></p>
-          </div>
+      <h1>Edit Account</h1>
+      
+      {user && (
+        <div className="block--element">
+          <p>Email: <b>{user.email}</b></p>
+          <p>Last Login: <b>{formatDate(previousOnline)}</b></p>
+        </div>
+      )}
+
+      {/* Personal Information Section */}
+      <form onSubmit={handleUserInfoUpdate} className="block--element">
+        <h2>Personal Information</h2>
+        
+        {editMode ? (
+          <>
+            <div className="block--element">
+              <label>First Name</label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="block--element">
+              <label>Last Name</label>
+              <Input
+                value={surname}
+                onChange={(e) => setSurname(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="block--element">
+              <label>Username</label>
+              <Input
+                value={username}
+                onChange={handleUsernameChange}
+                onBlur={() => handleFieldFocus("username")}
+                required
+              />
+              {usernameError && <p style={{ color: "red" }}>{usernameError}</p>}
+            </div>
+            
+            <div className="flex-row gap--8">
+              <Button 
+                type="submit" 
+                variant="primary" 
+                disabled={loading || !!usernameError}
+              >
+                {loading ? "Saving..." : "Save Changes"}
+              </Button>
+              <Button 
+                type="button" 
+                variant="secondary" 
+                onClick={() => setEditMode(false)}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="block--element">
+              <p><b>Name:</b> {name} {surname}</p>
+              <p><b>Username:</b> {username}</p>
+            </div>
+            <Button 
+              type="button" 
+              variant="secondary" 
+              onClick={() => setEditMode(true)}
+            >
+              Edit Personal Information
+            </Button>
+          </>
         )}
-        <div className={"block--element"}>
-          <label className={"block--element"}>Current Password</label>
+      </form>
+
+      {/* Password Change Section */}
+      <form onSubmit={handlePasswordChange} className="block--element">
+        <h2>Change Password</h2>
+        
+        <div className="block--element">
+          <label>Current Password</label>
           <Input
-            type={showCurrentPassword ? "text" : "password"} // Toggle visibility
-            className={"block--element"}
+            type={showCurrentPassword ? "text" : "password"}
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
@@ -157,11 +312,11 @@ const EditAccount = () => {
             Show Current Password
           </label>
         </div>
-        <div className={"block--element"}>
-          <label className={"block--element"}>New Password</label>
+        
+        <div className="block--element">
+          <label>New Password</label>
           <Input
-            type={showNewPassword ? "text" : "password"} // Toggle visibility
-            className={"block--element"}
+            type={showNewPassword ? "text" : "password"}
             value={newPassword}
             onChange={handlePasswordChangeInput}
             onFocus={() => handleFieldFocus("newPassword")}
@@ -176,11 +331,11 @@ const EditAccount = () => {
             Show New Password
           </label>
         </div>
-        <div className={"block--element"}>
-          <label className={"block--element"}>Confirm New Password</label>
+        
+        <div className="block--element">
+          <label>Confirm New Password</label>
           <Input
-            type={showConfirmPassword ? "text" : "password"} // Toggle visibility
-            className={"block--element"}
+            type={showConfirmPassword ? "text" : "password"}
             value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
             onFocus={() => handleFieldFocus("confirmNewPassword")}
@@ -195,23 +350,37 @@ const EditAccount = () => {
             Show Confirm Password
           </label>
         </div>
-        <div className={"block--element"} style={{ width: "500px" }}>
-          {touchedFields.newPassword && newPassword.length < 12 && <p style={{ color: "red" }}>Password must be at least 12 characters long.</p>}
-          {touchedFields.newPassword && newPassword.length > 128 && <p style={{ color: "red" }}>Password must be no more than 128 characters.</p>}
+        
+        <div className="block--element">
+          {touchedFields.newPassword && newPassword.length < 12 && (
+            <p style={{ color: "red" }}>Password must be at least 12 characters long.</p>
+          )}
+          {touchedFields.newPassword && newPassword.length > 128 && (
+            <p style={{ color: "red" }}>Password must be no more than 128 characters.</p>
+          )}
           {touchedFields.newPassword && (
             <>
               <p>Password Strength: {["Weak", "Fair", "Good", "Strong", "Very Strong"][passwordStrength]}</p>
               <p>{passwordStrengthLabel}</p>
             </>
           )}
-          {touchedFields.confirmNewPassword && newPassword !== confirmNewPassword && <p style={{ color: "red" }}>Passwords do not match.</p>}
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
+          {touchedFields.confirmNewPassword && newPassword !== confirmNewPassword && (
+            <p style={{ color: "red" }}>Passwords do not match.</p>
+          )}
         </div>
-        <Button className={"btn--block"} variant="primery" type="submit" disabled={loading}>
+        
+        <Button 
+          type="submit" 
+          variant="primary" 
+          disabled={loading}
+          className="btn--block"
+        >
           {loading ? "Updating..." : "Change Password"}
         </Button>
       </form>
+      
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
     </div>
   );
 };

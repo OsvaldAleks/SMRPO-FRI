@@ -150,9 +150,76 @@ process.on("SIGTERM", async () => {
   process.exit();
 });
 
+
+// Update user information (name, surname, username)
+async function updateUserInfo(userId, userData) {
+  try {
+    const { name, surname, username } = userData;
+
+    // Validate required fields
+    if (!name || !surname || !username) {
+      throw new Error("Name, surname, and username are required.");
+    }
+
+    const normalizedUsername = username.toLowerCase(); // Convert input to lowercase
+
+    // Check if username is already taken by another user (case-insensitive)
+    const usernameQuery = await db.collection("users")
+      .where("username_lowercase", "==", normalizedUsername) // Query against lowercase field
+      .get();
+
+    // Check if the found username belongs to a different user
+    if (!usernameQuery.empty && usernameQuery.docs[0].id !== userId) {
+      throw new Error("Username already exists.");
+    }
+
+    // Update user in Firestore with both original and lowercase username
+    await db.collection("users").doc(userId).update({
+      name,
+      surname,
+      username, // Store original case
+      username_lowercase: normalizedUsername, // Store lowercase version for queries
+    });
+
+    return {
+      success: true,
+      message: "User information updated successfully.",
+    };
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return {
+      success: false,
+      message: error.message || "Failed to update user information.",
+    };
+  }
+}
+
+// Update user password
+async function updateUserPassword(userId, newPassword) {
+  try {
+    await auth.updateUser(userId, {
+      password: newPassword,
+    });
+
+    return {
+      success: true,
+      message: "Password updated successfully.",
+    };
+  } catch (error) {
+    console.error("Error updating password:", error);
+    return {
+      success: false,
+      message: error.message || "Failed to update password.",
+    };
+  }
+}
+
+
 module.exports = {
   getUser,
   getUsers,
   addUser,
   updateUserStatus,
+  updateUserInfo,  // Add this
+  updateUserPassword,  // Add this
 };

@@ -530,3 +530,44 @@ export const deleteSprint = async (sprintId) => {
   }
 };
 
+// Update user information
+export const updateUserInfo = async (userId, userData) => {
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update user information");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error updating user info:", error);
+    throw new Error(error.message || "Network error");
+  }
+};
+
+// Update user password
+export const updateUserPassword = async (userId, newPassword) => {
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}/password`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newPassword }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update password");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error updating password:", error);
+    throw new Error(error.message || "Network error");
+  }
+};
