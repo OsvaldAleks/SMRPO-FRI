@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory, updateUserStory } = require("../services/userStoryService");
+const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory, updateUserStory, deleteSubtask } = require("../services/userStoryService");
 
 const router = express.Router();
 
@@ -183,5 +183,56 @@ router.put("/:storyId/update", async (req, res) =>{
   }
 });
 
+
+// DELETE subtask
+router.delete("/:storyId/subtask/:subtaskIndex", async (req, res) => {
+  const { storyId, subtaskIndex } = req.params;
+
+  try {
+    const index = parseInt(subtaskIndex);
+    if (isNaN(index)) {
+      return res.status(400).json({ message: "Invalid subtask index" });
+    }
+
+    const result = await deleteSubtask(storyId, index);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error deleting subtask:", error.message || error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// UPDATE subtask
+router.put("/:storyId/updateSubtask", async (req, res) => {
+  const { storyId } = req.params;
+  const { subtaskIndex, name, status, assignedTo } = req.body;
+
+  try {
+    const storyRef = ref(db, `userStories/${storyId}`);
+    const snapshot = await get(storyRef);
+
+    if (!snapshot.exists()) {
+      return res.status(404).json({ message: "User story not found" });
+    }
+
+    const story = snapshot.val();
+    if (!story.subtasks || !story.subtasks[subtaskIndex]) {
+      return res.status(400).json({ message: "Invalid subtask index" });
+    }
+
+    const subtask = story.subtasks[subtaskIndex];
+    if (name !== undefined) subtask.name = name;
+    if (status !== undefined) subtask.status = status;
+    if (assignedTo !== undefined) subtask.assignedTo = assignedTo;
+
+    story.subtasks[subtaskIndex] = subtask;
+    await update(storyRef, { subtasks: story.subtasks });
+
+    res.status(200).json({ message: "Subtask updated successfully" });
+  } catch (error) {
+    console.error("Error updating subtask:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 module.exports = router;

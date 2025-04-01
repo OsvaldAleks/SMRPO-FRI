@@ -28,6 +28,10 @@ const ProjectDetails = () => {
   const [showWontHaveStories, setShowWontHaveStories] = useState(false);
   const [showUncompletedStories, setShowUncompletedStories] = useState(true);
   const [showCompletedStories, setShowCompletedStories] = useState(true);
+  const [realized, setRealized] = useState([]);
+  const [assignedToActive, setAssignedToActive] = useState([]);
+  const [unassigned, setUnassigned] = useState([]);
+
 
   const navigate = useNavigate();
 
@@ -61,6 +65,20 @@ const ProjectDetails = () => {
       handleToggleForm(0);
     }
   }, [project]);
+
+  useEffect(() => {
+    if (!stories || !project) return;
+  
+    const activeSprintId = project.activeSprintId;
+  
+    const realizedStories = stories.filter(s => s.status === "Done" && s.isAccepted === true);
+    const assigned = stories.filter(s => s.sprintId === activeSprintId && !(s.status === "Done" && s.isAccepted));
+    const unassigned = stories.filter(s => (!s.sprintId || s.sprintId !== activeSprintId) && !(s.status === "Done" && s.isAccepted));
+  
+    setRealized(realizedStories);
+    setAssignedToActive(assigned);
+    setUnassigned(unassigned);
+  }, [stories, project]);
 
   useEffect(() => {
     const fetchUserStatuses = async () => {

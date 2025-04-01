@@ -571,3 +571,41 @@ export const updateUserPassword = async (userId, newPassword) => {
     throw new Error(error.message || "Network error");
   }
 };
+
+export const updateSubtask = async (storyId, subtaskIndex, updatedData) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/updateSubtask`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subtaskIndex, ...updatedData }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to update subtask");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error updating subtask:", error);
+    throw error;
+  }
+};
+
+export const deleteSubtask = async (storyId, subtaskIndex) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/subtask/${subtaskIndex}`, {
+      method: "DELETE"
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to delete subtask");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("API error deleting subtask:", error);
+    throw error;
+  }
+};
