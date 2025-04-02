@@ -51,14 +51,40 @@ const Documentation = () => {
       {user ? (
         <>
           <details>
-            <summary>Create a sprint</summary>
+            <summary style={{fontSize: "1.2em", fontWeight: "bold"}}>Sprints</summary>
+
+          <details>
+            <summary>Create a Sprint</summary>
             <p><em>You need to be a SCRUM master to create a new Sprint.</em></p>
             <ol>
               <li>Within a project, click on the <strong>+</strong> button under the <strong>Sprints</strong> section.</li>
-              <li>Determine the start and end dates of the sprint along with your sprint speed.</li>
+              <li>Determine the start and end dates of the sprint along with your sprint velocity (determined in Story Points).</li>
               <li>Click <strong>ADD SPRINT</strong>.</li>
             </ol>
           </details>
+          <details>
+            <summary>Edit a Sprint</summary>
+            <p><em>You need to be a SCRUM master to edit an existing Sprint.</em></p>
+            <p><em>The Sprint must not have started.</em></p>
+            <ol>
+              <li>Within a Sprint, click on the <strong><FaEdit/></strong> icon in the top right.</li>
+              <li>Determine the start and end dates of the sprint along with your sprint velocity (determined in Story Points).</li>
+              <li>Click <strong>UPDATE</strong>.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Delete a Sprint</summary>
+            <p><em>You need to be a SCRUM master to delete an existing Sprint.</em></p>
+            <p><em>The Sprint must not have started.</em></p>
+            <ol>
+              <li>Within a Sprint, click on the <strong className="p--alert"><FaTrash/></strong> icon in the top right.</li>
+            </ol>
+          </details>
+          
+          </details>
+          <details>
+            <summary style={{fontSize: "1.2em", fontWeight: "bold"}}>User Stories</summary>
+
           <details>
             <summary>Create a User Story</summary>
             <p><em>You need to be a SCRUM master or a Product Manager to create a new User Story.</em></p>
@@ -80,7 +106,7 @@ const Documentation = () => {
             <p><em>You need to be a SCRUM master or a Product Manager to edit an existing User Story.</em></p>
             <p><em>The User Story must not be assigned to a sprint.</em></p>
             <ol>
-              <li>Within a project, click on the <strong><FaEdit/></strong> in the top right.</li>
+              <li>Within a User Story, click on the <strong><FaEdit/></strong> icon in the top right.</li>
               <li>Change any of the following in the following details:</li>
               <ul>
                 <li>Unique name for your user story</li>
@@ -97,7 +123,7 @@ const Documentation = () => {
             <p><em>You need to be a SCRUM master or a Product Manager to delete an existing User Story.</em></p>
             <p><em>The User Story must not be assigned to a sprint.</em></p>
             <ol>
-              <li>Within a project, click on the <strong className="p--alert"><FaTrash/></strong> in the top right.</li>
+              <li>Within a User Story, click on the <strong className="p--alert"><FaTrash/></strong> icon in the top right.</li>
             </ol>
           </details>
 
@@ -112,7 +138,7 @@ const Documentation = () => {
             </ol>
           </details>
           <details>
-            <summary>Add a story to a Sprint</summary>
+            <summary>Add a Story to a Sprint</summary>
             <p><em>You need to be a SCRUM master to add a story to a sprint.</em></p>
             <ol>
               <li>In the Sprint overview, click the <strong>+</strong> button.</li>
@@ -120,6 +146,21 @@ const Documentation = () => {
               <li>Click <strong>ADD SELECTED →</strong>.</li>
             </ol>
           </details>
+          <details>
+            <summary>Accept or reject a User Story</summary>
+            <p><em>You need to be a <strong>Product Manager</strong> to accept or reject a User Story.</em></p>
+            <p><em>The story must be in a past sprint.</em></p>
+            <p><em>The story must have the <strong>Done</strong> status.</em></p>
+            <p>Select a story with status <strong>Done</strong></p>
+            <p>Click on the <strong>Accept</strong> or <strong>Reject</strong> button.</p>
+            <p>Confirm selection by pressing <strong>Confirm Accept</strong> or  <strong>Confirm Reject</strong></p>
+          </details>
+
+
+          </details>
+          <details>
+            <summary style={{fontSize: "1.2em", fontWeight: "bold"}}>Tasks</summary>
+
           <details>
             <summary>Add a task to a User Story</summary>
             <p><em>You need to be a SCRUM master or a developer to add a task.</em></p>
@@ -152,16 +193,8 @@ const Documentation = () => {
            <p>The task must be currently <strong>claimed by you</strong> for you to be able to mark it as completed.</p>
            <p>In the Story overview under the Subtasks rubric mark a task as completed, by selecting the <strong>checkmark</strong> in the Done column.</p>
          </details>
-         <details>
-          <summary>Accept or reject a User Story</summary>
-          <p><em>You need to be a <strong>Product Manager</strong> to accept or reject a User Story.</em></p>
-          <p><em>The story must be in a past sprint.</em></p>
-          <p><em>The story must have the <strong>Done</strong> status.</em></p>
-          <p>Select a story with status <strong>Done</strong></p>
-          <p>Click on the <strong>Accept</strong> or <strong>Reject</strong> button.</p>
-          <p>Confirm selection by pressing <strong>Confirm Accept</strong> or  <strong>Confirm Reject</strong></p>
-        </details>
 
+        </details>
         </>
       ) : (
         <details>

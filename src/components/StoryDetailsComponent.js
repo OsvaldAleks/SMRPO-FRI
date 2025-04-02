@@ -328,7 +328,7 @@ return (
                     <th>Time[h]</th>
                     <th>Dev</th>
                     {(userRole === "devs" || userRole === "scrumMasters") && <th>Claim</th>}
-                    {(userRole === "devs" || userRole === "scrumMasters") && <th>Delete</th>}
+                    {(userRole === "devs" || userRole === "scrumMasters") && <th></th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -360,13 +360,11 @@ return (
                         )}
                         {(userRole === "devs" || userRole === "scrumMasters") && (
                           <td>
-                            <button
+                            <FaTrash
                               className="btn--tiny btn--accent"
                               onClick={() => handleDeleteSubtask(idx)}
                               title="Delete subtask"
-                            >
-                              🗑
-                            </button>
+                            />
                           </td>
                         )}
 
