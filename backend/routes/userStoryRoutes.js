@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory, updateUserStory, deleteSubtask } = require("../services/userStoryService");
+const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory, updateUserStory, deleteSubtask, updateSubtask } = require("../services/userStoryService");
 
 const router = express.Router();
 
@@ -205,33 +205,19 @@ router.delete("/:storyId/subtask/:subtaskIndex", async (req, res) => {
 // UPDATE subtask
 router.put("/:storyId/updateSubtask", async (req, res) => {
   const { storyId } = req.params;
-  const { subtaskIndex, name, status, assignedTo } = req.body;
+  const { subtaskIndex, description, timeEstimate, developer } = req.body;
 
   try {
-    const storyRef = ref(db, `userStories/${storyId}`);
-    const snapshot = await get(storyRef);
+    const result = await updateSubtask(storyId, subtaskIndex, {
+      description,
+      timeEstimate,
+      developer
+    });
 
-    if (!snapshot.exists()) {
-      return res.status(404).json({ message: "User story not found" });
-    }
-
-    const story = snapshot.val();
-    if (!story.subtasks || !story.subtasks[subtaskIndex]) {
-      return res.status(400).json({ message: "Invalid subtask index" });
-    }
-
-    const subtask = story.subtasks[subtaskIndex];
-    if (name !== undefined) subtask.name = name;
-    if (status !== undefined) subtask.status = status;
-    if (assignedTo !== undefined) subtask.assignedTo = assignedTo;
-
-    story.subtasks[subtaskIndex] = subtask;
-    await update(storyRef, { subtasks: story.subtasks });
-
-    res.status(200).json({ message: "Subtask updated successfully" });
+    res.status(200).json(result);
   } catch (error) {
-    console.error("Error updating subtask:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error updating subtask:", error.message || error);
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 });
 

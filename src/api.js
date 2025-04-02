@@ -592,12 +592,12 @@ export const updateUserPassword = async (userId, newPassword) => {
   }
 };
 
-export const updateSubtask = async (storyId, subtaskIndex, updatedData) => {
+export const updateSubtask = async (storyId, updatedData) => {
   try {
     const response = await fetch(`${API_URL}/userStories/${storyId}/updateSubtask`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subtaskIndex, ...updatedData }),
+      body: JSON.stringify(updatedData),
     });
 
     if (!response.ok) {
