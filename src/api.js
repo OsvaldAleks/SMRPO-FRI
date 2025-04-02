@@ -1,6 +1,10 @@
 import { getDatabase, ref, update, serverTimestamp } from "firebase/database";
 
-const API_URL = "http://localhost:5001"; // Your backend URL
+
+
+const API_URL = process.env.REACT_APP_BACKEND_ADDRESS || 'http://localhost:5001';
+console.log("Backend Address:", process.env.REACT_APP_BACKEND_ADDRESS);
+console.log("API URL:", API_URL);
 
 // Register a new user via API
 export const registerUser = async (userData) => {
