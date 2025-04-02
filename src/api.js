@@ -168,7 +168,7 @@ export const getSprintData = async (sprintId) => {
   }
 };
 
-export const validateSprintDates = async (projectId, newStartDate, newEndDate) => {
+export const validateSprintDates = async (projectId, newStartDate, newEndDate, sprintId) => {
   try {
     const response = await fetch(`${API_URL}/sprints/validateDates`, {
       method: "POST",
@@ -177,6 +177,7 @@ export const validateSprintDates = async (projectId, newStartDate, newEndDate) =
         projectId,
         newStartDate,
         newEndDate,
+        sprintId
       }),
     });
 
@@ -529,4 +530,25 @@ export const deleteSprint = async (sprintId) => {
     throw error;
   }
 };
+
+export const updateSprint = async (sprintId, sprintData) => {
+  try {
+    const response = await fetch(`${API_URL}/sprints/${sprintId}/update`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(sprintData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Failed to update sprint");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating sprint:", error);
+    throw error;
+  }
+};
+
 

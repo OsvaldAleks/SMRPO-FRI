@@ -4,20 +4,35 @@ function doDatesOverlap(start1, end1, start2, end2) {
   return start1 <= end2 && start2 <= end1;
 }
 
-async function validateSprintDates(projectId, newStartDate, newEndDate) {
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("sl-SI", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+
+async function validateSprintDates(projectId, newStartDate, newEndDate, sprintId = null) {
   try {
     const sprints = await getSprintsByProjectId(projectId);
     const newStart = newStartDate;
     const newEnd = newEndDate;
 
     for (const sprint of sprints) {
+      // Skip checking the sprint that is being updated
+      if (sprintId && sprint.id === sprintId) {
+        continue;
+      }
+
       const existingStart = sprint.start_date;
       const existingEnd = sprint.end_date;
 
       if (doDatesOverlap(newStart, newEnd, existingStart, existingEnd)) {
         return {
           success: false,
-          message: `New sprint overlaps with existing sprint: ${sprint.name} (${sprint.start_date} to ${sprint.end_date})`,
+          message: `Overlaps with sprint: ${formatDate(sprint.start_date)} to ${formatDate(sprint.end_date)}`,
         };
       }
     }
@@ -123,4 +138,36 @@ async function deleteSprint(sprintId) {
     return { success: false, message: error.message };
   }
 }
-module.exports = { createSprint, getSprint, getSprintsByProjectId, deleteSprint };
+
+async function updateSprint(sprintId, updatedData) {
+  try {
+    const sprintRef = db.collection("sprints").doc(sprintId);
+    const sprintDoc = await sprintRef.get();
+
+    if (!sprintDoc.exists) {
+      throw new Error("Sprint not found.");
+    }
+
+    const existingSprint = sprintDoc.data();
+    const { start_date, end_date, velocity } = updatedData;
+
+    if (start_date && end_date && new Date(end_date) < new Date(start_date)) {
+      throw new Error("End date cannot be before start date.");
+    }
+
+    if (velocity !== undefined && velocity < 0) {
+      throw new Error("Velocity cannot be negative.");
+    }
+
+    await sprintRef.update(updatedData);
+    console.log("Sprint updated successfully:", updatedData);
+
+    return { id: sprintId, ...existingSprint, ...updatedData };
+  } catch (error) {
+    console.error("Failed to update sprint:", error.message);
+    throw error;
+  }
+}
+
+
+module.exports = { createSprint, getSprint, getSprintsByProjectId, deleteSprint, updateSprint, validateSprintDates };

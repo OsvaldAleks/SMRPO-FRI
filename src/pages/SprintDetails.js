@@ -14,6 +14,7 @@ import './style/ProjectDetails.css';
 import StoryDetailsComponent from '../components/StoryDetailsComponent.js';
 import { FaEdit, FaTrash } from "react-icons/fa";
 import {deleteSprint} from '../api.js'
+import AddSprintForm from './AddSprintForm.js'
 
 const SprintDetails = () => {
   const { projectName, sprintId } = useParams();
@@ -28,6 +29,7 @@ const SprintDetails = () => {
   const [selectedStory, setSelectedStory] = useState(null);
   const [developers, setDevelopers] = useState([]);
   const [canEdit, setCanEdit] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
   // Track which user stories are selected (checked) for adding to sprint
@@ -95,7 +97,7 @@ const SprintDetails = () => {
       };
       fetchSprintData();
     }
-  }, [sprintId]);
+  }, [sprintId, isEditing]);
 
   // Fetch Project Info
   useEffect(() => {
@@ -241,201 +243,206 @@ const SprintDetails = () => {
 
   return (
     <>
-      {showIncludeStories && (
-        <div className="center--box">
-          <h1>Add Stories to Sprint</h1>
-          <div className="responsive-table-container3">
-            <table className="responsive-table">
-              <thead>
-                <tr>
-                  <th>Include</th>
-                  <th>Story Title</th>
-                </tr>
-              </thead>
-              <tbody>
-                {notInAnySprint.map((story) => {
-                  const hasPoints =
-                    story.storyPoints !== undefined && story.storyPoints !== null;
-                  const isDisabled =
-                    !selectedStories.includes(story.id) &&
-                    (wouldExceedVelocity(story.id) || !hasPoints);
-                  const tooltip = isDisabled
-                    ? wouldExceedVelocity(story.id)
-                      ? "Cannot add story, because sprint velocity would be exceeded"
-                      : "Missing story points"
-                    : "";
-
-                  return (
-                    <tr
-                      key={story.id}
-                      className={selectedStory?.id === story.id ? "selected" : ""}
-                    >
-                      <td>
-                        <input
-                          type="checkbox"
-                          disabled={isDisabled}
-                          checked={selectedStories.includes(story.id)}
-                          onChange={() => handleCheckboxChange(story.id)}
-                          style={{ cursor: isDisabled ? "not-allowed" : "pointer" }}
-                          title={tooltip} // Add tooltip here
-                        />
-                      </td>
-                      <td
-                        onClick={() => handleStoryClick(story)}
-                        style={{ color: hasPoints ? "inherit" : "gray" }}
-                      >
-                        {story.name}
-                        {!hasPoints && (
-                          <span style={{ marginLeft: "8px", color: "var(--color-accent)" }}>
-                            (Missing story points)
-                          </span>
-                        )}
-                      </td>
+      {isEditing ? (
+        <AddSprintForm projectId={projectId} projectName={projectName} sprint={sprint} onSprintAdded={()=>setIsEditing(false)}/>
+      ) : (
+        <>
+          {showIncludeStories && (
+            <div className="center--box">
+              <h1>Add Stories to Sprint</h1>
+              <div className="responsive-table-container3">
+                <table className="responsive-table">
+                  <thead>
+                    <tr>
+                      <th>Include</th>
+                      <th>Story Title</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <Button className="btn--block" onClick={handleAddToSprint}>
-            Add Selected ->
-          </Button>
-        </div>
-      )}
+                  </thead>
+                  <tbody>
+                    {notInAnySprint.map((story) => {
+                      const hasPoints =
+                        story.storyPoints !== undefined && story.storyPoints !== null;
+                      const isDisabled =
+                        !selectedStories.includes(story.id) &&
+                        (wouldExceedVelocity(story.id) || !hasPoints);
+                      const tooltip = isDisabled
+                        ? wouldExceedVelocity(story.id)
+                          ? "Cannot add story, because sprint velocity would be exceeded"
+                          : "Missing story points"
+                        : "";
 
-      <div className="center--box">
-
-      <div className="card--header">
-        <h1>Sprint Details</h1>
-        <div className="icons">
-          {canEdit && (
-            <>
-              <FaEdit 
-                title="Edit User Story" 
-              />
-              <FaTrash 
-                className="p--alert"
-                title="Delete User Story" 
-                onClick={handleDelete}
-              />
-            </>
+                      return (
+                        <tr
+                          key={story.id}
+                          className={selectedStory?.id === story.id ? "selected" : ""}
+                        >
+                          <td>
+                            <input
+                              type="checkbox"
+                              disabled={isDisabled}
+                              checked={selectedStories.includes(story.id)}
+                              onChange={() => handleCheckboxChange(story.id)}
+                              style={{ cursor: isDisabled ? "not-allowed" : "pointer" }}
+                              title={tooltip}
+                            />
+                          </td>
+                          <td
+                            onClick={() => handleStoryClick(story)}
+                            style={{ color: hasPoints ? "inherit" : "gray" }}
+                          >
+                            {story.name}
+                            {!hasPoints && (
+                              <span style={{ marginLeft: "8px", color: "var(--color-accent)" }}>
+                                (Missing story points)
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <Button className="btn--block" onClick={handleAddToSprint}>
+                Add Selected -&gt;
+              </Button>
+            </div>
           )}
-        </div>
-      </div>
-        <div className="block--element">
-        <div className="header-with-button">
 
-        {role === "scrumMasters" && isSprintActive() && (
-            <Button
-              variant={"secondary"}
-              onClick={() => setShowIncludeStories((prev) => !prev)}
-              className={
-                showIncludeStories ? "add-button btn-left selected" : "add-button btn-left"
-              }
-            > 
-              <span className={showIncludeStories ? "rotated" : ""}>+</span>
-            </Button>
-          )}
+          <div className="center--box">
+            <div className="card--header">
+              <h1>Sprint Details</h1>
+              <div className="icons">
+                {canEdit && (
+                  <>
+                    <FaEdit 
+                      title="Edit User Story" 
+                      onClick={() => setIsEditing(true)}
+                    />
+                    <FaTrash 
+                      className="p--alert"
+                      title="Delete User Story" 
+                      onClick={handleDelete}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="block--element">
+              <div className="header-with-button">
+                {role === "scrumMasters" && isSprintActive() && (
+                  <Button
+                    variant={"secondary"}
+                    onClick={() => setShowIncludeStories((prev) => !prev)}
+                    className={
+                      showIncludeStories ? "add-button btn-left selected" : "add-button btn-left"
+                    }
+                  > 
+                    <span className={showIncludeStories ? "rotated" : ""}>+</span>
+                  </Button>
+                )}
 
-        {error && <p style={{ color: "red" }}>Error: {error}</p>}
+                {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
-        {sprint ? (
-          <div>
-            <p>
-              <strong>Start Date: </strong>
-              {sprint?.start_date
-                ? formatDate(sprint.start_date)
-                : "No start date available"}
-            </p>
-            <p>
-              <strong>End Date: </strong>
-              {sprint?.end_date
-                ? formatDate(sprint.end_date)
-                : "No end date available"}
-            </p>
-            <p>
-              <strong>Velocity: </strong> {sprint.velocity}
-            </p>
+                {sprint ? (
+                  <div>
+                    <p>
+                      <strong>Start Date: </strong>
+                      {sprint?.start_date
+                        ? formatDate(sprint.start_date)
+                        : "No start date available"}
+                    </p>
+                    <p>
+                      <strong>End Date: </strong>
+                      {sprint?.end_date
+                        ? formatDate(sprint.end_date)
+                        : "No end date available"}
+                    </p>
+                    <p>
+                      <strong>Velocity: </strong> {sprint.velocity}
+                    </p>
+                  </div>
+                ) : (
+                  <p>Loading sprint data...</p>
+                )}
+              </div>
+            </div>
+            {!isSprintNotStarted() && (
+              <div className="responsive-table-container-wide">
+                <table className="responsive-table">
+                  <thead>
+                    <tr>
+                      <th>TODO</th>
+                      <th>Doing</th>
+                      <th>Done</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: maxRows }).map((_, rowIndex) => (
+                      <tr key={rowIndex}>
+                        <td>
+                          {todoStories[rowIndex] && (
+                            <div
+                              onClick={() => handleStoryClick(todoStories[rowIndex])}
+                              className={`userStory ${
+                                selectedStory?.id === todoStories[rowIndex].id ? "selected" : ""
+                              }`}
+                            >
+                              <h2>{todoStories[rowIndex].name}</h2>
+                              <p>Priority: {todoStories[rowIndex].priority}</p>
+                              <p>Business Value: {todoStories[rowIndex].businessValue}</p>
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          {doingStories[rowIndex] && (
+                            <div
+                              onClick={() => handleStoryClick(doingStories[rowIndex])}
+                              className={`userStory ${
+                                selectedStory?.id === doingStories[rowIndex].id ? "selected" : ""
+                              }`}
+                            >
+                              <h2>{doingStories[rowIndex].name}</h2>
+                              <p>Priority: {doingStories[rowIndex].priority}</p>
+                              <p>Business Value: {doingStories[rowIndex].businessValue}</p>
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          {doneStories[rowIndex] && (
+                            <div
+                              onClick={() => handleStoryClick(doneStories[rowIndex])}
+                              className={`userStory ${
+                                selectedStory?.id === doneStories[rowIndex].id ? "selected" : ""
+                              }`}
+                            >
+                              <h2>{doneStories[rowIndex].name}</h2>
+                              <p>Priority: {doneStories[rowIndex].priority}</p>
+                              <p>Business Value: {doneStories[rowIndex].businessValue}</p>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-        ) : (
-          <p>Loading sprint data...</p>
-        )}
-        </div>
-        </div>
 
-        <div className="responsive-table-container-wide">
-          <table className="responsive-table">
-            <thead>
-              <tr>
-                <th>TODO</th>
-                <th>Doing</th>
-                <th>Done</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: maxRows }).map((_, rowIndex) => (
-                <tr key={rowIndex}>
-                  <td>
-                    {todoStories[rowIndex] && (
-                      <div
-                        onClick={() => handleStoryClick(todoStories[rowIndex])}
-                        className={`userStory ${
-                          selectedStory?.id === todoStories[rowIndex].id ? "selected" : ""
-                        }`}
-                      >
-                        <h2>{todoStories[rowIndex].name}</h2>
-                        <p>Priority: {todoStories[rowIndex].priority}</p>
-                        <p>Business Value: {todoStories[rowIndex].businessValue}</p>
-                      </div>
-                    )}
-                  </td>
-                  <td>
-                    {doingStories[rowIndex] && (
-                      <div
-                        onClick={() => handleStoryClick(doingStories[rowIndex])}
-                        className={`userStory ${
-                          selectedStory?.id === doingStories[rowIndex].id ? "selected" : ""
-                        }`}
-                      >
-                        <h2>{doingStories[rowIndex].name}</h2>
-                        <p>Priority: {doingStories[rowIndex].priority}</p>
-                        <p>Business Value: {doingStories[rowIndex].businessValue}</p>
-                      </div>
-                    )}
-                  </td>
-                  <td>
-                    {doneStories[rowIndex] && (
-                      <div
-                        onClick={() => handleStoryClick(doneStories[rowIndex])}
-                        className={`userStory ${
-                          selectedStory?.id === doneStories[rowIndex].id ? "selected" : ""
-                        }`}
-                      >
-                        <h2>{doneStories[rowIndex].name}</h2>
-                        <p>Priority: {doneStories[rowIndex].priority}</p>
-                        <p>Business Value: {doneStories[rowIndex].businessValue}</p>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {selectedStory && (
-        <StoryDetailsComponent
-          story={selectedStory}
-          userRole={role}
-          fromSprintView={true}
-          sprintEnded={!isSprintActive()} // Pass whether the sprint has ended
-          onUpdate={updateStoryStatus}
-          projectDevelopers={developers}
-        />
+          {selectedStory && (
+            <StoryDetailsComponent
+              story={selectedStory}
+              userRole={role}
+              fromSprintView={true}
+              sprintEnded={!isSprintActive()}
+              onUpdate={updateStoryStatus}
+              projectDevelopers={developers}
+            />
+          )}
+        </>
       )}
     </>
   );
-};
-
+}
 export default SprintDetails;

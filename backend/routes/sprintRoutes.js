@@ -1,5 +1,5 @@
 const express = require("express");
-const { createSprint, getSprint, getSprintsByProjectId, deleteSprint } = require("../services/sprintService");
+const { validateSprintDates, createSprint, getSprint, getSprintsByProjectId, deleteSprint, updateSprint } = require("../services/sprintService");
 
 const router = express.Router();
 
@@ -40,24 +40,19 @@ router.get("/project/:projectId", async (req, res) => {
 // Date validation
 router.post("/validateDates", async (req, res) => {
   try {
-    const { projectId, newStartDate, newEndDate } = req.body;
+    const { projectId, newStartDate, newEndDate, sprintId } = req.body;
 
     if (!projectId || !newStartDate || !newEndDate) {
       return res.status(400).json({ message: "Missing required parameters" });
     }
 
-    const sprints = await getSprintsByProjectId(projectId);
+    const validationResult = await validateSprintDates(projectId, newStartDate, newEndDate, sprintId);
 
-    for (const sprint of sprints) {
-      if (doDatesOverlap(newStartDate, newEndDate, sprint.start_date, sprint.end_date)) {
-        return res.status(400).json({
-          success: false,
-          message: `New sprint overlaps with existing sprint: (${sprint.start_date} to ${sprint.end_date})`,
-        });
-      }
+    if (!validationResult.success) {
+      return res.status(400).json(validationResult);
     }
 
-    return res.json({ success: true }); // No overlaps
+    return res.json(validationResult); // No overlaps
   } catch (error) {
     console.error("Error validating sprint dates:", error);
     return res.status(500).json({ success: false, message: "Server error" });
@@ -72,4 +67,20 @@ router.delete("/:sprintId", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+router.put("/:sprintId/update", async (req, res) => {
+  try {
+    const sprintData = {
+      projectName: req.body.projectName,
+      start_date: req.body.start_date,
+      end_date: req.body.end_date,
+      velocity: req.body.velocity
+    };
+        const sprint = await updateSprint(req.params.sprintId, sprintData);
+    res.status(200).json({ message: "Sprint updated successfully!", sprint });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

@@ -1,15 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { createSprint, validateSprintDates } from "../api";
+import { createSprint, updateSprint, validateSprintDates } from "../api";
 import Button from "../components/Button";
 import Input from "../components/Input";
 
-const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
+const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [velocity, setVelocity] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (sprint) {
+      setIsEditing(true);
+      setStartDate(sprint.start_date || "");
+      setEndDate(sprint.end_date || "");
+      setVelocity(sprint.velocity || "");
+    } else {
+      setIsEditing(false);
+      const today = new Date();
+      const oneWeekLater = new Date(today);
+      oneWeekLater.setDate(today.getDate() + 7);
+
+      const formatDate = (date) => date.toISOString().split("T")[0];
+
+      setStartDate(formatDate(today));
+      setEndDate(formatDate(oneWeekLater));
+    }
+  }, [sprint]);
 
   useEffect(() => {
     const today = new Date();
@@ -116,15 +136,19 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
       setError("");
       setSuccessMessage("");
 
-      // Validate sprint dates before creating a new sprint
-      const validationResponse = await validateSprintDates(projectId, startDate, endDate);
+      // Validate sprint dates before creating/updating a sprint
+      const validationResponse = await validateSprintDates(
+        projectId, 
+        startDate, 
+        endDate,
+        sprint?.id // Pass sprint ID when editing to exclude current sprint from validation
+      );
 
       if (!validationResponse.success) {
         setError(validationResponse.message);
         return;
       }
 
-      // Proceed with sprint creation if validation passes
       const sprintData = {
         projectName: projectName,
         start_date: startDate,
@@ -132,17 +156,24 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
         velocity: parseFloat(velocity),
       };
 
-      const response = await createSprint(sprintData);
+      let response;
+      if (isEditing) {
+        // Update existing sprint
+        response = await updateSprint(sprint.id, sprintData);
+      } else {
+        // Create new sprint
+        response = await createSprint(sprintData);
+      }
 
       if (response.error) {
-        setError(response.message || "Failed to add sprint.");
+        setError(response.message || `Failed to ${isEditing ? 'update' : 'add'} sprint.`);
       } else {
-        setSuccessMessage("Sprint added successfully!");
+        setSuccessMessage(`Sprint ${isEditing ? 'updated' : 'added'} successfully!`);
         setError("");
         onSprintAdded();
       }
     } catch (err) {
-      setError("An error occurred while adding the sprint.");
+      setError(`An error occurred while ${isEditing ? 'updating' : 'adding'} the sprint.`);
     }
   };
 
@@ -155,7 +186,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
 
   return (
     <div className="center--box">
-      <h1>Add New Sprint</h1>
+      <h1>{isEditing ? "Edit Sprint" : "Add New Sprint"}</h1>
       <form onSubmit={handleSubmit}>
         <div className={"block--element"}>
           <label className={"block--element"}>Start Date</label>
@@ -166,6 +197,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
             onChange={(e) => setStartDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]}
             required
+            disabled={isEditing && new Date(sprint.start_date) < new Date()}
           />
         </div>
         <div className={"block--element"}>
@@ -177,6 +209,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
             onChange={(e) => setEndDate(e.target.value)}
             min={startDate}
             required
+            disabled={isEditing && new Date(sprint.start_date) < new Date()}
           />
         </div>
         <div className={"block--element"}>
@@ -189,11 +222,26 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded }) => {
             placeholder="Velocity in story points"
             step="0.01"
             required
+            disabled={isEditing && new Date(sprint.start_date) < new Date()} 
           />
         </div>
         {error && <p className="p--alert">{error}</p>}
         {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-        <Button className="btn--block" type="submit">Add Sprint</Button>
+        {isEditing ?
+          (
+          <div style={{ margin: "0.5rem", display: "flex", gap: "0" }}>
+          <Button className="btn--half btn--accent" onClick={(e) => {e.preventDefault();onSprintAdded()}}>
+            CANCEL
+          </Button>
+          <Button className="btn--half" type="submit">
+            UPDATE
+          </Button>
+          </div>
+          )
+          :(
+          <Button className="btn--block" type="submit">
+            Add Sprint
+          </Button>)}
       </form>
     </div>
   );
