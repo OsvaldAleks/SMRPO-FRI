@@ -1,6 +1,6 @@
 const express = require("express");
 const { getUsers, getUser, addUser } = require("../services/userService");
-const { updateUserStatus } = require("../services/userService");
+const { updateUserStatus, updateUserInfo, updateUserPassword } = require("../services/userService");
 
 const router = express.Router();
 
@@ -58,6 +58,53 @@ router.put("/:userId/status", async (req, res) => {
   } catch (error) {
     console.error("Error updating user status:", error);
     res.status(500).json({ error: "Error updating user status" });
+  }
+});
+
+// Update user information
+router.put("/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { name, surname, username } = req.body;
+
+    // Verify required fields
+    if (!name || !surname || !username) {
+      return res.status(400).json({ error: "Name, surname, and username are required." });
+    }
+
+    const result = await updateUserInfo(userId, { name, surname, username });
+
+    if (result.success) {
+      res.status(200).json({ message: result.message });
+    } else {
+      res.status(400).json({ error: result.message });
+    }
+  } catch (error) {
+    console.error("Error updating user info:", error);
+    res.status(500).json({ error: "An unexpected error occurred while updating user information." });
+  }
+});
+
+// Update user password
+router.put("/:userId/password", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+      return res.status(400).json({ error: "New password is required." });
+    }
+
+    const result = await updateUserPassword(userId, newPassword);
+
+    if (result.success) {
+      res.status(200).json({ message: result.message });
+    } else {
+      res.status(400).json({ error: result.message });
+    }
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).json({ error: "An unexpected error occurred while updating password." });
   }
 });
 

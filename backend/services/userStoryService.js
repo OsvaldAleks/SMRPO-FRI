@@ -472,6 +472,24 @@ async function deleteUserStory(storyId){
   return { message: "User story deleted successfully." };
 }
 
+async function deleteSubtask(storyId, subtaskIndex) {
+  const storyRef = db.collection("userStories").doc(storyId);
+  const storyDoc = await storyRef.get();
+  if (!storyDoc.exists) throw new Error("User story not found");
+
+  const storyData = storyDoc.data();
+  const updatedSubtasks = [...(storyData.subtasks || [])];
+
+  if (subtaskIndex < 0 || subtaskIndex >= updatedSubtasks.length) {
+    throw new Error("Invalid subtask index");
+  }
+
+  updatedSubtasks.splice(subtaskIndex, 1);
+
+  await storyRef.update({ subtasks: updatedSubtasks });
+  return { success: true, subtasks: updatedSubtasks };
+};
+
 module.exports = { 
   createUserStory, 
   getUserStory,
@@ -485,7 +503,8 @@ module.exports = {
   evaluateUserStory,
   forceAssignUserStoryToSprint,
   deleteUserStory,
-  updateUserStory
+  updateUserStory,
+  deleteSubtask
 };
 
 

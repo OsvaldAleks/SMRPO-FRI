@@ -547,8 +547,85 @@ export const updateSprint = async (sprintId, sprintData) => {
     return await response.json();
   } catch (error) {
     console.error("Error updating sprint:", error);
+  }
+}
+
+// Update user information
+export const updateUserInfo = async (userId, userData) => {
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update user information");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error updating user info:", error);
+    throw new Error(error.message || "Network error");
+  }
+};
+
+// Update user password
+export const updateUserPassword = async (userId, newPassword) => {
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}/password`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newPassword }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update password");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error updating password:", error);
+    throw new Error(error.message || "Network error");
+  }
+};
+
+export const updateSubtask = async (storyId, subtaskIndex, updatedData) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/updateSubtask`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subtaskIndex, ...updatedData }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to update subtask");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error updating subtask:", error);
     throw error;
   }
 };
 
+export const deleteSubtask = async (storyId, subtaskIndex) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/subtask/${subtaskIndex}`, {
+      method: "DELETE"
+    });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to delete subtask");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("API error deleting subtask:", error);
+    throw error;
+  }
+};
