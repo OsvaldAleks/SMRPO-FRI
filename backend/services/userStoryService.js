@@ -490,6 +490,35 @@ async function deleteSubtask(storyId, subtaskIndex) {
   return { success: true, subtasks: updatedSubtasks };
 };
 
+async function updateSubtask(storyId, subtaskIndex, updates) {
+  const storyRef = db.collection("userStories").doc(storyId);
+  const storyDoc = await storyRef.get();
+
+  if (!storyDoc.exists) {
+    throw new Error("User story not found.");
+  }
+
+  const storyData = storyDoc.data();
+  const subtasks = storyData.subtasks || [];
+
+  if (!Array.isArray(subtasks) || subtaskIndex < 0 || subtaskIndex >= subtasks.length) {
+    throw new Error("Invalid subtask index.");
+  }
+
+  const subtask = subtasks[subtaskIndex];
+
+  // Apply updates
+  if (updates.description !== undefined) subtask.description = updates.description;
+  if (updates.timeEstimate !== undefined) subtask.timeEstimate = Number(updates.timeEstimate);
+  if (updates.developer !== undefined) subtask.devName = updates.developer;
+
+  subtasks[subtaskIndex] = subtask;
+
+  await storyRef.update({ subtasks });
+
+  return { message: "Subtask updated successfully.", subtask };
+}
+
 module.exports = { 
   createUserStory, 
   getUserStory,
@@ -504,7 +533,8 @@ module.exports = {
   forceAssignUserStoryToSprint,
   deleteUserStory,
   updateUserStory,
-  deleteSubtask
+  deleteSubtask,
+  updateSubtask
 };
 
 
