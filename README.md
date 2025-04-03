@@ -4,7 +4,9 @@ A web application built with **React** for the frontend, **Express** for the bac
 
 ## Demo
 Deployed using Render
+
 [![Live Demo](https://img.shields.io/badge/Demo-Live-green)](https://smrpo-fri-sprintly.onrender.com)
+
 [https://smrpo-fri-sprintly.onrender.com](https://smrpo-fri-sprintly.onrender.com)
 
 ---
