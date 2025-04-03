@@ -5,9 +5,7 @@ A web application built with **React** for the frontend, **Express** for the bac
 ## Demo
 Deployed using Render
 
-[![Live Demo](https://img.shields.io/badge/Demo-Live-green)](https://smrpo-fri-sprintly.onrender.com)
-
-[https://smrpo-fri-sprintly.onrender.com](https://smrpo-fri-sprintly.onrender.com)
+[![Demo](https://img.shields.io/badge/Demo-green)](https://osvaldaleks.github.io/SMRPO-FRI/)
 
 ---
 project was a part of the SMRPO course at FRI
