@@ -7,6 +7,8 @@ logs
 **/build/**
 
 .env
+.env.**
+
 smrpo-project-firebase-adminsdk-*.json
 backend/node_modules
 

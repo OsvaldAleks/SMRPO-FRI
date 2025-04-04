@@ -5,18 +5,17 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import { ProjectsContext } from "../context/ProjectsContext";
 
-const CreateProject = () => {
-  const [input1, setInput1] = useState("");
-  const [description, setDescription] = useState("");
+const CreateProject = ({ project, onSubmit }) => {
+  const [input1, setInput1] = useState(project?.name || "");
+  const [description, setDescription] = useState(project?.description || "");
   const [users, setUsers] = useState([]);
   const [checkedUsers, setCheckedUsers] = useState({});
-  const [loading, setLoading] = useState(true);
   const [roleAssignments, setRoleAssignments] = useState({
-    devs: [],
-    scrumMasters: [],
-    productOwners: [],
+    devs: project?.devs || [],
+    scrumMasters: project?.scrumMasters || [],
+    productOwners: project?.productOwners || [],
   });
-  const [selectedRoles, setSelectedRoles] = useState({}); // Track selected role for each user
+  const [selectedRoles, setSelectedRoles] = useState({});
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
   const [success, setSuccess] = useState("");
@@ -24,7 +23,6 @@ const CreateProject = () => {
 
   const auth = getAuth();
 
-  // Listen for authentication state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -38,7 +36,6 @@ const CreateProject = () => {
     const fetchUsers = async () => {
       try {
         const data = await getUsers();
-
         if (data && !data.error) {
           setUsers(data);
         } else {
@@ -46,8 +43,6 @@ const CreateProject = () => {
         }
       } catch (error) {
         console.error("Network error:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -59,21 +54,15 @@ const CreateProject = () => {
       const isChecked = !prev[userId];
       const updatedCheckedUsers = { ...prev, [userId]: isChecked };
 
-      // Initialize the role to "devs" when the user is first checked
-      if (isChecked && !roleAssignments.devs.includes(userId)) {
-        setRoleAssignments((prevRoles) => {
-          // Add to devs if not already included in any other role
-          if (!prevRoles.devs.includes(userId) && !prevRoles.scrumMasters.includes(userId) && !prevRoles.productOwners.includes(userId)) {
-            return {
-              ...prevRoles,
-              devs: [...prevRoles.devs, userId]
-            };
-          }
-          return prevRoles;
-        });
-        setSelectedRoles((prev) => ({ ...prev, [userId]: "devs" })); // Set default role
-      } else if (!isChecked) {
-        // Remove the user from all roles if unchecked
+      if (isChecked) {
+        // If user was previously assigned a role, use that
+        const previousRole = selectedRoles[userId] || "devs";
+        setRoleAssignments((prevRoles) => ({
+          ...prevRoles,
+          [previousRole]: [...prevRoles[previousRole], userId]
+        }));
+        setSelectedRoles((prev) => ({ ...prev, [userId]: previousRole }));
+      } else {
         setRoleAssignments((prevRoles) => {
           const updatedRoles = { ...prevRoles };
           Object.keys(updatedRoles).forEach((role) => {
@@ -83,7 +72,7 @@ const CreateProject = () => {
         });
         setSelectedRoles((prev) => {
           const updated = { ...prev };
-          delete updated[userId]; // Remove the user's selected role
+          delete updated[userId];
           return updated;
         });
       }
@@ -96,63 +85,52 @@ const CreateProject = () => {
     setRoleAssignments((prev) => {
       const updatedAssignments = { ...prev };
 
-      // Remove user from all roles before adding to the new role
+      // Remove user from all roles before assigning a new one
       Object.keys(updatedAssignments).forEach((key) => {
         updatedAssignments[key] = updatedAssignments[key].filter((id) => id !== userId);
       });
 
       updatedAssignments[role] = [...updatedAssignments[role], userId];
-
       return updatedAssignments;
     });
 
-    // Update the selected role for the user
     setSelectedRoles((prev) => ({ ...prev, [userId]: role }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!input1) {
       setError("Project name is required.");
       return;
     }
-  
+
     if (!user || !user.uid) {
       setError("User is not authenticated.");
       return;
     }
-  
-    // Include Scrum Masters in the devs list
-    const devsWithScrumMasters = [...new Set([...roleAssignments.devs, ...roleAssignments.scrumMasters])];
-  
+
     const projectData = {
       name: input1,
       description,
-      devs: devsWithScrumMasters, // Include Scrum Masters in the devs list
+      devs: [...new Set([...roleAssignments.devs, ...roleAssignments.scrumMasters])],
       scrumMasters: roleAssignments.scrumMasters,
       productOwners: roleAssignments.productOwners,
       owner: user.uid,
     };
-  
-    console.log("Project data:", projectData);
-  
+
     try {
-      console.log("Submitting project data:", projectData);
-      const result = await createProject(projectData);
-  
+      /*const result = project
+        ? await updateProject(projectData) // Use an updateProject function here
+        : await createProject(projectData);
+*/const result = await createProject(projectData);
       if (result.error) {
-        setError(result.message || "An error occurred while creating the project.");
-        setSuccess("");
+        setError(result.message || "An error occurred while updating/creating the project.");
       } else {
-        setSuccess("Project created successfully!");
+        setSuccess("Project updated successfully!");
         setError("");
-  
-        console.log("Fetching updated projects for user:", user.uid);
         const updatedProjects = await getUserProjects(user.uid);
         setProjects(updatedProjects);
-  
-        // Reset form
         setInput1("");
         setDescription("");
         setCheckedUsers({});
@@ -160,18 +138,15 @@ const CreateProject = () => {
         setSelectedRoles({});
       }
     } catch (err) {
-      setError(err.message || "Network error occurred while creating project.");
-      setSuccess("");
+      setError(err.message || "Network error occurred while creating/updating project.");
     }
   };
-  
-  // Helper function to determine available roles for a user
+
   const getAvailableRoles = (userId) => {
     const availableRoles = [
       { value: "devs", label: "Developer" },
     ];
 
-    // Add Scrum Master option only if no one is assigned yet or the current user is the assigned Scrum Master
     if (
       roleAssignments.scrumMasters.length === 0 ||
       roleAssignments.scrumMasters.includes(userId)
@@ -179,7 +154,6 @@ const CreateProject = () => {
       availableRoles.push({ value: "scrumMasters", label: "SCRUM Master" });
     }
 
-    // Add Product Owner option only if no one is assigned yet or the current user is the assigned Product Owner
     if (
       roleAssignments.productOwners.length === 0 ||
       roleAssignments.productOwners.includes(userId)
@@ -190,9 +164,36 @@ const CreateProject = () => {
     return availableRoles;
   };
 
+  useEffect(() => {
+    if (project) {
+      const initialCheckedUsers = {};
+      const initialSelectedRoles = {};
+
+      // Mark users as checked and set their roles
+      project.devs?.forEach(userId => {
+        initialCheckedUsers[userId] = true;
+        initialSelectedRoles[userId] = "devs";
+      });
+
+      project.scrumMasters?.forEach(userId => {
+        initialCheckedUsers[userId] = true;
+        initialSelectedRoles[userId] = "scrumMasters";
+      });
+
+      project.productOwners?.forEach(userId => {
+        initialCheckedUsers[userId] = true;
+        initialSelectedRoles[userId] = "productOwners";
+      });
+
+      setCheckedUsers(initialCheckedUsers);
+      setSelectedRoles(initialSelectedRoles);
+    }
+  }, [project]);
+
+
   return (
     <div className="center--box">
-      <h1>Create New Project</h1>
+      <h1>{project ? "Edit Project" : "Create New Project"}</h1>
       <form onSubmit={handleSubmit}>
         <div className="block--element grid">
           <label className="block--element">Project Name:</label>
@@ -215,27 +216,47 @@ const CreateProject = () => {
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {success && <p style={{ color: "green" }}>{success}</p>}
-        <Button type="submit">Create Project</Button>
+        <Button type="submit">{project ? "Update Project" : "Create Project"}</Button>
+
         <div className="responsive-table-container">
-          <table className="responsive-table">
-            <thead>
-              <tr>
-                <th>Include</th>
-                <th>Username</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(users) &&
-                users.map((user) => (
+        <table className="responsive-table">
+          <thead>
+            <tr>
+              <th>Include</th>
+              <th>Username</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Email</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.isArray(users) &&
+              users.map((user) => {
+                // Check if user is assigned to any role
+                const isAssigned = 
+                  roleAssignments.devs.includes(user.id) ||
+                  roleAssignments.scrumMasters.includes(user.id) ||
+                  roleAssignments.productOwners.includes(user.id);
+                
+                // Determine current role
+                let currentRole = selectedRoles[user.id];
+                if (!currentRole) {
+                  if (roleAssignments.scrumMasters.includes(user.id)) {
+                    currentRole = "scrumMasters";
+                  } else if (roleAssignments.productOwners.includes(user.id)) {
+                    currentRole = "productOwners";
+                  } else if (roleAssignments.devs.includes(user.id)) {
+                    currentRole = "devs";
+                  }
+                }
+
+                return (
                   <tr key={user.id}>
                     <td>
                       <input
                         type="checkbox"
-                        checked={checkedUsers[user.id] || false}
+                        checked={isAssigned || checkedUsers[user.id]}
                         onChange={() => handleCheckboxChange(user.id)}
                       />
                     </td>
@@ -244,11 +265,11 @@ const CreateProject = () => {
                     <td>{user.surname}</td>
                     <td>{user.email}</td>
                     <td>
-                      {checkedUsers[user.id] ? (
+                      {isAssigned || checkedUsers[user.id] ? (
                         <div className="select-container">
                           <select
                             className="select select--short"
-                            value={selectedRoles[user.id] || "devs"} // Use the selected role
+                            value={currentRole || "devs"}
                             onChange={(e) => handleRoleChange(user.id, e.target.value)}
                           >
                             {getAvailableRoles(user.id).map((role) => (
@@ -263,10 +284,11 @@ const CreateProject = () => {
                       )}
                     </td>
                   </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
+                );
+              })}
+          </tbody>
+        </table>
+      </div>
       </form>
     </div>
   );

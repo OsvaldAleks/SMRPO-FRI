@@ -11,6 +11,7 @@ import AddSprintForm from "./AddSprintForm";
 import UserStoryForm from "./UserStoryForm";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import CreateProject from "./CreateProject.js";
 
 
 const ProjectDetails = () => {
@@ -28,10 +29,7 @@ const ProjectDetails = () => {
   const [showWontHaveStories, setShowWontHaveStories] = useState(false);
   const [showUncompletedStories, setShowUncompletedStories] = useState(true);
   const [showCompletedStories, setShowCompletedStories] = useState(true);
-  const [realized, setRealized] = useState([]);
-  const [assignedToActive, setAssignedToActive] = useState([]);
-  const [unassigned, setUnassigned] = useState([]);
-
+  const [isEditing, setIsEditing] = useState(false)
 
   const navigate = useNavigate();
 
@@ -65,20 +63,6 @@ const ProjectDetails = () => {
       handleToggleForm(0);
     }
   }, [project]);
-
-  useEffect(() => {
-    if (!stories || !project) return;
-  
-    const activeSprintId = project.activeSprintId;
-  
-    const realizedStories = stories.filter(s => s.status === "Done" && s.isAccepted === true);
-    const assigned = stories.filter(s => s.sprintId === activeSprintId && !(s.status === "Done" && s.isAccepted));
-    const unassigned = stories.filter(s => (!s.sprintId || s.sprintId !== activeSprintId) && !(s.status === "Done" && s.isAccepted));
-  
-    setRealized(realizedStories);
-    setAssignedToActive(assigned);
-    setUnassigned(unassigned);
-  }, [stories, project]);
 
   useEffect(() => {
     const fetchUserStatuses = async () => {
@@ -223,8 +207,20 @@ const ProjectDetails = () => {
     (story) => (!story.sprintId || story.sprintId.length === 0) && story.status !== "Completed"
   );
 
+  const handleChange = async() => {
+    console.log("call API")
+    setIsEditing(false)
+  }
+
   return (
     <>
+    {isEditing ?
+      <CreateProject
+        project={project}
+        onSubmit={()=>handleChange()}
+      />
+        :(
+      <>
       <div className="center--box">
             <div className="card--header">
               <h1>{project.name}</h1>
@@ -234,6 +230,7 @@ const ProjectDetails = () => {
                   <>
                     <FaEdit 
                       title="Edit User Story" 
+                      onClick={()=>{setIsEditing(true)}}
                     />
                   </>
                 )}
@@ -468,6 +465,8 @@ const ProjectDetails = () => {
             fetchStories();
           }}
         />
+      )}
+      </>
       )}
     </>
   );

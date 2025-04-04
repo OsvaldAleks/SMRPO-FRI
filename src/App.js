@@ -19,13 +19,14 @@ import UserStoryDetails from "./pages/UserStoryDetails";
 import UserStatusHandler from "./utils/UserStatusHandler"; // Import the new component
 import Documentation from "./pages/Documentation";
 import "./App.css";
+import { HashRouter } from "react-router-dom";
 
 
 function App() {
   return (
     <AuthProvider>
       <ProjectsProvider>
-        <Router>
+        <HashRouter>
           <UserStatusHandler /> {/* This handles the online/offline status */}
           <Navbar />
           <main>
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/EditAccount" element={<PrivateRoute><EditAccount /></PrivateRoute>} />
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/SMRPO-FRI" element={<Dashboard />} />
                 <Route path="/userDocumentation" element={<Documentation />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/newProject" element={<AdminRoute><CreateProject /></AdminRoute>} />
@@ -47,7 +49,7 @@ function App() {
               </Routes>
             </div>
           </main>
-        </Router>
+        </HashRouter>
       </ProjectsProvider>
     </AuthProvider>
   );
