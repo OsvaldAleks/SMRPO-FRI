@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory, updateUserStory, deleteSubtask, updateSubtask } = require("../services/userStoryService");
+const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory, updateUserStory, deleteSubtask, updateSubtask, startTimeRecording, stopTimeRecording } = require("../services/userStoryService");
 
 const router = express.Router();
 
@@ -218,6 +218,46 @@ router.put("/:storyId/updateSubtask", async (req, res) => {
   } catch (error) {
     console.error("Error updating subtask:", error.message || error);
     res.status(500).json({ message: error.message || "Internal server error" });
+  }
+});
+
+// Start time recording for a subtask
+router.put('/:storyId/subtasks/:subtaskId/start-recording', async (req, res) => {
+  try {
+    const { storyId, subtaskId } = req.params;
+    const result = await startTimeRecording(storyId, subtaskId);
+
+    if (result.success) {
+      res.status(200).json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('Error in start-recording route:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// Stop time recording for a subtask
+router.put('/:storyId/subtasks/:subtaskId/stop-recording', async (req, res) => {
+  try {
+    const { storyId, subtaskId } = req.params;
+    const result = await stopTimeRecording(storyId, subtaskId);
+
+    if (result.success) {
+      res.status(200).json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('Error in stop-recording route:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
   }
 });
 

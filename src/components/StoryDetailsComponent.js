@@ -5,8 +5,8 @@ import Input from "./Input.js";
 import Button from './Button.js';
 import { FaEdit, FaTrash, FaEllipsisV } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import { startTimeRecording, stopTimeRecording } from "../api.js";
 import UserStoryForm from "../pages/UserStoryForm.js";
-
 
 const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, projectDevelopers = [] }) => {
   const { user, loading } = useAuth();
@@ -22,6 +22,9 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
   const [dropdownIndex, setDropdownIndex] = useState(null);
   const dropdownRef = useRef(null);
   const [editingSubtaskIndex, setEditingSubtaskIndex] = useState(null);
+  const [recordingSubtaskId, setRecordingSubtaskId] = useState(null);
+  const [showTimeRecordingModal, setShowTimeRecordingModal] = useState(false);
+  const [selectedSubtaskForRecording, setSelectedSubtaskForRecording] = useState(null);
 
   const navigate = useNavigate();
 
@@ -48,9 +51,54 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     setEditingSubtaskIndex(index);
     setShowSubtaskForm(true);
     setErrorMessage("");
-    setDropdownIndex(null); // close menu
+    setDropdownIndex(null);
   };
 
+  const handleStartRecording = (subtask) => {
+    setSelectedSubtaskForRecording(null); // Reset selection
+  setShowTimeRecordingModal(true);
+  };
+
+  const handleConfirmStartRecording = async () => {
+    if (selectedSubtaskForRecording === null) {
+      setErrorMessage("Please select a subtask first");
+      return;
+    }
+  
+    try {
+      console.log('Attempting to start recording for subtask index:', selectedSubtaskForRecording);
+      const result = await startTimeRecording(story.id, selectedSubtaskForRecording);
+      
+      if (result.success) {
+        console.log('Recording started successfully');
+        setRecordingSubtaskId(selectedSubtaskForRecording);
+        setShowTimeRecordingModal(false);
+        setSelectedSubtaskForRecording(null);
+        
+        // Refresh the story data
+        const updatedStory = await getUserStory(story.id);
+        setSubtasks(updatedStory.subtasks || []);
+      } else {
+        console.error('Failed to start recording:', result.message);
+        setErrorMessage(result.message);
+      }
+    } catch (error) {
+      console.error('Error in handleConfirmStartRecording:', error);
+      setErrorMessage(error.message);
+    }
+  };
+
+  const handleStopRecording = async (subtask) => {
+    if (recordingSubtaskId === null) return;
+
+  try {
+    await stopTimeRecording(story.id, recordingSubtaskId);
+    setRecordingSubtaskId(null);
+  } catch (error) {
+    console.error('Failed to stop recording:', error);
+    setErrorMessage(error.message);
+  }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -87,7 +135,6 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
 
   const hasChanges = storyPointValue !== originalStoryPointValue;
 
-  // Subtasks section
   const [showSubtaskForm, setShowSubtaskForm] = useState(false);
   const [subtaskDescription, setSubtaskDescription] = useState("");
   const [subtaskTime, setSubtaskTime] = useState("");
@@ -130,13 +177,12 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     }
   };
 
-  // funkcija za odstranitev subtaska
   const handleDeleteSubtask = async (index) => {
     const confirmed = window.confirm("Are you sure you want to delete this subtask?");
     if (!confirmed) return;
 
     try {
-      await deleteSubtask(story.id, index); // <-- ta funkcija iz api.js
+      await deleteSubtask(story.id, index);
       setDropdownIndex(null);
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
@@ -150,7 +196,6 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     }
   };
 
-  // funkcija za editanje subtaska
   const handleSaveSubtask = async () => {
     if (!subtaskDescription || !subtaskTime) {
       setErrorMessage("Please fill out description and time estimate.");
@@ -165,7 +210,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     const subtaskData = {
       subtaskIndex: editingSubtaskIndex,
       name: subtaskDescription,
-      status: undefined, // ali po potrebi
+      status: undefined,
       assignedTo: subtaskDeveloper !== "N/A" ? subtaskDeveloper : null,
     };
 
@@ -179,19 +224,17 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
         });
       } else {
         await addSubtaskToUserStory(story.id, {
-          description: subtaskDescription, // ✅ pravilno ime
+          description: subtaskDescription,
           timeEstimate: parseFloat(subtaskTime),
           developer: subtaskDeveloper !== "N/A" ? subtaskDeveloper : null,
         });
       }
 
-      // Refresh view
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
       if (typeof onUpdate === "function") onUpdate(updatedStory);
 
-      // Reset form
       setShowSubtaskForm(false);
       setEditingSubtaskIndex(null);
       setSubtaskDescription("");
@@ -214,8 +257,8 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
         if (index === taskIndex) {
           return {
             ...subtask,
-            developerId: subtask.developerId ? null : user.uid, // Toggle claim
-            isDone: subtask.isDone ?? false, // Ensure isDone is defined
+            developerId: subtask.developerId ? null : user.uid,
+            isDone: subtask.isDone ?? false,
           };
         }
         return subtask;
@@ -246,12 +289,10 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     try {
       await markSubtaskAsDone(story.id, subtaskIndex);
 
-      // Fetch the updated story to refresh the subtasks
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
 
-      // Notify the parent component (if needed)
       if (typeof onUpdate === 'function') {
         onUpdate(updatedStory);
       }
@@ -317,14 +358,12 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     onUpdateStory(updatedStory);
   };
 
-
   return (
     <>
       {!editView ? (
         <div className="center--box">
           <div className="card--header">
             <h1>{story.name}</h1>
-            {/* Show edit icon only for SCRUM masters or project managers when story has no sprintId */}
             <div className="icons">
               {canEditStory && (
                 <>
@@ -347,14 +386,13 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
           <p><strong>Priority:</strong> {story.priority}</p>
           <p><strong>Business Value:</strong> {story.businessValue}</p>
           <p><strong>Status:</strong> {story.status}</p>
-
-          {/* 1) Dodamo prikaz, če je status Rejected in obstaja rejectionComment */}
+  
           {story.status === "Rejected" && story.rejectionComment && (
             <p>
               <strong>Rejection Comment:</strong> {story.rejectionComment}
             </p>
           )}
-
+  
           <div>
             <label>
               <strong>Story Points: </strong>
@@ -369,7 +407,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                 <span>{storyPointValue ? storyPointValue : "not set"}</span>
               )}
             </label>
-
+  
             {userRole === "scrumMasters" && hasChanges && (
               <span
                 style={{
@@ -384,7 +422,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               </span>
             )}
           </div>
-
+  
           <h3>Acceptance Tests</h3>
           <div className="responsive-table-container3">
             <table className="responsive-table">
@@ -406,7 +444,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               </tbody>
             </table>
           </div>
-
+  
           {story.sprintId && story.sprintId.length > 0 && (
             <>
               <h3>Subtasks</h3>
@@ -425,7 +463,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                   <tbody>
                     {subtasks.length > 0 ? (
                       subtasks.map((sub, idx) => (
-                        <tr key={idx}>
+                        <tr key={idx} className={recordingSubtaskId === sub.id ? 'recording-subtask' : ''}>
                           <td>
                             <input
                               type="checkbox"
@@ -468,7 +506,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                                 <FaEllipsisV
                                   className="dropdown-trigger"
                                   onClick={(e) => {
-                                    e.stopPropagation(); // prevent document-level click
+                                    e.stopPropagation();
                                     setDropdownIndex(idx);
                                   }}
                                   title="More actions"
@@ -476,8 +514,6 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                               )}
                             </td>
                           )}
-
-
                         </tr>
                       ))
                     ) : (
@@ -490,11 +526,28 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               </div>
             </>
           )}
-
+  
           {(userRole === "scrumMasters" || userRole === "devs") && story.sprintId.length != 0 && (
             <div style={{ marginTop: "1rem" }}>
               {!showSubtaskForm ? (
-                <Button className="btn--block" onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</Button>
+                <>
+                  <Button className="btn--block" onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</Button>
+                  {recordingSubtaskId !== null ? (
+  <Button 
+    variant="danger"
+    onClick={handleStopRecording}
+  >
+    Stop Recording
+  </Button>
+) : (
+  <Button 
+    variant="secondary"
+    onClick={handleStartRecording}
+  >
+    Record Time
+  </Button>
+)}
+                </>
               ) : (
                 <>
                   {errorMessage && (
@@ -517,8 +570,6 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                       value={subtaskTime}
                       onChange={(e) => {
                         const value = e.target.value;
-
-                        // Allow negative numbers with up to 2 decimal places
                         if (/^-?\d*\.?\d{0,2}$/.test(value)) {
                           setSubtaskTime(e.target.value);
                         }
@@ -542,7 +593,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                       </select>
                     </div>
                   </div>
-
+  
                   <Button className="btn--block" onClick={handleSaveSubtask}>
                     {editingSubtaskIndex !== null ? "Update Subtask" : "Save Subtask"}
                   </Button>
@@ -562,16 +613,14 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               )}
             </div>
           )}
-
-          {/* Accept/Reject buttons, if in sprint view + sprint ended + user is product manager */}
+  
           {story.sprintId.length != 0 && userRole === "productManagers" && story.status != 'Completed' && (
             <div style={{ marginTop: "1rem", display: "flex", gap: "0" }}>
               <Button className={story.status === 'Done' ? 'btn--accent btn--half' : "btn--accent btn--block"} onClick={rejectStory}>Reject</Button>
               {story.status === 'Done' && <Button className="btn--half" onClick={confirmStoryAsDone}>Accept</Button>}
             </div>
           )}
-
-          {/* Forma za Reject Story: */}
+  
           {showRejectForm && (
             <div style={{ marginTop: "1rem" }}>
               <h4>Reject Story</h4>
@@ -589,14 +638,124 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               </div>
             </div>
           )}
-        </div>)
-
-        : (<UserStoryForm
+  
+  {showTimeRecordingModal && (
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <h3>Start Time Recording</h3>
+      <p>Select subtask to record time for:</p>
+      
+      <div className="subtask-selection">
+        {subtasks.map((subtask, index) => (
+          <div 
+            key={index}
+            className={`subtask-option ${selectedSubtaskForRecording === index ? 'selected' : ''}`}
+            onClick={() => {
+              setSelectedSubtaskForRecording(index);
+              console.log("Selected subtask index:", index);
+            }}
+          >
+            {subtask.description}
+          </div>
+        ))}
+      </div>
+      
+      <div className="modal-buttons">
+        <Button 
+          onClick={() => {
+            setShowTimeRecordingModal(false);
+            setSelectedSubtaskForRecording(null);
+          }}
+          variant="secondary"
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleConfirmStartRecording}
+          disabled={selectedSubtaskForRecording === null}
+        >
+          Start Recording
+        </Button>
+      </div>
+    </div>
+  </div>
+          )}
+        </div>
+      ) : (
+        <UserStoryForm
           projectId={story.projectId}
           story={story}
           onStoryAdded={handleEditComplete}
-          onCancel={() => setEditView(false)}></UserStoryForm>)}
-    </>);
+          onCancel={() => setEditView(false)}
+        />
+      )}
+  
+      <style jsx>{`
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+        
+        .modal-content {
+          background-color: white;
+          padding: 20px;
+          border-radius: 8px;
+          width: 400px;
+          max-width: 90%;
+        }
+        
+        .subtask-selection {
+          margin: 15px 0;
+          max-height: 200px;
+          overflow-y: auto;
+        }
+        
+        .subtask-option {
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.subtask-option:hover {
+  background-color: #f5f5f5;
+}
+
+.subtask-option.selected {
+  background-color: #e6f7ff;
+  border-color: #1890ff;
+  transform: scale(1.02);
+}
+        
+        .modal-buttons {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-top: 20px;
+        }
+        
+        .recording-subtask {
+          animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.4); }
+          70% { box-shadow: 0 0 0 10px rgba(24, 144, 255, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(24, 144, 255, 0); }
+        }
+      `}</style>
+    </>
+  );
 };
 
 export default StoryDetailsComponent;

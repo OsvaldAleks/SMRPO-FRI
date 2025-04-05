@@ -633,3 +633,43 @@ export const deleteSubtask = async (storyId, subtaskIndex) => {
     throw error;
   }
 };
+
+// Start time recording for a subtask
+export const startTimeRecording = async (storyId, subtaskId) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/subtasks/${subtaskId}/start-recording`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to start time recording');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error starting time recording:', error);
+    throw error;
+  }
+};
+
+// Stop time recording for a subtask
+export const stopTimeRecording = async (storyId, subtaskId) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/subtasks/${subtaskId}/stop-recording`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to stop time recording');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error stopping time recording:', error);
+    throw error;
+  }
+};

@@ -220,6 +220,8 @@ async function addSubtaskToUserStory(storyId, subtaskData) {
     description: subtaskData.description,
     timeEstimate: Number(subtaskData.timeEstimate),
     suggestedDevName: subtaskData.developer || null,
+    workdate: null,
+    worktimes: null,
   };
 
   // Check the status and update it if necessary
@@ -519,6 +521,115 @@ async function updateSubtask(storyId, subtaskIndex, updates) {
   return { message: "Subtask updated successfully.", subtask };
 }
 
+// Start time recording for a subtask
+async function startTimeRecording(storyId, subtaskIndex) {
+  try {
+    console.log(`Starting time recording for story ${storyId}, subtask ${subtaskIndex}`);
+    
+    const storyRef = db.collection('userStories').doc(storyId);
+    const storyDoc = await storyRef.get();
+    
+    if (!storyDoc.exists) {
+      console.error('Story not found');
+      throw new Error('User story not found');
+    }
+
+    const storyData = storyDoc.data();
+    console.log('Current story data:', JSON.stringify(storyData, null, 2));
+    
+    let subtasks = storyData.subtasks || [];
+    console.log(`Current subtasks (count: ${subtasks.length}):`, JSON.stringify(subtasks, null, 2));
+    
+    if (subtaskIndex < 0 || subtaskIndex >= subtasks.length) {
+      console.error(`Invalid subtask index: ${subtaskIndex}`);
+      throw new Error('Invalid subtask index');
+    }
+
+    // Check if another subtask is already being recorded
+    const alreadyRecording = subtasks.some(sub => sub.workdate);
+    if (alreadyRecording) {
+      console.error('Another subtask is already being recorded');
+      throw new Error('Another subtask is already being recorded');
+    }
+
+    // Create a NEW array with the updated subtask
+    const updatedSubtasks = [...subtasks]; // Create a copy of the array
+    updatedSubtasks[subtaskIndex] = {
+      ...subtasks[subtaskIndex], // Copy all existing fields
+      workdate: new Date().toISOString() // Update workdate
+    };
+
+    console.log('Updated subtasks array:', JSON.stringify(updatedSubtasks, null, 2));
+
+    // Perform the update
+    console.log('Performing Firestore update...');
+    await storyRef.update({ subtasks: updatedSubtasks });
+    console.log('Firestore update completed successfully');
+
+    return {
+      success: true,
+      message: 'Time recording started successfully'
+    };
+  } catch (error) {
+    console.error('Error in startTimeRecording:', error);
+    return {
+      success: false,
+      message: error.message || 'Failed to start time recording'
+    };
+  }
+}
+
+// Stop time recording and save the duration
+async function stopTimeRecording(storyId, subtaskIndex) {
+  try {
+    const storyRef = db.collection('userStories').doc(storyId);
+    const storyDoc = await storyRef.get();
+    
+    if (!storyDoc.exists) {
+      throw new Error('User story not found');
+    }
+
+    const storyData = storyDoc.data();
+    const subtasks = storyData.subtasks || [];
+    
+    if (subtaskIndex < 0 || subtaskIndex >= subtasks.length) {
+      throw new Error('Invalid subtask index');
+    }
+
+    const existingSubtask = subtasks[subtaskIndex];
+    if (!existingSubtask.workdate) {
+      throw new Error('This subtask is not being recorded');
+    }
+
+    // Calculate duration in seconds
+    const startTime = new Date(existingSubtask.workdate);
+    const endTime = new Date();
+    const duration = Math.floor((endTime - startTime) / 1000);
+
+    // Create a NEW array with the updated subtask
+    const updatedSubtasks = [...subtasks];
+    updatedSubtasks[subtaskIndex] = {
+      ...existingSubtask,
+      workdate: null,
+      worktimes: [...(existingSubtask.worktimes || []), duration]
+    };
+
+    await storyRef.update({ subtasks: updatedSubtasks });
+    
+    return {
+      success: true,
+      message: 'Time recording stopped successfully',
+      duration
+    };
+  } catch (error) {
+    console.error('Error stopping time recording:', error);
+    return {
+      success: false,
+      message: error.message || 'Failed to stop time recording'
+    };
+  }
+}
+
 module.exports = { 
   createUserStory, 
   getUserStory,
@@ -534,7 +645,9 @@ module.exports = {
   deleteUserStory,
   updateUserStory,
   deleteSubtask,
-  updateSubtask
+  updateSubtask,
+  startTimeRecording,
+  stopTimeRecording
 };
 
 
