@@ -294,7 +294,8 @@ async function claimSubtask(storyId, userId, taskIndex) {
   if (newDeveloperId) {
     newStatus = "In progress";
   } else {
-    const anyClaimed = updatedSubtasks.some(task => task.developerId);
+    const activeSubtasks = updatedSubtasks.filter(task => !task.deleted);
+    const anyClaimed = activeSubtasks.some(task => task.developerId);
     newStatus = anyClaimed ? "In progress" : "Product backlog";
   }
 
@@ -331,23 +332,31 @@ async function completeSubtask(storyId, subtaskIndex) {
       return { success: false, message: "Invalid subtask index" };
     }
 
-    // Toggle the completion status of the subtask
+    // Toggle the completion status of the targeted subtask
     subtasks[subtaskIndex].isDone = !(subtasks[subtaskIndex].isDone || false);
 
-    // Check if all subtasks are completed
-    const allCompleted = subtasks.length > 0 && subtasks.every(task => task.isDone);
+    // Filter only active (not soft-deleted) subtasks
+    const activeSubtasks = subtasks.filter(task => !task.deleted);
 
-    // Update the story status based on subtask completion
-    let newStatus = allCompleted ? "Done" : story.status;
+    // Check if all active subtasks are completed
+    const allCompleted = activeSubtasks.length > 0 && activeSubtasks.every(task => task.isDone);
 
-    // If it's being reverted from "Done", set status to "In progress"
-    if (!allCompleted && story.status === "Done") {
+    // Determine new status
+    let newStatus = story.status;
+    if (allCompleted) {
+      newStatus = "Done";
+    } else if (!allCompleted && story.status === "Done") {
       newStatus = "In progress";
     }
 
     await storyRef.update({ subtasks, status: newStatus });
 
-    return { success: true, message: "Subtask updated", subtasks, status: newStatus };
+    return {
+      success: true,
+      message: "Subtask updated",
+      subtasks,
+      status: newStatus
+    };
   } catch (error) {
     console.error("Error updating subtask:", error);
     return { success: false, message: "Internal server error" };
@@ -477,20 +486,25 @@ async function deleteUserStory(storyId){
 async function deleteSubtask(storyId, subtaskIndex) {
   const storyRef = db.collection("userStories").doc(storyId);
   const storyDoc = await storyRef.get();
-  if (!storyDoc.exists) throw new Error("User story not found");
 
-  const storyData = storyDoc.data();
-  const updatedSubtasks = [...(storyData.subtasks || [])];
-
-  if (subtaskIndex < 0 || subtaskIndex >= updatedSubtasks.length) {
-    throw new Error("Invalid subtask index");
+  if (!storyDoc.exists) {
+    throw new Error("User story not found.");
   }
 
-  updatedSubtasks.splice(subtaskIndex, 1);
+  const story = storyDoc.data();
+  if (!Array.isArray(story.subtasks) || subtaskIndex >= story.subtasks.length) {
+    throw new Error("Invalid subtask index.");
+  }
+
+  const updatedSubtasks = [...story.subtasks];
+  updatedSubtasks[subtaskIndex] = {
+    ...updatedSubtasks[subtaskIndex],
+    deleted: true
+  };
 
   await storyRef.update({ subtasks: updatedSubtasks });
-  return { success: true, subtasks: updatedSubtasks };
-};
+  return { message: "Subtask marked as deleted." };
+}
 
 async function updateSubtask(storyId, subtaskIndex, updates) {
   const storyRef = db.collection("userStories").doc(storyId);

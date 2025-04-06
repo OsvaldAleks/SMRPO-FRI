@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, markSubtaskAsDone, evaluateUserStory, deleteUserStory, deleteSubtask, updateSubtask } from "../api.js";
+import { updateStoryPoints, addSubtaskToUserStory, getUserStory, claimSubtask, markSubtaskAsDone, evaluateUserStory, deleteUserStory, deleteSubtask, updateSubtask, updateUserStoryStatus } from "../api.js";
 import Input from "./Input.js";
 import Button from './Button.js';
 import { FaEdit, FaTrash, FaEllipsisV } from "react-icons/fa";
@@ -56,7 +56,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
 
   const handleStartRecording = (subtask) => {
     setSelectedSubtaskForRecording(null); // Reset selection
-  setShowTimeRecordingModal(true);
+    setShowTimeRecordingModal(true);
   };
 
   const handleConfirmStartRecording = async () => {
@@ -64,17 +64,17 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
       setErrorMessage("Please select a subtask first");
       return;
     }
-  
+
     try {
       console.log('Attempting to start recording for subtask index:', selectedSubtaskForRecording);
       const result = await startTimeRecording(story.id, selectedSubtaskForRecording);
-      
+
       if (result.success) {
         console.log('Recording started successfully');
         setRecordingSubtaskId(selectedSubtaskForRecording);
         setShowTimeRecordingModal(false);
         setSelectedSubtaskForRecording(null);
-        
+
         // Refresh the story data
         const updatedStory = await getUserStory(story.id);
         setSubtasks(updatedStory.subtasks || []);
@@ -91,13 +91,13 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
   const handleStopRecording = async (subtask) => {
     if (recordingSubtaskId === null) return;
 
-  try {
-    await stopTimeRecording(story.id, recordingSubtaskId);
-    setRecordingSubtaskId(null);
-  } catch (error) {
-    console.error('Failed to stop recording:', error);
-    setErrorMessage(error.message);
-  }
+    try {
+      await stopTimeRecording(story.id, recordingSubtaskId);
+      setRecordingSubtaskId(null);
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+      setErrorMessage(error.message);
+    }
   };
 
   useEffect(() => {
@@ -180,16 +180,27 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
   const handleDeleteSubtask = async (index) => {
     const confirmed = window.confirm("Are you sure you want to delete this subtask?");
     if (!confirmed) return;
-
+  
     try {
       await deleteSubtask(story.id, index);
       setDropdownIndex(null);
+  
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
+  
       if (typeof onUpdate === 'function') {
         onUpdate(updatedStory);
       }
+  
+      //preveri, če ni več aktivnih claimed subtaskov
+      const activeSubtasks = updatedStory.subtasks?.filter(st => !st.deleted) || [];
+      const hasClaimed = activeSubtasks.some(st => !!st.developerId);
+  
+      if (activeSubtasks.length === 0 || !hasClaimed) {
+        await updateUserStoryStatus(story.id, "Product backlog");
+      }
+  
     } catch (err) {
       console.error("Failed to delete subtask:", err.message || err);
       alert("Failed to delete subtask: " + (err.message || "Unknown error"));
@@ -287,12 +298,16 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
 
   const handleMarkSubtaskAsDone = async (subtaskIndex) => {
     try {
-      await markSubtaskAsDone(story.id, subtaskIndex);
-
+      const result = await markSubtaskAsDone(story.id, subtaskIndex);
+  
+      if (!result.success) {
+        throw new Error(result.message || "Could not update subtask");
+      }
+  
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
-
+  
       if (typeof onUpdate === 'function') {
         onUpdate(updatedStory);
       }
@@ -300,7 +315,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
       console.error("Failed to mark subtask as done:", err);
       setErrorMessage(err.message);
     }
-  };
+  };  
 
   const confirmStoryAsDone = async () => {
     try {
@@ -386,13 +401,13 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
           <p><strong>Priority:</strong> {story.priority}</p>
           <p><strong>Business Value:</strong> {story.businessValue}</p>
           <p><strong>Status:</strong> {story.status}</p>
-  
+
           {story.status === "Rejected" && story.rejectionComment && (
             <p>
               <strong>Rejection Comment:</strong> {story.rejectionComment}
             </p>
           )}
-  
+
           <div>
             <label>
               <strong>Story Points: </strong>
@@ -407,7 +422,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                 <span>{storyPointValue ? storyPointValue : "not set"}</span>
               )}
             </label>
-  
+
             {userRole === "scrumMasters" && hasChanges && (
               <span
                 style={{
@@ -422,7 +437,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               </span>
             )}
           </div>
-  
+
           <h3>Acceptance Tests</h3>
           <div className="responsive-table-container3">
             <table className="responsive-table">
@@ -444,7 +459,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               </tbody>
             </table>
           </div>
-  
+
           {story.sprintId && story.sprintId.length > 0 && (
             <>
               <h3>Subtasks</h3>
@@ -461,61 +476,64 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                     </tr>
                   </thead>
                   <tbody>
-                    {subtasks.length > 0 ? (
-                      subtasks.map((sub, idx) => (
-                        <tr key={idx} className={recordingSubtaskId === sub.id ? 'recording-subtask' : ''}>
-                          <td>
-                            <input
-                              type="checkbox"
-                              checked={sub.isDone || false}
-                              disabled={!sub.developerId || sub.developerId !== user.uid}
-                              onChange={() => handleMarkSubtaskAsDone(idx)}
-                            />
-                          </td>
-                          <td>{sub.description}</td>
-                          <td>{sub.timeEstimate}</td>
-                          <td style={{ fontWeight: sub.devName ? 'bold' : 'normal', color: sub.suggestedDevName && !sub.devName ? 'gray' : 'inherit' }}>
-                            {sub.devName || sub.suggestedDevName || "N/A"}
-                          </td>
-                          {(userRole === "devs" || userRole === "scrumMasters") && (
+                    {(subtasks.filter(st => !st.deleted)).length > 0 ? (
+                      subtasks
+                        .map((sub, idx) => ({ sub, idx }))
+                        .filter(({ sub }) => !sub.deleted)
+                        .map(({ sub, idx }) => (
+                          <tr key={idx} className={recordingSubtaskId === sub.id ? 'recording-subtask' : ''}>
                             <td>
                               <input
                                 type="checkbox"
-                                checked={!!sub.developerId && sub.developerId === user.uid}
-                                disabled={!!sub.developerId && sub.developerId !== user.uid}
-                                onChange={() => handleClaim(idx)}
+                                checked={sub.isDone || false}
+                                disabled={!sub.developerId || sub.developerId !== user.uid}
+                                onChange={() => handleMarkSubtaskAsDone(idx)}
                               />
                             </td>
-                          )}
-                          {(userRole === "devs" || userRole === "scrumMasters") && (
-                            <td style={{ position: 'relative' }} ref={dropdownRef}>
-                              {dropdownIndex === idx ? (
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                  <FaEdit
-                                    className="dropdown-icon"
-                                    onClick={() => handleEditSubtask(idx)}
-                                    title="Edit Subtask"
-                                  />
-                                  <FaTrash
-                                    className="dropdown-icon p--alert"
-                                    onClick={() => handleDeleteSubtask(idx)}
-                                    title="Delete Subtask"
-                                  />
-                                </div>
-                              ) : (
-                                <FaEllipsisV
-                                  className="dropdown-trigger"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDropdownIndex(idx);
-                                  }}
-                                  title="More actions"
-                                />
-                              )}
+                            <td>{sub.description}</td>
+                            <td>{sub.timeEstimate}</td>
+                            <td style={{ fontWeight: sub.devName ? 'bold' : 'normal', color: sub.suggestedDevName && !sub.devName ? 'gray' : 'inherit' }}>
+                              {sub.devName || sub.suggestedDevName || "N/A"}
                             </td>
-                          )}
-                        </tr>
-                      ))
+                            {(userRole === "devs" || userRole === "scrumMasters") && (
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  checked={!!sub.developerId && sub.developerId === user.uid}
+                                  disabled={!!sub.developerId && sub.developerId !== user.uid}
+                                  onChange={() => handleClaim(idx)}
+                                />
+                              </td>
+                            )}
+                            {(userRole === "devs" || userRole === "scrumMasters") && (
+                              <td style={{ position: 'relative' }} ref={dropdownRef}>
+                                {dropdownIndex === idx ? (
+                                  <div style={{ display: 'flex', gap: '8px' }}>
+                                    <FaEdit
+                                      className="dropdown-icon"
+                                      onClick={() => handleEditSubtask(idx)}
+                                      title="Edit Subtask"
+                                    />
+                                    <FaTrash
+                                      className="dropdown-icon p--alert"
+                                      onClick={() => handleDeleteSubtask(idx)}
+                                      title="Delete Subtask"
+                                    />
+                                  </div>
+                                ) : (
+                                  <FaEllipsisV
+                                    className="dropdown-trigger"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDropdownIndex(idx);
+                                    }}
+                                    title="More actions"
+                                  />
+                                )}
+                              </td>
+                            )}
+                          </tr>
+                        ))
                     ) : (
                       <tr>
                         <td colSpan={(userRole === "devs" || userRole === "scrumMasters") ? "6" : "5"}>No subtasks yet.</td>
@@ -526,27 +544,27 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               </div>
             </>
           )}
-  
+
           {(userRole === "scrumMasters" || userRole === "devs") && story.sprintId.length != 0 && (
             <div style={{ marginTop: "1rem" }}>
               {!showSubtaskForm ? (
                 <>
                   <Button className="btn--block" onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</Button>
                   {recordingSubtaskId !== null ? (
-  <Button 
-    variant="danger"
-    onClick={handleStopRecording}
-  >
-    Stop Recording
-  </Button>
-) : (
-  <Button 
-    variant="secondary"
-    onClick={handleStartRecording}
-  >
-    Record Time
-  </Button>
-)}
+                    <Button
+                      variant="danger"
+                      onClick={handleStopRecording}
+                    >
+                      Stop Recording
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      onClick={handleStartRecording}
+                    >
+                      Record Time
+                    </Button>
+                  )}
                 </>
               ) : (
                 <>
@@ -593,7 +611,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                       </select>
                     </div>
                   </div>
-  
+
                   <Button className="btn--block" onClick={handleSaveSubtask}>
                     {editingSubtaskIndex !== null ? "Update Subtask" : "Save Subtask"}
                   </Button>
@@ -613,14 +631,14 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               )}
             </div>
           )}
-  
+
           {story.sprintId.length != 0 && userRole === "productManagers" && story.status != 'Completed' && (
             <div style={{ marginTop: "1rem", display: "flex", gap: "0" }}>
               <Button className={story.status === 'Done' ? 'btn--accent btn--half' : "btn--accent btn--block"} onClick={rejectStory}>Reject</Button>
               {story.status === 'Done' && <Button className="btn--half" onClick={confirmStoryAsDone}>Accept</Button>}
             </div>
           )}
-  
+
           {showRejectForm && (
             <div style={{ marginTop: "1rem" }}>
               <h4>Reject Story</h4>
@@ -638,47 +656,47 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               </div>
             </div>
           )}
-  
-  {showTimeRecordingModal && (
-  <div className="modal-overlay">
-    <div className="modal-content">
-      <h3>Start Time Recording</h3>
-      <p>Select subtask to record time for:</p>
-      
-      <div className="subtask-selection">
-        {subtasks.map((subtask, index) => (
-          <div 
-            key={index}
-            className={`subtask-option ${selectedSubtaskForRecording === index ? 'selected' : ''}`}
-            onClick={() => {
-              setSelectedSubtaskForRecording(index);
-              console.log("Selected subtask index:", index);
-            }}
-          >
-            {subtask.description}
-          </div>
-        ))}
-      </div>
-      
-      <div className="modal-buttons">
-        <Button 
-          onClick={() => {
-            setShowTimeRecordingModal(false);
-            setSelectedSubtaskForRecording(null);
-          }}
-          variant="secondary"
-        >
-          Cancel
-        </Button>
-        <Button 
-          onClick={handleConfirmStartRecording}
-          disabled={selectedSubtaskForRecording === null}
-        >
-          Start Recording
-        </Button>
-      </div>
-    </div>
-  </div>
+
+          {showTimeRecordingModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <h3>Start Time Recording</h3>
+                <p>Select subtask to record time for:</p>
+
+                <div className="subtask-selection">
+                  {subtasks.map((subtask, index) => (
+                    <div
+                      key={index}
+                      className={`subtask-option ${selectedSubtaskForRecording === index ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedSubtaskForRecording(index);
+                        console.log("Selected subtask index:", index);
+                      }}
+                    >
+                      {subtask.description}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="modal-buttons">
+                  <Button
+                    onClick={() => {
+                      setShowTimeRecordingModal(false);
+                      setSelectedSubtaskForRecording(null);
+                    }}
+                    variant="secondary"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleConfirmStartRecording}
+                    disabled={selectedSubtaskForRecording === null}
+                  >
+                    Start Recording
+                  </Button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       ) : (
@@ -689,7 +707,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
           onCancel={() => setEditView(false)}
         />
       )}
-  
+
       <style jsx>{`
         .modal-overlay {
           position: fixed;

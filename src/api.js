@@ -700,3 +700,25 @@ export const stopTimeRecording = async (storyId, subtaskId) => {
     throw error;
   }
 };
+
+// after deleting subtasks - move the user story to "To Do" status
+export const updateUserStoryStatus = async (storyId, newStatus) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newStatus }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update user story status");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error updating user story status:", error);
+    throw error;
+  }
+};
