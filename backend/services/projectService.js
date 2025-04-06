@@ -1,60 +1,49 @@
 const { db } = require("../firebase");
 const userService = require('./userService');
 
-async function createProject(name, description, devs, scrumMasters, productManagers, owner) {
-  // Validate required fields
+function validateProjectInput(name, description, devs, scrumMasters, productManagers) {
   if (!name || !description) {
     throw new Error("All fields are required");
   }
 
-  // Validate at least one developer, scrum master, and product manager
-  let valid = true;
-  let err = "At least one";
+  const missingRoles = [];
 
-  if (devs.length === 0) {
-    valid = false;
-    err += " developer";
+  if (!Array.isArray(devs) || devs.length === 0) missingRoles.push("developer");
+  if (!Array.isArray(scrumMasters) || scrumMasters.length === 0) missingRoles.push("scrum master");
+  if (!Array.isArray(productManagers) || productManagers.length === 0) missingRoles.push("product manager");
+
+  if (missingRoles.length > 0) {
+    const last = missingRoles.pop();
+    const msg = missingRoles.length
+      ? `At least one ${missingRoles.join(", ")} and ${last} must be assigned to the project.`
+      : `At least one ${last} must be assigned to the project.`;
+    throw new Error(msg);
   }
+}
 
-  if (!scrumMasters) {
-    valid = false;
-    if (!err.endsWith("one")) {
-      err += ",";
-    }
-    err += " scrum master";
-  }
+async function checkNameUniqueness(name, excludeProjectId = null) {
+  const projects = await db.collection("projects").get();
+  const lowerName = name.toLowerCase();
 
-  if (!productManagers) {
-    valid = false;
-    if (!err.endsWith("one")) {
-      err += ",";
-    }
-    err += " product manager";
-  }
+  const isTaken = projects.docs.some(doc => {
+    const data = doc.data();
+    return (
+      (!excludeProjectId || doc.id !== excludeProjectId) &&
+      data.name.toLowerCase() === lowerName
+    );
+  });
 
-  if (!valid) {
-    const lastCommaIndex = err.lastIndexOf(",");
-    if (lastCommaIndex !== -1) {
-      err = err.substring(0, lastCommaIndex) + " and" + err.substring(lastCommaIndex + 1);
-    }
-
-    throw new Error(err + " must be assigned to the project.");
-  }
-
-  // Check if project name already exists (case-insensitive)
-  const existingProjects = await db.collection("projects").get();
-  const isNameTaken = existingProjects.docs.some(
-    (doc) => doc.data().name.toLowerCase() === name.toLowerCase()
-  );
-
-  if (isNameTaken) {
+  if (isTaken) {
     throw new Error("Project name already exists. Please choose another name.");
   }
+}
 
-  // Generate a new project ID
+async function createProject(name, description, devs, scrumMasters, productManagers, owner) {
+  validateProjectInput(name, description, devs, scrumMasters, productManagers);
+  await checkNameUniqueness(name);
+
   const projectId = db.collection("projects").doc().id;
 
-  // Create the new project object
   const newProject = {
     id: projectId,
     name,
@@ -67,13 +56,46 @@ async function createProject(name, description, devs, scrumMasters, productManag
   };
 
   try {
-    // Save the project to the database
     await db.collection("projects").doc(projectId).set(newProject);
     return newProject;
   } catch (error) {
     throw new Error("Error saving project to database: " + error.message);
   }
 }
+
+async function updateProject(projectId, name, description, devs, scrumMasters, productManagers) {
+  if (!projectId) throw new Error("Project ID is required");
+
+  validateProjectInput(name, description, devs, scrumMasters, productManagers);
+  await checkNameUniqueness(name, projectId);
+
+  const projectRef = db.collection("projects").doc(projectId);
+  const projectSnap = await projectRef.get();
+
+  if (!projectSnap.exists) throw new Error("Project not found.");
+
+  const existingData = projectSnap.data();
+
+  const updatedProject = {
+    id: projectId,
+    name,
+    description,
+    devs,
+    scrumMasters,
+    productManagers,
+    owner: existingData.owner,
+    createdAt: existingData.createdAt || new Date(),
+    updatedAt: new Date(),
+  };
+
+  try {
+    await projectRef.set(updatedProject, { merge: true });
+    return updatedProject;
+  } catch (error) {
+    throw new Error("Error updating project: " + error.message);
+  }
+}
+
 
 async function getUserProjects(userId) {
   const projectsRef = db.collection('projects');
@@ -160,4 +182,4 @@ async function replaceUserIdsWithData(projectData) {
   return projectData;
 }
 
-module.exports = { createProject, getUserProjects, getProject };
+module.exports = { createProject, getUserProjects, getProject, updateProject};

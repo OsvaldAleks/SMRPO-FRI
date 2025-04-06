@@ -82,6 +82,33 @@ export const createProject = async (projectData) => {
   }
 };
 
+export const updateProject = async (projectData) => {
+  try {
+    const response = await fetch(`${API_URL}/projects/${projectData.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(projectData),
+    });
+
+    const responseBody = await response.text();
+    let result;
+    try {
+      result = JSON.parse(responseBody);
+    } catch (error) {
+      throw new Error("Invalid JSON response from server");
+    }
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to update project");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Network error:", error.message);
+    return { error: true, message: error.message || "Network error" };
+  }
+};
+
 
 export const getUserProjects = async (userId) => {
   try {

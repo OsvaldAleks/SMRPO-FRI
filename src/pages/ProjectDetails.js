@@ -207,8 +207,10 @@ const ProjectDetails = () => {
     (story) => (!story.sprintId || story.sprintId.length === 0) && story.status !== "Completed"
   );
 
-  const handleChange = async() => {
-    console.log("call API")
+  const handleChange = async(project) => {
+    if (user && projectName) {
+      await fetchProject(user.uid);
+    }
     setIsEditing(false)
   }
 

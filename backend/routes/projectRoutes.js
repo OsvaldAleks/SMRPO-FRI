@@ -1,13 +1,11 @@
 const express = require("express");
-const { createProject, getUserProjects, getProject } = require("../services/projectService");
+const { createProject, getUserProjects, getProject, updateProject } = require("../services/projectService");
 
 const router = express.Router();
 
 // Create a project
 router.post("/", async (req, res) => {
   try {
-    console.log("Received project data:", req.body); // Log incoming request body
-
     const { name, description, devs, scrumMasters, productOwners, owner } = req.body;
 
     // Create the project
@@ -20,6 +18,21 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Update a project
+router.put("/:projectId", async (req, res) => {
+  try {
+    const projectId = req.params.projectId;
+    const { name, description, devs, scrumMasters, productOwners} = req.body;
+
+    // Create the project
+    const project = await updateProject(projectId, name, description, devs, scrumMasters, productOwners);
+    res.status(201).json({ message: "Project updated successfully", project });
+
+  } catch (error) {
+    console.error("Error creating project:", error); // Log the actual error
+    res.status(500).json({ error: error.message || "Error updating project" });
+  }
+});
 
 // Get projects for a user
 router.get("/user/:userId", async (req, res) => {
