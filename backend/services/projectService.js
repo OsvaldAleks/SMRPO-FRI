@@ -76,6 +76,27 @@ async function updateProject(projectId, name, description, devs, scrumMasters, p
 
   const existingData = projectSnap.data();
 
+  // Get the previous team members
+  const previousDevs = existingData.devs || [];
+  const previousScrumMasters = existingData.scrumMasters || [];
+  const previousProductManagers = existingData.productManagers || [];
+
+  // Find users who were removed
+  const removedDevs = previousDevs.filter(dev => !devs.includes(dev));
+  const removedScrumMasters = previousScrumMasters.filter(sm => !scrumMasters.includes(sm));
+  const removedProductManagers = previousProductManagers.filter(pm => !productManagers.includes(pm));
+  
+  const allRemovedUsers = [...new Set([
+    ...removedDevs,
+    ...removedScrumMasters,
+    ...removedProductManagers
+  ])];
+
+  // Unclaim subtasks for removed users
+  if (allRemovedUsers.length > 0) {
+    await unclaimSubtasksForRemovedUsers(projectId, allRemovedUsers);
+  }
+
   const updatedProject = {
     id: projectId,
     name,
@@ -96,6 +117,51 @@ async function updateProject(projectId, name, description, devs, scrumMasters, p
   }
 }
 
+async function unclaimSubtasksForRemovedUsers(projectId, removedUserIds) {
+  try {
+    // Get all user stories for this project
+    const storiesSnapshot = await db.collection('userStories')
+      .where('projectId', '==', projectId)
+      .get();
+
+    if (storiesSnapshot.empty) return;
+
+    const batch = db.batch();
+
+    for (const storyDoc of storiesSnapshot.docs) {
+      const storyData = storyDoc.data();
+      const subtasks = storyData.subtasks || [];
+      let needsUpdate = false;
+
+      const updatedSubtasks = subtasks.map(subtask => {
+        if (subtask.developerId && removedUserIds.includes(subtask.developerId)) {
+          needsUpdate = true;
+          return {
+            ...subtask,
+            developerId: null,
+            devName: null
+          };
+        }
+        return subtask;
+      });
+
+      if (needsUpdate) {
+        const activeSubtasks = updatedSubtasks.filter(st => !st.deleted);
+        const hasClaimedSubtasks = activeSubtasks.some(st => st.developerId);
+        const newStatus = hasClaimedSubtasks ? 'In progress' : 'Product backlog';
+
+        batch.update(storyDoc.ref, {
+          subtasks: updatedSubtasks,
+          status: newStatus
+        });
+      }
+    }
+
+    await batch.commit();
+  } catch (error) {
+    console.error("Error unclaiming subtasks for removed users:", error);
+  }
+}
 
 async function getUserProjects(userId) {
   const projectsRef = db.collection('projects');
