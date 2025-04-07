@@ -245,7 +245,8 @@ router.put('/:storyId/subtasks/:subtaskId/start-recording', async (req, res) => 
 router.put('/:storyId/subtasks/:subtaskId/stop-recording', async (req, res) => {
   try {
     const { storyId, subtaskId } = req.params;
-    const result = await stopTimeRecording(storyId, subtaskId);
+    const { userId } = req.body;
+    const result = await stopTimeRecording(storyId, subtaskId, userId);
 
     if (result.success) {
       res.status(200).json(result);

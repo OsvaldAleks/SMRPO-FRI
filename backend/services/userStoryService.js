@@ -594,7 +594,7 @@ async function startTimeRecording(storyId, subtaskIndex) {
 }
 
 // Stop time recording and save the duration
-async function stopTimeRecording(storyId, subtaskIndex) {
+async function stopTimeRecording(storyId, subtaskIndex, userId) {
   try {
     const storyRef = db.collection('userStories').doc(storyId);
     const storyDoc = await storyRef.get();
@@ -625,7 +625,7 @@ async function stopTimeRecording(storyId, subtaskIndex) {
     updatedSubtasks[subtaskIndex] = {
       ...existingSubtask,
       workdate: null,
-      worktimes: [...(existingSubtask.worktimes || []), duration]
+      worktimes: [...(existingSubtask.worktimes || []), {duration: duration, userid: userId}]
     };
 
     await storyRef.update({ subtasks: updatedSubtasks });

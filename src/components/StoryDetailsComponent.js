@@ -92,7 +92,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     if (recordingSubtaskId === null) return;
 
     try {
-      await stopTimeRecording(story.id, recordingSubtaskId);
+      await stopTimeRecording(story.id, recordingSubtaskId, user.uid);
       setRecordingSubtaskId(null);
     } catch (error) {
       console.error('Failed to stop recording:', error);
@@ -664,19 +664,22 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                 <p>Select subtask to record time for:</p>
 
                 <div className="subtask-selection">
-                  {subtasks.map((subtask, index) => (
-                    <div
-                      key={index}
-                      className={`subtask-option ${selectedSubtaskForRecording === index ? 'selected' : ''}`}
-                      onClick={() => {
-                        setSelectedSubtaskForRecording(index);
-                        console.log("Selected subtask index:", index);
-                      }}
-                    >
-                      {subtask.description}
-                    </div>
-                  ))}
-                </div>
+  {subtasks
+    .filter(subtask => subtask.developerId === user.uid)
+    .map((subtask, index) => (
+      <div
+        key={index}
+        className={`subtask-option ${selectedSubtaskForRecording === index ? 'selected' : ''}`}
+        onClick={() => {
+          setSelectedSubtaskForRecording(index);
+          console.log("Selected subtask index:", index);
+        }}
+      >
+        {subtask.description}
+      </div>
+    ))
+  }
+</div>
 
                 <div className="modal-buttons">
                   <Button
@@ -726,7 +729,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
           background-color: white;
           padding: 20px;
           border-radius: 8px;
-          width: 400px;
+          width: 500px;
           max-width: 90%;
         }
         

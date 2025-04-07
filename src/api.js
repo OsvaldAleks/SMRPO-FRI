@@ -682,11 +682,12 @@ export const startTimeRecording = async (storyId, subtaskId) => {
 };
 
 // Stop time recording for a subtask
-export const stopTimeRecording = async (storyId, subtaskId) => {
+export const stopTimeRecording = async (storyId, subtaskId, userId) => {
   try {
     const response = await fetch(`${API_URL}/userStories/${storyId}/subtasks/${subtaskId}/stop-recording`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
     });
 
     if (!response.ok) {
