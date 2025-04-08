@@ -26,6 +26,9 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
   const [showTimeRecordingModal, setShowTimeRecordingModal] = useState(false);
   const [selectedSubtaskForRecording, setSelectedSubtaskForRecording] = useState(null);
 
+  const [currentRecordingTime, setCurrentRecordingTime] = useState(0);
+  const [timerInterval, setTimerInterval] = useState(null);
+
   const navigate = useNavigate();
 
   const fetchLatestStory = async () => {
@@ -54,8 +57,17 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     setDropdownIndex(null);
   };
 
-  const handleStartRecording = (subtask) => {
-    setSelectedSubtaskForRecording(null); // Reset selection
+  const handleStartRecording = async () => {
+    // Check if there's already a recording
+    const storyData = await getUserStory(story.id);
+    const existingRecording = storyData.subtasks?.find(s => s.workdate);
+    
+    if (existingRecording) {
+      setRecordingSubtaskId(existingRecording.id);
+      return;
+    }
+    
+    setSelectedSubtaskForRecording(null);
     setShowTimeRecordingModal(true);
   };
 
@@ -88,12 +100,16 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     }
   };
 
-  const handleStopRecording = async (subtask) => {
+  const handleStopRecording = async () => {
     if (recordingSubtaskId === null) return;
-
+  
     try {
       await stopTimeRecording(story.id, recordingSubtaskId, user.uid);
       setRecordingSubtaskId(null);
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        setTimerInterval(null);
+      }
     } catch (error) {
       console.error('Failed to stop recording:', error);
       setErrorMessage(error.message);
@@ -373,6 +389,49 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     onUpdateStory(updatedStory);
   };
 
+
+
+// Timer effect
+useEffect(() => {
+  if (recordingSubtaskId !== null) {
+    const interval = setInterval(() => {
+      const subtask = subtasks[recordingSubtaskId]; // Get by index
+      if (subtask?.workdate) {
+        const startTime = new Date(subtask.workdate);
+        const currentTime = new Date();
+        setCurrentRecordingTime(Math.floor((currentTime - startTime) / 1000));
+      }
+    }, 1000);
+    setTimerInterval(interval);
+
+    return () => clearInterval(interval);
+  } else {
+    setCurrentRecordingTime(0);
+  }
+}, [recordingSubtaskId, subtasks]);
+
+// Check for existing recordings on load
+useEffect(() => {
+  const checkForExistingRecording = async () => {
+    const storyData = await getUserStory(story.id);
+    const recordingIndex = storyData.subtasks?.findIndex(s => s.workdate);
+    if (recordingIndex !== undefined && recordingIndex !== -1) {
+      setRecordingSubtaskId(recordingIndex);
+    }
+  };
+  
+  checkForExistingRecording();
+}, [story.id]);
+
+
+const formatTime = (seconds) => {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
   return (
     <>
       {!editView ? (
@@ -551,20 +610,20 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                 <>
                   <Button className="btn--block" onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</Button>
                   {recordingSubtaskId !== null ? (
-                    <Button
+                    <Button 
                       variant="danger"
                       onClick={handleStopRecording}
                     >
                       Stop Recording
                     </Button>
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      onClick={handleStartRecording}
-                    >
-                      Record Time
-                    </Button>
-                  )}
+                ) : (
+                  <Button 
+                    variant="secondary"
+                    onClick={handleStartRecording}
+                  >
+                    Record Time
+                  </Button>
+                )}
                 </>
               ) : (
                 <>
@@ -702,6 +761,15 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               </div>
             </div>
           )}
+          {recordingSubtaskId !== null && (
+  <div style={{ marginTop: '10px' }}>
+    <strong>Recording: </strong>
+    {subtasks[recordingSubtaskId]?.description}
+    <br />
+    <strong>Time: </strong>
+    {formatTime(currentRecordingTime)}
+  </div>
+)}
         </div>
       ) : (
         <UserStoryForm
@@ -775,6 +843,20 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
           70% { box-shadow: 0 0 0 10px rgba(24, 144, 255, 0); }
           100% { box-shadow: 0 0 0 0 rgba(24, 144, 255, 0); }
         }
+
+        .recording-timer {
+  color: #d9534f;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+
       `}</style>
     </>
   );
