@@ -248,4 +248,15 @@ async function replaceUserIdsWithData(projectData) {
   return projectData;
 }
 
-module.exports = { createProject, getUserProjects, getProject, updateProject};
+async function getProjectDocumentation(projectId) {
+  const doc = await db.collection("projects").doc(projectId).get();
+  if (!doc.exists) throw new Error("Project not found");
+  return doc.data().documentation || "";
+}
+
+async function updateProjectDocumentation(projectId, documentation) {
+  await db.collection("projects").doc(projectId).update({ documentation });
+  return { success: true };
+}
+
+module.exports = { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation };

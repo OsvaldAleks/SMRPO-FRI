@@ -1,5 +1,5 @@
 const express = require("express");
-const { createProject, getUserProjects, getProject, updateProject } = require("../services/projectService");
+const { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation } = require("../services/projectService");
 
 const router = express.Router();
 
@@ -51,6 +51,24 @@ router.get("/details/:projectName", async (req, res) => {
     res.json(project);
   } catch (error) {
     res.status(500).json({ error: "Error fetching project details" });
+  }
+});
+
+router.get("/:projectId/documentation", async (req, res) => {
+  try {
+    const documentation = await getProjectDocumentation(req.params.projectId);
+    res.json({ documentation });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/:projectId/documentation", async (req, res) => {
+  try {
+    const result = await updateProjectDocumentation(req.params.projectId, req.body.documentation);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

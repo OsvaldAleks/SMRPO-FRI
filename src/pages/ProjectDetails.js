@@ -207,7 +207,7 @@ const ProjectDetails = () => {
     (story) => (!story.sprintId || story.sprintId.length === 0) && story.status !== "Completed"
   );
 
-  const handleChange = async(project) => {
+  const handleChange = async (project) => {
     if (user && projectName) {
       await fetchProject(user.uid);
     }
@@ -216,260 +216,299 @@ const ProjectDetails = () => {
 
   return (
     <>
-    {isEditing ?
-      <CreateProject
-        project={project}
-        onSubmit={()=>handleChange()}
-      />
-        :(
-      <>
-      <div className="center--box">
-            <div className="card--header">
-              <h1>{project.name}</h1>
-              {/* Show edit icon only for SCRUM masters or project managers when story has no sprintId */}
-              <div className="icons">
-                {(user?.system_rights === 'Admin' || isScrumMaster) && (
-                  <>
-                    <FaEdit 
-                      title="Edit User Story" 
-                      onClick={()=>{setIsEditing(true)}}
+      {isEditing ?
+        <CreateProject
+          project={project}
+          onSubmit={() => handleChange()}
+        />
+        : (
+          <>
+            <div className="center--box">
+              <div className="card--header" style={{ position: "relative", textAlign: "center" }}>
+                {/* Naslov projekta */}
+                <h1>{project.name}</h1>
+
+                {/* Desni gumbi: DOC + Edit */}
+                <div style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1rem",
+                  paddingRight: 15
+                }}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate(`/projects/${project.id}/documentation`)}
+                    style={{ padding: '0.6rem 1.5rem', fontSize: '1.4rem' }}
+                  >
+                    Doc
+                  </Button>
+                  {(user?.system_rights === 'Admin' || isScrumMaster) && (
+                    <FaEdit
+                      title="Edit Project"
+                      onClick={() => setIsEditing(true)}
+                      style={{ cursor: "pointer" }}
                     />
-                  </>
+                  )}
+                </div>
+              </div>
+
+              {/*Stara verzija
+              <div className="card--header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h1>{project.name}</h1>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate(/projects/${project.id}/documentation)}
+                    style={{ padding: '0.6rem 1.5rem', fontSize: '1.4rem' }}
+                  >
+                    Doc
+                  </Button>
+                  {(user?.system_rights === 'Admin' || isScrumMaster) && (
+                    <FaEdit
+                      title="Edit Project"
+                      onClick={() => setIsEditing(true)}
+                      style={{ cursor: "pointer" }}
+                    />
+                  )}
+                </div>
+              </div>
+              */}
+
+              <div className="project-description-container">
+                {project.description && (
+                  <p className="project-description">{project.description}</p>
                 )}
               </div>
-            </div>
-        <div className="project-description-container">
-          {project.description && (
-            <p className="project-description">{project.description}</p>
-          )}
-        </div>
 
-        {/* --- Members --- */}
-        <h2>Members</h2>
-        <div className="roles-grid">
-          {/* Product Managers */}
-          <div>
-            <h2>Product Owner</h2>
-            <ul>
-              {project.productManagers && project.productManagers.length > 0 ? (
-                project.productManagers.map(renderUserWithStatus)
-              ) : (
-                <li>No Product Owner assigned</li>
+              {/* --- Members --- */}
+              <h2>Members</h2>
+              <div className="roles-grid">
+                {/* Product Managers */}
+                <div>
+                  <h2>Product Owner</h2>
+                  <ul>
+                    {project.productManagers && project.productManagers.length > 0 ? (
+                      project.productManagers.map(renderUserWithStatus)
+                    ) : (
+                      <li>No Product Owner assigned</li>
+                    )}
+                  </ul>
+                </div>
+
+                {/* SCRUM Masters */}
+                <div>
+                  <h2>SCRUM Master</h2>
+                  <ul>
+                    {project.scrumMasters && project.scrumMasters.length > 0 ? (
+                      project.scrumMasters.map(renderUserWithStatus)
+                    ) : (
+                      <li>No SCRUM Master assigned</li>
+                    )}
+                  </ul>
+                </div>
+
+                {/* Developers */}
+                <div>
+                  <h2>Developers</h2>
+                  <ul>
+                    {project.devs && project.devs.length > 0 ? (
+                      project.devs.map(renderUserWithStatus)
+                    ) : (
+                      <li>No developers assigned</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+
+              {/* --- Sprints --- */}
+              <div className="block--element">
+                <div className="header-with-button">
+                  <h2>Sprints</h2>
+                  {isScrumMaster && (
+                    <Button
+                      variant={"secondary"}
+                      onClick={() => handleToggleForm(1)}
+                      className={showForm === 1 ? "add-button selected" : "add-button"}
+                    >
+                      <span className={showForm === 1 ? "rotated" : ""}>+</span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="project-list">
+                {sprints.length > 0 ? (
+                  sprints.map((sprint, index) => (
+                    <Card
+                      key={sprint.id}
+                      title={'Sprint #' + (index + 1)}
+                      onClick={() => handleSprintClick(sprint.id)}
+                      colorScheme="card--secondary"
+                      extraText={["Start Date: ", "End Date: "]}
+                      extraContent={[formatDate(sprint.start_date), formatDate(sprint.end_date)]}
+                    />
+                  ))
+                ) : (
+                  <p>No sprints found for this project.</p>
+                )}
+              </div>
+              {/* --- Stories --- */}
+              <div className="block--element">
+                <div className="header-with-button">
+                  <h2>Stories</h2>
+                  {(isScrumMaster || isProductManager) && (
+                    <Button
+                      variant={"secondary"}
+                      onClick={() => handleToggleForm(2)}
+                      className={showForm === 2 ? "add-button selected" : "add-button"}
+                    >
+                      <span className={showForm === 2 ? "rotated" : ""}>+</span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* UNCOMPLETED STORIES DROPDOWN */}
+              {(storiesWithSprint.length > 0 || storiesWithoutSprint.length > 0 || wontHaveStories.length > 0) && (
+                <>
+                  <div style={{ marginBottom: "1rem" }}>
+                    <h2
+                      style={{ cursor: "pointer" }}
+                      onClick={() => setShowUncompletedStories(!showUncompletedStories)}
+                    >
+                      {showUncompletedStories ? "▼" : "▶"} UNCOMPLETED
+                    </h2>
+
+                    {showUncompletedStories && wontHaveStories.length > 0 && (
+                      <div style={{ marginBottom: "1rem" }}>
+                        <h3
+                          style={{ cursor: "pointer" }}
+                          onClick={() => setShowWontHaveStories(!showWontHaveStories)}
+                        >
+                          {showWontHaveStories ? "▼" : "▶"} Won't Have This Time Stories
+                        </h3>
+                        {showWontHaveStories && (
+                          <div className="project-list">
+                            {wontHaveStories.length > 0 && (
+                              wontHaveStories.map((story) => (
+                                <Card
+                                  key={story.id}
+                                  title={story.name}
+                                  description={story.description}
+                                  onClick={() => handleStoryClick(story.id)}
+                                  colorScheme="card--primary"
+                                />
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+
+                    {showUncompletedStories && (
+                      <>
+                        {storiesWithoutSprint.length > 0 && (
+                          <>
+                            <h3>Stories not in Sprints</h3>
+                            <div className="project-list">
+                              {storiesWithoutSprint.map((story) => (
+                                <Card
+                                  key={story.id}
+                                  title={story.name}
+                                  description={story.description}
+                                  onClick={() => handleStoryClick(story.id)}
+                                  extraText="Story Points: "
+                                  extraContent={story.storyPoints || "unset"}
+                                  colorScheme="card--primary"
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
+
+                        {storiesWithSprint.length > 0 && (
+                          <>
+                            <h3>Stories in Sprints</h3>
+                            <div className="project-list">
+                              {storiesWithSprint.map((story) => (
+                                <Card
+                                  key={story.id}
+                                  title={story.name}
+                                  description={story.description}
+                                  onClick={() => handleStoryClick(story.id)}
+                                  colorScheme="card--primary"
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </>
               )}
-            </ul>
-          </div>
-
-          {/* SCRUM Masters */}
-          <div>
-            <h2>SCRUM Master</h2>
-            <ul>
-              {project.scrumMasters && project.scrumMasters.length > 0 ? (
-                project.scrumMasters.map(renderUserWithStatus)
-              ) : (
-                <li>No SCRUM Master assigned</li>
-              )}
-            </ul>
-          </div>
-
-          {/* Developers */}
-          <div>
-            <h2>Developers</h2>
-            <ul>
-              {project.devs && project.devs.length > 0 ? (
-                project.devs.map(renderUserWithStatus)
-              ) : (
-                <li>No developers assigned</li>
-              )}
-            </ul>
-          </div>
-        </div>
-
-        {/* --- Sprints --- */}
-        <div className="block--element">
-          <div className="header-with-button">
-            <h2>Sprints</h2>
-            {isScrumMaster && (
-              <Button
-                variant={"secondary"}
-                onClick={() => handleToggleForm(1)}
-                className={showForm === 1 ? "add-button selected" : "add-button"}
-              >
-                <span className={showForm === 1 ? "rotated" : ""}>+</span>
-              </Button>
-            )}
-          </div>
-          </div>
-          <div className="project-list">
-            {sprints.length > 0 ? (
-              sprints.map((sprint, index) => (
-                <Card
-                  key={sprint.id}
-                  title={'Sprint #'+(index + 1)}
-                  onClick={() => handleSprintClick(sprint.id)}
-                  colorScheme="card--secondary"
-                  extraText={["Start Date: ", "End Date: "]}
-                  extraContent={[formatDate(sprint.start_date), formatDate(sprint.end_date)]}
-                />
-            ))
-            ) : (
-              <p>No sprints found for this project.</p>
-            )}
-        </div>
-          {/* --- Stories --- */}
-          <div className="block--element">
-            <div className="header-with-button">
-              <h2>Stories</h2>
-              {(isScrumMaster || isProductManager) && (
-                <Button
-                  variant={"secondary"}
-                  onClick={() => handleToggleForm(2)}
-                  className={showForm === 2 ? "add-button selected" : "add-button"}
-                >
-                  <span className={showForm === 2 ? "rotated" : ""}>+</span>
-                </Button>
-              )}
-            </div>
-            </div>
-
-            {/* UNCOMPLETED STORIES DROPDOWN */}
-            {(storiesWithSprint.length > 0 || storiesWithoutSprint.length > 0 || wontHaveStories.length > 0) && (
-              <>
-            <div style={{ marginBottom: "1rem" }}>
-              <h2
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowUncompletedStories(!showUncompletedStories)}
-              >
-                {showUncompletedStories ? "▼" : "▶"} UNCOMPLETED
-              </h2>
-
-                {showUncompletedStories && wontHaveStories.length > 0 && (
+              {/* COMPLETED STORIES DROPDOWN */}
+              {completedStories.length > 0 && (
                 <div style={{ marginBottom: "1rem" }}>
-                  <h3
-                    style={{ cursor: "pointer"}}
-                    onClick={() => setShowWontHaveStories(!showWontHaveStories)}
+                  <h2
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setShowCompletedStories(!showCompletedStories)}
                   >
-                    {showWontHaveStories ? "▼" : "▶"} Won't Have This Time Stories
-                  </h3>
-                  {showWontHaveStories && (
+                    {showCompletedStories ? "▼" : "▶"} COMPLETED
+                  </h2>
+
+                  {showCompletedStories && (
                     <div className="project-list">
-                      {wontHaveStories.length > 0 && (
-                        wontHaveStories.map((story) => (
+                      {completedStories.map((story) => {
+                        const sprint = sprints.find((sprint) => sprint.id == story.sprintId);
+                        const sprintTitle = sprint ? `Sprint #${sprints.indexOf(sprint) + 1}` : "unset";
+                        return (
                           <Card
                             key={story.id}
                             title={story.name}
                             description={story.description}
                             onClick={() => handleStoryClick(story.id)}
                             colorScheme="card--primary"
-                            />
-                        ))
-                      )}
+                            extraText={'Completed: '}
+                            extraContent={sprintTitle}
+                          />
+                        );
+                      })}
                     </div>
                   )}
                 </div>
               )}
-
-
-              {showUncompletedStories && (
-                <>
-                  {storiesWithoutSprint.length > 0 && (
-                    <>
-                      <h3>Stories not in Sprints</h3>
-                      <div className="project-list">
-                        {storiesWithoutSprint.map((story) => (
-                          <Card
-                            key={story.id}
-                            title={story.name}
-                            description={story.description}
-                            onClick={() => handleStoryClick(story.id)}
-                            extraText="Story Points: "
-                            extraContent={story.storyPoints || "unset"}
-                            colorScheme="card--primary"
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {storiesWithSprint.length > 0 && (
-                    <>
-                      <h3>Stories in Sprints</h3>
-                      <div className="project-list">
-                        {storiesWithSprint.map((story) => (
-                          <Card
-                            key={story.id}
-                            title={story.name}
-                            description={story.description}
-                            onClick={() => handleStoryClick(story.id)}
-                            colorScheme="card--primary"
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
+              {stories.length == 0 &&
+                <p>No stories found for this project.</p>
+              }
             </div>
-            </>
-          )}
-            {/* COMPLETED STORIES DROPDOWN */}
-            {completedStories.length > 0 && (
-            <div style={{ marginBottom: "1rem" }}>
-              <h2
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowCompletedStories(!showCompletedStories)}
-              >
-                {showCompletedStories ? "▼" : "▶"} COMPLETED
-              </h2>
-              
-              {showCompletedStories && (
-                <div className="project-list">
-                  {completedStories.map((story) => {
-                    const sprint = sprints.find((sprint) => sprint.id == story.sprintId);
-                    const sprintTitle = sprint ? `Sprint #${sprints.indexOf(sprint) + 1}` : "unset";
-                    return (
-                      <Card
-                        key={story.id}
-                        title={story.name}
-                        description={story.description}
-                        onClick={() => handleStoryClick(story.id)}
-                        colorScheme="card--primary"
-                        extraText={'Completed: '}
-                        extraContent={sprintTitle}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            {/* --- Add Sprint Form (pop-up) --- */}
+            {showForm === 1 && (
+              <AddSprintForm
+                projectId={project.id}
+                projectName={projectName}
+                onSprintAdded={() => {
+                  setShowForm(0);
+                  fetchSprints();
+                }}
+              />
             )}
-            {stories.length == 0 &&  
-              <p>No stories found for this project.</p>
-            }
-        </div>
-      {/* --- Add Sprint Form (pop-up) --- */}
-      {showForm === 1 && (
-        <AddSprintForm
-          projectId={project.id}
-          projectName={projectName}
-          onSprintAdded={() => {
-            setShowForm(0);
-            fetchSprints();
-          }}
-        />
-      )}
 
-      {/* --- Add Story Form (pop-up) --- */}
-      {showForm === 2 && (
-        <UserStoryForm
-          projectId={project.id}
-          onStoryAdded={() => {
-            setShowForm(0);
-            fetchStories();
-          }}
-        />
-      )}
-      </>
-      )}
+            {/* --- Add Story Form (pop-up) --- */}
+            {showForm === 2 && (
+              <UserStoryForm
+                projectId={project.id}
+                onStoryAdded={() => {
+                  setShowForm(0);
+                  fetchStories();
+                }}
+              />
+            )}
+          </>
+        )}
     </>
   );
 };

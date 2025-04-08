@@ -8,6 +8,7 @@ import EditAccount from "./pages/EditAccount";
 import Navbar from "./components/Navbar";
 import CreateProject from "./pages/CreateProject";
 import AddUserForm from "./pages/AddUserForm";
+import ProjectDocumentation from "./components/ProjectDocumentation";
 import ManageUsers from "./pages/ManageUsers";
 import UserProjects from "./pages/UserProjects";
 import ProjectDetails from "./pages/ProjectDetails";
@@ -46,6 +47,7 @@ function App() {
                 <Route path="/story/:storyId" element={<PrivateRoute><UserStoryDetails /></PrivateRoute>} />
                 <Route path="/userStoryForm" element={<PrivateRoute><UserStoryForm /></PrivateRoute>} />
                 <Route path="/project/:projectName/sprint/:sprintId" element={<PrivateRoute><SprintDetails /></PrivateRoute>} />
+                <Route path="/projects/:projectId/documentation" element={<ProjectDocumentation />} />
               </Routes>
             </div>
           </main>

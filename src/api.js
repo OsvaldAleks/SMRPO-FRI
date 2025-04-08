@@ -9,15 +9,15 @@ console.log("API URL:", API_URL);
 // Register a new user via API
 export const registerUser = async (userData) => {
   try {
-      const response = await fetch(`${API_URL}/users/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userData),
-      });
+    const response = await fetch(`${API_URL}/users/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData),
+    });
 
-      return response.json();
+    return response.json();
   } catch (error) {
-      return { message: "Network error", error };
+    return { message: "Network error", error };
   }
 };
 
@@ -114,14 +114,14 @@ export const getUserProjects = async (userId) => {
   try {
     const response = await fetch(`${API_URL}/projects/user/${userId}`, { method: "GET", headers: { "Content-Type": "application/json" } });
     if (response.ok) {
-      return response.json();    
+      return response.json();
 
     } else {
       const errorData = await response.json();
-      return { message: errorData.message || "Failed to fetch projects", error: true };      
+      return { message: errorData.message || "Failed to fetch projects", error: true };
 
     }
-  } catch (error) {      
+  } catch (error) {
     return { message: "Network error", error };
   }
 };
@@ -325,7 +325,7 @@ export const getUserStatus = async (userId) => {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    
+
     if (response.ok) {
       return response.json();
     } else {
@@ -338,7 +338,7 @@ export const getUserStatus = async (userId) => {
 };
 
 export const updateUserStatus = async (userId, status) => {
-  if (!userId){
+  if (!userId) {
     return;
   }
 
@@ -722,4 +722,27 @@ export const updateUserStoryStatus = async (storyId, newStatus) => {
     console.error("Error updating user story status:", error);
     throw error;
   }
+};
+
+export const getProjectDocumentation = async (projectId) => {
+  const res = await fetch(`${API_URL}/projects/${projectId}/documentation`);
+  const text = await res.text(); // poskusi najprej tekst
+  console.log("Raw response:", text);
+  try {
+    const data = JSON.parse(text);
+    return data.documentation;
+  } catch (e) {
+    console.error("Failed to parse JSON:", e);
+    throw new Error("Invalid response from server");
+  }
+};
+
+export const updateProjectDocumentation = async (projectId, documentation) => {
+  const res = await fetch(`${API_URL}/projects/${projectId}/documentation`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ documentation }),
+  });
+  const data = await res.json();
+  return data;
 };
