@@ -491,6 +491,10 @@ async function deleteSubtask(storyId, subtaskIndex) {
     throw new Error("User story not found.");
   }
 
+  if (storyData.status === 'Done') {
+    throw new Error('Cannot delete subtasks from a completed story');
+  }
+
   const story = storyDoc.data();
   if (!Array.isArray(story.subtasks) || subtaskIndex >= story.subtasks.length) {
     throw new Error("Invalid subtask index.");

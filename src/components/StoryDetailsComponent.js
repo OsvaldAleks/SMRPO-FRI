@@ -61,12 +61,12 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     // Check if there's already a recording
     const storyData = await getUserStory(story.id);
     const existingRecording = storyData.subtasks?.find(s => s.workdate);
-    
+
     if (existingRecording) {
       setRecordingSubtaskId(existingRecording.id);
       return;
     }
-    
+
     setSelectedSubtaskForRecording(null);
     setShowTimeRecordingModal(true);
   };
@@ -102,7 +102,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
 
   const handleStopRecording = async () => {
     if (recordingSubtaskId === null) return;
-  
+
     try {
       await stopTimeRecording(story.id, recordingSubtaskId, user.uid);
       setRecordingSubtaskId(null);
@@ -193,30 +193,41 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     }
   };
 
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState({
+    show: false,
+    subtaskIndex: null,
+  });
+
   const handleDeleteSubtask = async (index) => {
-    const confirmed = window.confirm("Are you sure you want to delete this subtask?");
-    if (!confirmed) return;
-  
+
     try {
       await deleteSubtask(story.id, index);
       setDropdownIndex(null);
-  
+
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
-  
+
+      // Pokličeš onUpdate, da se celoten kontekst osveži
       if (typeof onUpdate === 'function') {
         onUpdate(updatedStory);
       }
-  
-      //preveri, če ni več aktivnih claimed subtaskov
+
+      // preveri, če ni več aktivnih claimed subtaskov
       const activeSubtasks = updatedStory.subtasks?.filter(st => !st.deleted) || [];
       const hasClaimed = activeSubtasks.some(st => !!st.developerId);
-  
+
       if (activeSubtasks.length === 0 || !hasClaimed) {
-        await updateUserStoryStatus(story.id, "Product backlog");
+        const statusUpdate = await updateUserStoryStatus(story.id, "Product backlog");
+
+        // Osveži še enkrat, ker status se je spremenil
+        const refreshed = await getUserStory(story.id);
+        setSubtasks(refreshed.subtasks || []);
+        if (typeof onUpdate === 'function') {
+          onUpdate(refreshed);
+        }
       }
-  
+
     } catch (err) {
       console.error("Failed to delete subtask:", err.message || err);
       alert("Failed to delete subtask: " + (err.message || "Unknown error"));
@@ -315,15 +326,15 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
   const handleMarkSubtaskAsDone = async (subtaskIndex) => {
     try {
       const result = await markSubtaskAsDone(story.id, subtaskIndex);
-  
+
       if (!result.success) {
         throw new Error(result.message || "Could not update subtask");
       }
-  
+
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
-  
+
       if (typeof onUpdate === 'function') {
         onUpdate(updatedStory);
       }
@@ -331,7 +342,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
       console.error("Failed to mark subtask as done:", err);
       setErrorMessage(err.message);
     }
-  };  
+  };
 
   const confirmStoryAsDone = async () => {
     try {
@@ -389,48 +400,93 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     onUpdateStory(updatedStory);
   };
 
-
-
-// Timer effect
-useEffect(() => {
-  if (recordingSubtaskId !== null) {
-    const interval = setInterval(() => {
-      const subtask = subtasks[recordingSubtaskId]; // Get by index
-      if (subtask?.workdate) {
-        const startTime = new Date(subtask.workdate);
-        const currentTime = new Date();
-        setCurrentRecordingTime(Math.floor((currentTime - startTime) / 1000));
-      }
-    }, 1000);
-    setTimerInterval(interval);
-
-    return () => clearInterval(interval);
-  } else {
-    setCurrentRecordingTime(0);
-  }
-}, [recordingSubtaskId, subtasks]);
-
-// Check for existing recordings on load
-useEffect(() => {
-  const checkForExistingRecording = async () => {
-    const storyData = await getUserStory(story.id);
-    const recordingIndex = storyData.subtasks?.findIndex(s => s.workdate);
-    if (recordingIndex !== undefined && recordingIndex !== -1) {
-      setRecordingSubtaskId(recordingIndex);
+  const handleConfirmDelete = async () => {
+    const index = confirmDeleteModal.subtaskIndex;
+    if (index === null) return;
+  
+    if (story.status === "Done") {
+      alert("Cannot delete subtasks from a completed story.");
+      setConfirmDeleteModal({ show: false, subtaskIndex: null });
+      return;
     }
+  
+    try {
+      await deleteSubtask(story.id, index);
+      const updatedStory = await getUserStory(story.id);
+      setSubtasks(updatedStory.subtasks || []);
+      story.status = updatedStory.status;
+  
+      if (typeof onUpdate === 'function') {
+        onUpdate(updatedStory);
+      }
+  
+      setConfirmDeleteModal({ show: false, subtaskIndex: null });
+  
+      // Optionalno: preverimo še Product backlog status
+      const activeSubtasks = updatedStory.subtasks?.filter(st => !st.deleted) || [];
+      const hasClaimed = activeSubtasks.some(st => !!st.developerId);
+  
+      if (activeSubtasks.length === 0 || !hasClaimed) {
+        const refreshed = await updateUserStoryStatus(story.id, "Product backlog");
+        const refreshedStory = await getUserStory(story.id);
+        setSubtasks(refreshedStory.subtasks || []);
+        if (typeof onUpdate === 'function') {
+          onUpdate(refreshedStory);
+        }
+      }
+  
+    } catch (err) {
+      console.error("Failed to delete subtask:", err.message || err);
+      alert("Failed to delete subtask: " + (err.message || "Unknown error"));
+    } finally {
+      setConfirmDeleteModal({ show: false, subtaskIndex: null });
+    }
+  };  
+
+  const handleCancelDelete = () => {
+    setConfirmDeleteModal({ show: false, subtaskIndex: null });
   };
-  
-  checkForExistingRecording();
-}, [story.id]);
+
+  // Timer effect
+  useEffect(() => {
+    if (recordingSubtaskId !== null) {
+      const interval = setInterval(() => {
+        const subtask = subtasks[recordingSubtaskId]; // Get by index
+        if (subtask?.workdate) {
+          const startTime = new Date(subtask.workdate);
+          const currentTime = new Date();
+          setCurrentRecordingTime(Math.floor((currentTime - startTime) / 1000));
+        }
+      }, 1000);
+      setTimerInterval(interval);
+
+      return () => clearInterval(interval);
+    } else {
+      setCurrentRecordingTime(0);
+    }
+  }, [recordingSubtaskId, subtasks]);
+
+  // Check for existing recordings on load
+  useEffect(() => {
+    const checkForExistingRecording = async () => {
+      const storyData = await getUserStory(story.id);
+      const recordingIndex = storyData.subtasks?.findIndex(s => s.workdate);
+      if (recordingIndex !== undefined && recordingIndex !== -1) {
+        setRecordingSubtaskId(recordingIndex);
+      }
+    };
+
+    checkForExistingRecording();
+  }, [story.id]);
 
 
-const formatTime = (seconds) => {
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  
-  return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-};
+  const formatTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
     <>
@@ -566,29 +622,20 @@ const formatTime = (seconds) => {
                             )}
                             {(userRole === "devs" || userRole === "scrumMasters") && (
                               <td style={{ position: 'relative' }} ref={dropdownRef}>
-                                {dropdownIndex === idx ? (
-                                  <div style={{ display: 'flex', gap: '8px' }}>
-                                    <FaEdit
-                                      className="dropdown-icon"
-                                      onClick={() => handleEditSubtask(idx)}
-                                      title="Edit Subtask"
-                                    />
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <FaEdit
+                                    className="dropdown-icon"
+                                    onClick={() => handleEditSubtask(idx)}
+                                    title="Edit Subtask"
+                                  />
+                                  {story.status !== "Done" && (
                                     <FaTrash
                                       className="dropdown-icon p--alert"
-                                      onClick={() => handleDeleteSubtask(idx)}
+                                      onClick={() => setConfirmDeleteModal({ show: true, subtaskIndex: idx })}
                                       title="Delete Subtask"
                                     />
-                                  </div>
-                                ) : (
-                                  <FaEllipsisV
-                                    className="dropdown-trigger"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDropdownIndex(idx);
-                                    }}
-                                    title="More actions"
-                                  />
-                                )}
+                                  )}
+                                </div>
                               </td>
                             )}
                           </tr>
@@ -610,20 +657,20 @@ const formatTime = (seconds) => {
                 <>
                   <Button className="btn--block" onClick={() => setShowSubtaskForm(true)}>+ Add Subtask</Button>
                   {recordingSubtaskId !== null ? (
-                    <Button 
+                    <Button
                       variant="danger"
                       onClick={handleStopRecording}
                     >
                       Stop Recording
                     </Button>
-                ) : (
-                  <Button 
-                    variant="secondary"
-                    onClick={handleStartRecording}
-                  >
-                    Record Time
-                  </Button>
-                )}
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      onClick={handleStartRecording}
+                    >
+                      Record Time
+                    </Button>
+                  )}
                 </>
               ) : (
                 <>
@@ -724,22 +771,22 @@ const formatTime = (seconds) => {
 
                 <div className="subtask-selection">
                   {subtasks
-                  .map((subtask, originalIndex) => ({ subtask, originalIndex }))
-                  .filter(({ subtask }) => subtask.developerId === user.uid && !subtask.isDone && !subtask.deleted)
-                  .map(({ subtask, originalIndex }) => (
-                    <div
-                    key={originalIndex}
-                    className={`subtask-option ${selectedSubtaskForRecording === originalIndex ? 'selected' : ''}`}
-                    onClick={() => {
-                      setSelectedSubtaskForRecording(originalIndex); // Use original index
-                      console.log("Selected subtask original index:", originalIndex);
-                    }}
-                  >
-                    {subtask.description}
-                  </div>
-    ))
-  }
-</div>
+                    .map((subtask, originalIndex) => ({ subtask, originalIndex }))
+                    .filter(({ subtask }) => subtask.developerId === user.uid && !subtask.isDone && !subtask.deleted)
+                    .map(({ subtask, originalIndex }) => (
+                      <div
+                        key={originalIndex}
+                        className={`subtask-option ${selectedSubtaskForRecording === originalIndex ? 'selected' : ''}`}
+                        onClick={() => {
+                          setSelectedSubtaskForRecording(originalIndex); // Use original index
+                          console.log("Selected subtask original index:", originalIndex);
+                        }}
+                      >
+                        {subtask.description}
+                      </div>
+                    ))
+                  }
+                </div>
 
                 <div className="modal-buttons">
                   <Button
@@ -762,14 +809,14 @@ const formatTime = (seconds) => {
             </div>
           )}
           {recordingSubtaskId !== null && (
-  <div style={{ marginTop: '10px' }}>
-    <strong>Recording: </strong>
-    {subtasks[recordingSubtaskId]?.description}
-    <br />
-    <strong>Time: </strong>
-    {formatTime(currentRecordingTime)}
-  </div>
-)}
+            <div style={{ marginTop: '10px' }}>
+              <strong>Recording: </strong>
+              {subtasks[recordingSubtaskId]?.description}
+              <br />
+              <strong>Time: </strong>
+              {formatTime(currentRecordingTime)}
+            </div>
+          )}
         </div>
       ) : (
         <UserStoryForm
@@ -779,6 +826,28 @@ const formatTime = (seconds) => {
           onCancel={() => setEditView(false)}
         />
       )}
+      {confirmDeleteModal.show && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title" style={{ textAlign: 'center' }}>Confirm Delete</h3>
+            <p className="modal-text" style={{ textAlign: 'center' }}>
+              Are you sure you want to delete this subtask?
+            </p>
+            <div className="modal-buttons">
+              <Button
+                variant="secondary"
+                onClick={handleCancelDelete}
+              >
+                Cancel
+              </Button>
+              <Button className="btn btn--primery" onClick={handleConfirmDelete}>
+                Delete subtask
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       <style jsx>{`
         .modal-overlay {
