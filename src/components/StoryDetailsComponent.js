@@ -664,19 +664,20 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                 <p>Select subtask to record time for:</p>
 
                 <div className="subtask-selection">
-  {subtasks
-    .filter(subtask => subtask.developerId === user.uid)
-    .map((subtask, index) => (
-      <div
-        key={index}
-        className={`subtask-option ${selectedSubtaskForRecording === index ? 'selected' : ''}`}
-        onClick={() => {
-          setSelectedSubtaskForRecording(index);
-          console.log("Selected subtask index:", index);
-        }}
-      >
-        {subtask.description}
-      </div>
+                  {subtasks
+                  .map((subtask, originalIndex) => ({ subtask, originalIndex }))
+                  .filter(({ subtask }) => subtask.developerId === user.uid && !subtask.isDone && !subtask.deleted)
+                  .map(({ subtask, originalIndex }) => (
+                    <div
+                    key={originalIndex}
+                    className={`subtask-option ${selectedSubtaskForRecording === originalIndex ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedSubtaskForRecording(originalIndex); // Use original index
+                      console.log("Selected subtask original index:", originalIndex);
+                    }}
+                  >
+                    {subtask.description}
+                  </div>
     ))
   }
 </div>
