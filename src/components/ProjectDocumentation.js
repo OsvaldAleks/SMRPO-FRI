@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getProjectDocumentation, updateProjectDocumentation } from "../api";
 import Button from "../components/Button";
+import ReactMarkdown from "react-markdown";
 
 const ProjectDocumentation = () => {
   const { projectId } = useParams();
@@ -63,8 +64,8 @@ const ProjectDocumentation = () => {
           style={{ width: "100%", fontSize: "1.6rem" }}
         />
       ) : (
-        <div className="doc-display">
-          <pre style={{ whiteSpace: "pre-wrap" }}>{content}</pre>
+        <div className="markdown-content">
+          <ReactMarkdown>{content}</ReactMarkdown>
         </div>
       )}
 
