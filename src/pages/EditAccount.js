@@ -121,10 +121,11 @@ const EditAccount = () => {
 
   const handleUsernameChange = (e) => {
     const value = e.target.value;
-    setUsername(value);
-    if (touchedFields.username) {
-      validateUsername(value);
-    }
+  setUsername(value);
+  // Always validate when in edit mode
+  if (editMode) {
+    validateUsername(value);
+  }
   };
 
   const handlePasswordChange = async (e) => {
@@ -206,6 +207,22 @@ const EditAccount = () => {
     setPasswordStrengthLabel(result.feedback.suggestions.join(" "));
   };
 
+  // Update the cancel button handler to reset all fields
+const handleCancelEdit = () => {
+  // Reset all fields to their original values
+  if (user) {
+    getUser(user.uid).then(userData => {
+      if (userData) {
+        setName(userData.name || "");
+        setSurname(userData.surname || "");
+        setUsername(userData.username || "");
+        setUsernameError(""); // Clear any errors
+      }
+    });
+  }
+  setEditMode(false);
+};
+
   if (authLoading) {
     return <p>Loading...</p>;
   }
@@ -267,7 +284,7 @@ const EditAccount = () => {
               <Button 
                 type="button" 
                 variant="secondary" 
-                onClick={() => setEditMode(false)}
+                onClick={handleCancelEdit}
                 disabled={loading}
               >
                 Cancel
