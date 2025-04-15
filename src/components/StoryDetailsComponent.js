@@ -291,35 +291,35 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     try {
       console.log("Attempting to claim subtask at index:", taskIndex);
       console.log("User ID:", user.uid);
-
-      const updatedSubtasks = subtasks.map((subtask, index) => {
-        if (index === taskIndex) {
-          return {
-            ...subtask,
-            developerId: subtask.developerId ? null : user.uid,
-            isDone: subtask.isDone ?? false,
-          };
-        }
-        return subtask;
-      });
-
+  
+      const currentSubtask = subtasks[taskIndex];
+      const isUnclaiming = currentSubtask.developerId && currentSubtask.developerId === user.uid;
+      const isCompleted = currentSubtask.isDone;
+  
+      // First handle the claim/unclaim
       await claimSubtask(story.id, user.uid, taskIndex);
       console.log("Subtask claim request sent successfully.");
-
+  
+      // If unclaiming a completed task, mark it as undone
+      if (isUnclaiming && isCompleted) {
+        console.log("Unclaiming completed subtask - marking as undone");
+        await handleMarkSubtaskAsDone(taskIndex);
+      }
+  
+      // For all other cases, just update normally
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       setDropdownIndex(null);
       console.log("Updated story fetched:", updatedStory);
-
-      setSubtasks(updatedStory.subtasks || []);
+  
       story.status = updatedStory.status;
-
       if (typeof onUpdate === "function") {
         console.log("Triggering onUpdate callback.");
         onUpdate(story);
       }
     } catch (err) {
       console.error("Failed to claim/unclaim subtask:", err);
+      setErrorMessage(err.message || "Failed to update subtask status");
     }
   };
 

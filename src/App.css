@@ -138,25 +138,28 @@ position: absolute;
 }
 
 .responsive-table {
-  width: auto;
-  max-width: 100%;
+  width: 100%; /* Ensures table expands to fill the parent container */
+  max-width: 100%; /* Ensures it doesn't overflow the parent */
   border-collapse: collapse;
-  overflow-x: auto;
-  display: block;
+  table-layout: auto; /* Ensures columns are adjusted based on content */
 }
+
 .responsive-table td:first-child, 
 .responsive-table th:first-child {
   text-align: center;
   vertical-align: middle;
 }
+
 .responsive-table tbody tr:nth-child(2n-1) {
   background-color: #e8f2f8;
 }
-.responsive-table th{
+
+.responsive-table th {
   background-color: var(--color-primary) !important;
   color: #fff;
   font-weight: bold;
 }
+
 .responsive-table th,
 .responsive-table td {
   border: 0;
@@ -167,24 +170,15 @@ position: absolute;
   white-space: normal;
 }
 
-
-.responsive-table th {
-  background-color: var(--color-light);
-  font-weight: bold;
-}
-
 .responsive-table-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  overflow-x: auto;
+  width: 100%; /* Ensure container uses full width */
+  overflow-x: auto; /* Allow horizontal scrolling */
   margin: 0.5rem 0 0 0;
 }
 
-/* Ensuring it doesn't break layout in smaller screens */
 @media (max-width: 768px) {
   .responsive-table-container {
-    overflow-x: scroll;
+    overflow-x: scroll; /* Enable horizontal scrolling on smaller screens */
   }
 
   .responsive-table th,
@@ -193,6 +187,7 @@ position: absolute;
     padding: 0.5rem;
   }
 }
+
 
 .activeStatus {
   background-color: green;

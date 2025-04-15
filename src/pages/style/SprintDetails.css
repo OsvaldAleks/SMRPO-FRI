@@ -1,45 +1,60 @@
 
-
 .responsive-table-container-wide .responsive-table td {
-    width: 200px;
-    height: 150px;
+    width: auto; /* Allow cells to expand based on content */
+    height: auto; /* Let the height adapt to content */
     text-align: center;
     vertical-align: middle;
-  }
-  .responsive-table-container-wide .responsive-table th{
-    width: 200px;
-    height: 100%;
-    text-align: center;
-    vertical-align: middle;
+}
 
+.responsive-table-container-wide .responsive-table th {
+    width: auto; /* Adjust width to auto */
+    height: auto; /* Adjust height to fit content */
+    text-align: center;
+    vertical-align: middle;
 }
 
 .responsive-table-container3 {
     width: 100%;
-    overflow-x: auto;
+    overflow-x: auto; /* Allows scrolling if the table exceeds the container */
+    max-width: 100%; /* Ensures the container does not overflow */
 }
 
 .responsive-table-container3 .responsive-table {
     width: 100%;
-    table-layout: fixed;
+    table-layout: auto; /* Allows table width to adjust based on content */
+    max-width: 100%; /* Prevents the table from exceeding the container */
+    overflow-x: hidden; /* Prevents overflow if content is too wide */
 }
 
 .responsive-table-container3 .responsive-table th,
 .responsive-table-container3 .responsive-table td {
     vertical-align: middle;
     padding: 1rem;
+    word-wrap: break-word; /* Ensures long words break and don't overflow */
 }
 
 .responsive-table-container3 .responsive-table th:nth-child(1),
 .responsive-table-container3 .responsive-table td:nth-child(1) {
     text-align: center;
-    width: 5%;
+    width: 5%; /* Keeps the first column narrow */
 }
 
 .responsive-table-container3 .responsive-table th:nth-child(2),
 .responsive-table-container3 .responsive-table td:nth-child(2) {
     text-align: left;
-    width: 95%;
+    width: auto; /* Allows the second column to adjust to content */
+}
+
+@media (max-width: 768px) {
+    .responsive-table-container3 {
+        overflow-x: scroll; /* Scroll if the table is too wide */
+    }
+
+    .responsive-table-container3 .responsive-table th,
+    .responsive-table-container3 .responsive-table td {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
 }
 
 .userStory {
@@ -111,3 +126,54 @@ tr.selected{
 .userStory.plus-button.selected{
     background-color: var(--color-accent)!important;
 }
+
+.subtasks-container {
+    display: flex;
+    gap: 0;
+    margin-top: 1.5rem;
+    align-items: flex-start;
+  }
+  
+  .subtask-column {
+    flex: 1;
+    min-width: 240px;
+  }
+  
+  .subtask-column h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+    border-bottom: 1px solid var(--color-secondary);
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  .subtask-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .subtask-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-borders);
+  }
+  
+  .subtask-item:last-child {
+    border-bottom: none;
+  }
+  
+  .subtask-item h4 {
+    font-size: 3rem;
+    margin: 0;
+    color: var(--color-primary);
+  }
+    
+  .subtask-empty {
+    font-style: italic;
+    color: #888;
+    font-size: 1rem;
+    padding: 0.5rem 0;
+  }
+  
+  

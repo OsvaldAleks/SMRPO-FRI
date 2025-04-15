@@ -46,10 +46,6 @@ const SprintDetails = () => {
     startDate.setHours(0, 0, 0, 0);
     const endDate = new Date(sprint.end_date); 
     endDate.setHours(1, 1, 1, 1);
-
-    console.log("Current Date:", currentDate);  
-    console.log("Start Date:", startDate);
-    console.log("End Date:", endDate);
   
     return currentDate >= startDate && currentDate <= endDate;
   };
@@ -242,6 +238,23 @@ const SprintDetails = () => {
     }
   }, [showIncludeStories, selectedStory, stories, sprintId]);
 
+  const getCategorizedSubtasks = () => {
+    const allSubtasks = sprintStories.flatMap(story => 
+      (story.subtasks || []).map(subtask => ({ 
+        ...subtask, 
+        storyName: story.name,
+        storyId: story.id
+      }))
+    );
+    console.log("All Subtasks:", allSubtasks);
+    return {
+      unclaimed: allSubtasks.filter(subtask => subtask.devName==null && !subtask.isDone),
+      claimed: allSubtasks.filter(subtask => subtask.devName!=null && !subtask.isDone),
+      completed: allSubtasks.filter(subtask => subtask.isDone)
+      // Active column will remain empty for now
+    }
+  }
+
   // Calculate the number of rows needed
   const maxRows = Math.max(todoStories.length, doingStories.length, doneStories.length);
 
@@ -329,40 +342,42 @@ const SprintDetails = () => {
           )}
 
           <div className="center--box">
-            <div className="card--header">
-              <h1>Sprint Details</h1>
-              <div className="icons">
-                {canEdit && (
-                  <>
-                    <FaEdit 
-                      title="Edit User Story" 
-                      onClick={() => setIsEditing(true)}
-                    />
-                    {!isSprintActive() && (
-                    <FaTrash 
-                      className="p--alert"
-                      title="Delete User Story" 
-                      onClick={handleDelete}
-                    />
+                <div className="card--header">
+                  <h1>Sprint Details</h1>
+                  <div className="icons">
+                    {canEdit && (
+                      <>
+                        <FaEdit 
+                          title="Edit User Story" 
+                          onClick={() => setIsEditing(true)}
+                        />
+                        {!isSprintActive() && (
+                          <FaTrash 
+                            className="p--alert"
+                            title="Delete User Story" 
+                            onClick={handleDelete}
+                          />
+                        )}
+                      </>
                     )}
-                  </>
-                )}
-              </div>
-            </div>
-            <div className="block--element">
-              <div className="header-with-button">
-                {role === "scrumMasters" && isSprintActive() && (
+                  </div>
+                {canEdit && role === "scrumMasters" && isSprintActive() && (
                   <Button
                     variant={"secondary"}
                     onClick={() => setShowIncludeStories((prev) => !prev)}
                     className={
                       showIncludeStories ? "add-button btn-left selected" : "add-button btn-left"
                     }
+                    style={{ padding: '0.6rem 1.5rem', fontSize: '1.4rem', position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }}
                   > 
                     <span className={showIncludeStories ? "rotated" : ""}>+</span>
                   </Button>
                 )}
+            </div>
 
+
+            <div className="block--element">
+              <div className="header-with-button">
                 {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
                 {sprint ? (
@@ -392,6 +407,7 @@ const SprintDetails = () => {
               </div>
             </div>
             {!isSprintNotStarted() && (
+              <>
               <div className="responsive-table-container-wide">
                 <table className="responsive-table">
                   <thead>
@@ -451,6 +467,32 @@ const SprintDetails = () => {
                   </tbody>
                 </table>
               </div>
+                  <h2>Subtasks Overview</h2>
+                  
+                  <div className="subtasks-container">
+                    {Object.entries(getCategorizedSubtasks()).map(([status, subtasks]) => (
+                      <div key={status} className="subtask-column">
+                        <h3>
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </h3>
+                        <ul className="subtask-list">
+                          {subtasks.length > 0 ? (
+                            subtasks.map((subtask, index) => (
+                              <li key={`${status}-${index}`} className="subtask-item">
+                                  <h4>{subtask.title}</h4>
+                                  <p className="subtask-story">{subtask.description} [{subtask.timeEstimate}h] (from:{subtask.storyName})</p>
+                              </li>
+                            ))
+                          ) : (
+                            <li className="subtask-empty">
+                              No {status} subtasks
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+              </>            
             )}
           </div>
 
