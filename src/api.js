@@ -321,19 +321,27 @@ export const assignUserStoryToSprint = async (storyId, sprintId) => {
 
 export const getUserStatus = async (userId) => {
   try {
-    const response = await fetch(`${API_URL}/users/${userId}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(`${API_URL}/user/status/${userId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
     });
 
-    if (response.ok) {
-      return response.json();
-    } else {
-      const errorData = await response.json();
-      return { message: errorData.message || "Failed to fetch user status", error: true };
+    if (!response.ok) {
+      return { status: 'offline' };
     }
+
+    const text = await response.text();
+    if (!text) {
+      return { status: 'offline' };
+    }
+
+    return JSON.parse(text);
   } catch (error) {
-    return { message: "Network error", error };
+    console.error('Error fetching user status:', error);
+    return { status: 'offline' }; // Default fallback
   }
 };
 

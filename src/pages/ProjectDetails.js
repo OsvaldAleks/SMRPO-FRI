@@ -34,6 +34,12 @@ const ProjectDetails = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    return () => {
+      setIsEditing(false);
+    };
+  }, [projectName]);  
+
+  useEffect(() => {
     setProject(null);
     setSprints([]);
     setStories([]);
@@ -64,24 +70,37 @@ const ProjectDetails = () => {
     }
   }, [project]);
 
-  useEffect(() => {
-    const fetchUserStatuses = async () => {
-      if (!project) return;
+  const fetchUserStatuses = async () => {
+    if (!project) return;
+    
+    try {      
       const users = [
         ...(project.devs || []),
         ...(project.scrumMasters || []),
         ...(project.productManagers || []),
       ];
-      const statuses = {};
+  
+      const statusUpdates = {};
+      
+      await Promise.all(users.map(async (usr) => {
+        try {
+          const statusData = await getUserStatus(usr.id);
+          statusUpdates[usr.id] = statusData?.status === "online";
+        } catch (error) {
+          console.error(`Failed to get status for user ${usr.id}:`, error);
+          statusUpdates[usr.id] = false;
+        }
+      }));
+  
+      setUserStatuses(prev => ({ ...prev, ...statusUpdates }));
+    } catch (error) {
+      console.error("Failed to fetch user statuses:", error);
+    } finally {
+    }
+  };
+  
 
-      for (const usr of users) {
-        const statusData = await getUserStatus(usr.id);
-        statuses[usr.id] = statusData.status === "online";
-      }
-
-      setUserStatuses(statuses);
-    };
-
+  useEffect(() => {
     fetchUserStatuses();
   }, [project]);
 
@@ -226,19 +245,38 @@ const ProjectDetails = () => {
     (story) => (!story.sprintId || story.sprintId.length === 0) && story.status !== "Completed"
   );
 
-  const handleChange = async (project) => {
-    if (user && projectName) {
-      await fetchProject(user.uid);
+  const handleChange = async (updatedProject) => {
+    const oldProject = project; // Save current state for rollback
+    
+    try {
+      // Optimistic update
+      setProject(updatedProject);
+      
+      // Refresh data from server
+      if (user?.uid) {
+        await fetchProject(user.uid);
+      }
+      
+      setIsEditing(false);
+      
+      // Navigate if name changed
+      if (updatedProject.name !== projectName) {
+        navigate(`/project/${encodeURIComponent(updatedProject.name)}`);
+      }
+    } catch (error) {
+      console.error("Error updating project:", error);
+      // Rollback on error
+      setProject(oldProject);
+      setError("Failed to update project. Please try again.");
     }
-    setIsEditing(false)
-  }
+  };
 
   return (
     <>
       {isEditing ?
         <CreateProject
           project={project}
-          onSubmit={() => handleChange()}
+          onSubmit={(updatedProject) => handleChange(updatedProject)}
         />
         : (
           <>
