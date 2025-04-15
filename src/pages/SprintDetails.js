@@ -338,11 +338,13 @@ const SprintDetails = () => {
                       title="Edit User Story" 
                       onClick={() => setIsEditing(true)}
                     />
+                    {!isSprintActive() && (
                     <FaTrash 
                       className="p--alert"
                       title="Delete User Story" 
                       onClick={handleDelete}
                     />
+                    )}
                   </>
                 )}
               </div>
