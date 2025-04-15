@@ -11,6 +11,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isSprintActive, setIsSprintActive] = useState(false);
 
   useEffect(() => {
     if (sprint) {
@@ -18,8 +19,16 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
       setStartDate(sprint.start_date || "");
       setEndDate(sprint.end_date || "");
       setVelocity(sprint.velocity || "");
+
+      const today = new Date();
+      const sprintStart = new Date(sprint.start_date);
+      const sprintEnd = new Date(sprint.end_date);
+      
+      setIsSprintActive(today >= sprintStart && today <= sprintEnd);
     } else {
       setIsEditing(false);
+      setIsSprintActive(false);
+
       const today = new Date();
       const oneWeekLater = new Date(today);
       oneWeekLater.setDate(today.getDate() + 7);
@@ -197,7 +206,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
             onChange={(e) => setStartDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]}
             required
-            disabled={isEditing && new Date(sprint.start_date) < new Date()}
+            disabled={isEditing && (isSprintActive || new Date(sprint.start_date) < new Date())}
           />
         </div>
         <div className={"block--element"}>
@@ -209,20 +218,19 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
             onChange={(e) => setEndDate(e.target.value)}
             min={startDate}
             required
-            disabled={isEditing && new Date(sprint.start_date) < new Date()}
+            disabled={isEditing && (isSprintActive || new Date(sprint.start_date) < new Date())}
           />
         </div>
         <div className={"block--element"}>
-          <label className={"block--element"}>Velocity</label>
+          <label className={"block--element"}>Velocity (Story Points)</label>
           <Input
             type="number"
             className={"block--element"}
             value={velocity}
             onChange={handleVelocityChange}
-            placeholder="Velocity in story points"
+            placeholder="Velocity (Story Points)"
             step="0.01"
             required
-            disabled={isEditing && new Date(sprint.start_date) < new Date()} 
           />
         </div>
         {error && <p className="p--alert">{error}</p>}

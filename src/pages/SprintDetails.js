@@ -30,6 +30,7 @@ const SprintDetails = () => {
   const [developers, setDevelopers] = useState([]);
   const [canEdit, setCanEdit] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [sprintLoad, setSprintLoad] = useState(0);
   const navigate = useNavigate();
 
   // Track which user stories are selected (checked) for adding to sprint
@@ -40,9 +41,16 @@ const SprintDetails = () => {
     if (!sprint || !sprint.start_date || !sprint.end_date) return false;
 
     const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
     const startDate = new Date(sprint.start_date);
-    const endDate = new Date(sprint.end_date);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(sprint.end_date); 
+    endDate.setHours(1, 1, 1, 1);
 
+    console.log("Current Date:", currentDate);  
+    console.log("Start Date:", startDate);
+    console.log("End Date:", endDate);
+  
     return currentDate >= startDate && currentDate <= endDate;
   };
 
@@ -55,11 +63,10 @@ const SprintDetails = () => {
 
   useEffect(() => {
     if (sprint && role) {
-      setCanEdit(role === "scrumMasters" && isSprintNotStarted());
+      setCanEdit(role === "scrumMasters" && (isSprintNotStarted() || isSprintActive()));
     }
   }, [sprint, role]);
   
-
   // Calculate the total story points of stories already in the sprint
   const calculateSprintStoryPoints = () => {
     return sprintStories.reduce((total, story) => {
@@ -173,6 +180,18 @@ const SprintDetails = () => {
   );
   const doingStories = sprintStories.filter((story) => story.status === "In progress");
   const doneStories = sprintStories.filter((story) => story.status === "Done");
+
+  useEffect(() => {
+    if (sprintStories && sprintStories.length > 0) {
+      const totalLoad = sprintStories.reduce((sum, story) => {
+        return sum + (story.storyPoints || 0);
+      }, 0);
+      setSprintLoad(totalLoad);
+    } else {
+      setSprintLoad(0);
+    }
+  }, [sprintStories]);
+
 
   // Handle story click
   const handleStoryClick = (story) => {
@@ -359,7 +378,10 @@ const SprintDetails = () => {
                         : "No end date available"}
                     </p>
                     <p>
-                      <strong>Velocity: </strong> {sprint.velocity}
+                    <strong>Capacity: </strong> 
+                      <span>
+                        {sprintLoad}/{sprint.velocity}
+                      </span>
                     </p>
                   </div>
                 ) : (
@@ -434,8 +456,6 @@ const SprintDetails = () => {
             <StoryDetailsComponent
               story={selectedStory}
               userRole={role}
-              fromSprintView={true}
-              sprintEnded={!isSprintActive()}
               onUpdate={updateStoryStatus}
               projectDevelopers={developers}
             />

@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import { getProjectDocumentation, updateProjectDocumentation } from "../api";
 import Button from "../components/Button";
 import ReactMarkdown from "react-markdown";
+import './style/projectDocumentation.css';
+import { FaEdit, FaSave, FaTimes, FaFileImport, FaFileExport } from "react-icons/fa";
+
 
 const ProjectDocumentation = () => {
   const { projectId } = useParams();
@@ -54,14 +57,42 @@ const ProjectDocumentation = () => {
 
   return (
     <div className="center--box">
-      <h1>Project Documentation</h1>
 
+  
+    <div className="card--header" style={{ position: "relative", textAlign: "center" }}>
+    {/* Naslov projekta */}
+    <h1>Project Documentation</h1>
+
+    {/* Desni gumbi: DOC + Edit */}
+    <div style={{
+      position: "absolute",
+      top: 0,
+      right: 0,
+      display: "flex",
+      alignItems: "center",
+      gap: "1rem",
+      paddingRight: 15
+    }}>
+       {!editing && (
+          <div className="doc-toolbar">
+            <FaEdit title="Edit" onClick={() => setEditing(true)} className="doc-icon edit" />
+            <label title="Import" style={{ cursor: "pointer" }}>
+              <FaFileImport className="doc-icon import" />
+              <input type="file" accept=".txt" onChange={handleImport} style={{ display: "none" }} />
+            </label>
+            <FaFileExport title="Export" onClick={handleExport} className="doc-icon export" />
+          </div>
+        )}
+    </div>
+  </div>
+  
       {editing ? (
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={20}
           style={{ width: "100%", fontSize: "1.6rem" }}
+          className="edit-markdown textarea"
         />
       ) : (
         <div className="markdown-content">
@@ -70,20 +101,11 @@ const ProjectDocumentation = () => {
       )}
 
       <div className="modal-buttons">
-        {editing ? (
-          <>
-            <Button onClick={handleCancel} variant="secondary">Cancel</Button>
-            <Button onClick={handleSave} className="btn btn--primery">Save</Button>
-          </>
-        ) : (
-          <>
-            <Button onClick={() => setEditing(true)}>Edit</Button>
-            <Button onClick={handleExport} variant="secondary">Export</Button>
-            <label className="btn btn--outline" style={{ cursor: "pointer" }}>
-              Import
-              <input type="file" accept=".txt" onChange={handleImport} style={{ display: "none" }} />
-            </label>
-          </>
+        {editing && (
+          <div style={{ margin: "0.5rem", display: "flex", gap: "0" }}>
+            <Button onClick={handleCancel} variant="accent btn btn--half">Cancel</Button>
+            <Button onClick={handleSave} className="btn btn--primery btn--half">Save</Button>
+          </div>
         )}
       </div>
     </div>

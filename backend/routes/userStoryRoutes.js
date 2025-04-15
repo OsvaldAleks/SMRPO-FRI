@@ -198,7 +198,7 @@ router.delete("/:storyId/subtask/:subtaskIndex", async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error("Error deleting subtask:", error.message || error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: error.message || error || "Internal server error" });
   }
 });
 

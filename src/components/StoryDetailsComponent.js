@@ -7,6 +7,7 @@ import { FaEdit, FaTrash, FaEllipsisV } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { startTimeRecording, stopTimeRecording } from "../api.js";
 import UserStoryForm from "../pages/UserStoryForm.js";
+import { set } from "firebase/database";
 
 const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, projectDevelopers = [] }) => {
   const { user, loading } = useAuth();
@@ -36,7 +37,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
     } catch (err) {
-      console.error("Failed to fetch latest subtasks:", err);
+      console.error("Failed to fetch latest tasks:", err);
     }
   };
 
@@ -73,7 +74,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
 
   const handleConfirmStartRecording = async () => {
     if (selectedSubtaskForRecording === null) {
-      setErrorMessage("Please select a subtask first");
+      setErrorMessage("Please select a task first");
       return;
     }
 
@@ -229,8 +230,8 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
       }
 
     } catch (err) {
-      console.error("Failed to delete subtask:", err.message || err);
-      alert("Failed to delete subtask: " + (err.message || "Unknown error"));
+      console.error(err.message || err);
+      setErrorMessage((err.message || "Unknown error"));
     }
   };
 
@@ -319,7 +320,6 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
       }
     } catch (err) {
       console.error("Failed to claim/unclaim subtask:", err);
-      alert("Failed to claim/unclaim subtask.");
     }
   };
 
@@ -403,9 +403,9 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
   const handleConfirmDelete = async () => {
     const index = confirmDeleteModal.subtaskIndex;
     if (index === null) return;
-  
+    setErrorMessage("");
     if (story.status === "Done") {
-      alert("Cannot delete subtasks from a completed story.");
+      setErrorMessage("Cannot delete subtasks from a completed story.");
       setConfirmDeleteModal({ show: false, subtaskIndex: null });
       return;
     }
@@ -436,8 +436,8 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
       }
   
     } catch (err) {
-      console.error("Failed to delete subtask:", err.message || err);
-      alert("Failed to delete subtask: " + (err.message || "Unknown error"));
+      console.error(err.message || err);
+      setErrorMessage((err.message || "Unknown error"));
     } finally {
       setConfirmDeleteModal({ show: false, subtaskIndex: null });
     }
@@ -577,7 +577,12 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
 
           {story.sprintId && story.sprintId.length > 0 && (
             <>
-              <h3>Subtasks</h3>
+              <h3>Tasks</h3>
+              {errorMessage && (
+                    <div className="p--alert">
+                      {errorMessage}
+                    </div>
+                  )}
               <div className="responsive-table-container3">
                 <table className="responsive-table">
                   <thead>
@@ -674,11 +679,6 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                 </>
               ) : (
                 <>
-                  {errorMessage && (
-                    <div style={{ color: "red", marginBottom: "0.5rem" }}>
-                      {errorMessage}
-                    </div>
-                  )}
                   <div style={{ marginBottom: "0.5rem" }}>
                     <label>Description: </label>
                     <Input
@@ -767,7 +767,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
             <div className="modal-overlay">
               <div className="modal-content">
                 <h3>Start Time Recording</h3>
-                <p>Select subtask to record time for:</p>
+                <p>Select task to record time for:</p>
 
                 <div className="subtask-selection">
                   {subtasks
@@ -831,7 +831,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
           <div className="modal-content">
             <h3 className="modal-title" style={{ textAlign: 'center' }}>Confirm Delete</h3>
             <p className="modal-text" style={{ textAlign: 'center' }}>
-              Are you sure you want to delete this subtask?
+              Are you sure you want to delete this task?
             </p>
             <div className="modal-buttons">
               <Button
@@ -841,7 +841,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                 Cancel
               </Button>
               <Button className="btn btn--primery" onClick={handleConfirmDelete}>
-                Delete subtask
+                Delete task
               </Button>
             </div>
           </div>

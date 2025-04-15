@@ -10,10 +10,14 @@ const Documentation = () => {
   return (
     <div className="center--box documentation">
       <h1>User Documentation</h1>
-      {user && user.system_rights === "Admin" && (
+
+
+      {user ? (
         <>
-          <h2>Admin documentation</h2>
           <details>
+            <summary style={{fontSize: "1.2em", fontWeight: "bold"}}>Users</summary>
+
+            <details>
             <summary>Add a new user</summary>
             <ol>
               <li>Click on the <strong>Manage Users</strong> tab in the navigation bar.</li>
@@ -29,13 +33,22 @@ const Documentation = () => {
               </ul>
               <li>Click <strong>Add User</strong>.</li>
             </ol>
+            </details>
+
+
           </details>
+
+
+          <details>
+            <summary style={{fontSize: "1.2em", fontWeight: "bold"}}>Projects</summary>
+
           <details>
             <summary>Create a new project</summary>
+            <p><em>You need to be a system administrator to create a new Project.</em></p>
             <ol>
               <li>Click on the <strong>My Projects</strong> tab in the navigation bar.</li>
               <li>Click on the <strong>+</strong> button.</li>
-              <li>Select a name for the project and assign roles to selected members.</li>
+              <li>Select a name and description for the project and assign roles to selected members.</li>
               <li>Ensure you have assigned at least one of each:</li>
               <ul>
                 <li>Product Manager</li>
@@ -45,11 +58,28 @@ const Documentation = () => {
               <li>Click <strong>Create Project</strong>.</li>
             </ol>
           </details>
-          <h2>General user documentation</h2>
-        </>
-      )}
-      {user ? (
-        <>
+
+          <details>
+            <summary>Edit an existing project</summary>
+            <p><em>You need to be a system administrator or a SCRUM master to edit an existing Project.</em></p>
+            <ol>
+              <li>Within a Project, click on the <strong><FaEdit/></strong> icon in the top right.</li>
+              <li>Select a name and description for the project and assign roles to selected members.</li>
+              <li>Ensure you have assigned at least one of each:</li>
+              <ul>
+                <li>Product Manager</li>
+                <li>SCRUM Master</li>
+                <li>Developer</li>
+              </ul>
+              <li>Click <strong>Update Project</strong>.</li>
+            </ol>
+          </details>
+
+          </details>
+
+
+
+
           <details>
             <summary style={{fontSize: "1.2em", fontWeight: "bold"}}>Sprints</summary>
 
@@ -178,20 +208,26 @@ const Documentation = () => {
           </details>
           <details>
            <summary>Claim a task</summary>
-           <p>You need to be a <strong>developer</strong> in order to claim a Task.</p>
-           <p>In the Story overview under the Subtasks rubric claim a task, by selecting the <strong>checkmark</strong> in the Claim column.</p>
+           <p><em>You need to be a developer in order to claim a Task.</em></p>
+           <ol>
+           <li>In the Story overview under the Subtasks rubric claim a task, by selecting the <strong>checkmark</strong> in the Claim column.</li>
+           </ol>
          </details>
          <details>
            <summary>Unclaim a task</summary>
-           <p>You need to be a <strong>developer</strong> in order to claim a Task.</p>
-           <p>The task must be currently <strong>claimed by you</strong> for you to be able to unclaim it.</p>
-           <p>In the Story overview under the Subtasks rubric claim a task, by unselecting the <strong>checkmark</strong> in the Claim column.</p>
+           <p><em>You need to be a developer in order to claim a Task.</em></p>
+           <p><em>The task must be currently claimed by you for you to be able to unclaim it.</em></p>
+           <ol>
+             <li>In the Story overview under the Subtasks rubric claim a task, by unselecting the <strong>checkmark</strong> in the Claim column.</li>
+           </ol>
          </details>
          <details>
            <summary>Mark a task as completed</summary>
-           <p>You need to be a <strong>developer</strong> in order to claim a Task.</p>
-           <p>The task must be currently <strong>claimed by you</strong> for you to be able to mark it as completed.</p>
-           <p>In the Story overview under the Subtasks rubric mark a task as completed, by selecting the <strong>checkmark</strong> in the Done column.</p>
+           <p><em>You need to be a developer in order to mark a Task as completed.</em></p>
+           <p><em>The task must be currently claimed by you for you to be able to mark it as completed.</em></p>
+           <ol>
+             <li>In the Story overview under the Subtasks rubric mark a task as completed, by selecting the <strong>checkmark</strong> in the Done column.</li>
+           </ol>
          </details>
 
         </details>

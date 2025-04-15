@@ -491,16 +491,32 @@ async function deleteSubtask(storyId, subtaskIndex) {
     throw new Error("User story not found.");
   }
 
+  const storyData = storyDoc.data();
+
+  // Check if story is completed
   if (storyData.status === 'Done') {
     throw new Error('Cannot delete subtasks from a completed story');
   }
 
-  const story = storyDoc.data();
-  if (!Array.isArray(story.subtasks) || subtaskIndex >= story.subtasks.length) {
+  // Validate subtasks array
+  if (!Array.isArray(storyData.subtasks) || subtaskIndex >= storyData.subtasks.length) {
     throw new Error("Invalid subtask index.");
   }
 
-  const updatedSubtasks = [...story.subtasks];
+  const subtask = storyData.subtasks[subtaskIndex];
+
+  // Check if subtask is claimed
+  if (subtask.developerId) {
+    throw new Error('Cannot delete a subtask that has been claimed by a developer');
+  }
+
+  // Check if subtask is already marked as deleted
+  if (subtask.deleted) {
+    throw new Error('Subtask is already marked as deleted');
+  }
+
+  // Mark subtask as deleted
+  const updatedSubtasks = [...storyData.subtasks];
   updatedSubtasks[subtaskIndex] = {
     ...updatedSubtasks[subtaskIndex],
     deleted: true

@@ -1,0 +1,134 @@
+.center--box:has(.markdown-content),
+.center--box:has(.edit-markdown){
+    width: 75%;
+    margin: 0 auto;
+  }
+  
+
+.markdown-content {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 1rem;
+    color: var(--color-primary);
+    font-size: 1.1rem;
+    line-height: 1.75;
+    text-align: left;
+    margin: 0 auto;
+  }
+  
+  /* Center top-level title only (h1) */
+  .markdown-content h1 {
+    text-align: center;
+    color: var(--color-primary);
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+    font-size: 2.2rem;
+    font-weight: 700;
+  }
+  
+  /* Other headings */
+  .markdown-content h2,
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
+    text-align: center;
+    color: var(--color-primary);
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  
+  /* Paragraphs */
+  .markdown-content p {
+    margin-bottom: 1rem;
+  }
+  
+  /* Lists */
+  .markdown-content ul,
+  .markdown-content ol {
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .markdown-content li {
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Blockquotes */
+  .markdown-content blockquote {
+    border-left: 4px solid var(--color-accent);
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    background-color: #f9f9f9;
+    color: var(--color-primary);
+    font-style: italic;
+  }
+  
+  /* Code blocks */
+  .markdown-content pre {
+    background-color: #f4f4f4;
+    color: #2d2d2d;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    text-align: left;
+  }
+  
+  .markdown-content code {
+    background-color: #eeeeee;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.3rem;
+    font-family: monospace;
+  }
+  
+  /* Inline code */
+  .markdown-content p code {
+    font-size: 0.95rem;
+    color: #333;
+  }
+  
+  /* Links */
+  .markdown-content a {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+  
+  .markdown-content a:hover {
+    opacity: 0.8;
+  }
+  
+  /* Match positioning/spacing of project view header buttons */
+.doc-toolbar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Icon styles */
+  .doc-icon {
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: color 0.2s ease, opacity 0.2s ease;
+  }
+  
+  /* Color from variables */
+  .doc-icon.edit {
+    color: var(--color-primary);
+  }
+  .doc-icon.export {
+    color: var(--color-secondary);
+  }
+  .doc-icon.import {
+    color: var(--color-accent);
+  }
+  
+  /* Hover feedback */
+  .doc-icon:hover {
+    opacity: 0.7;
+  }
+  
