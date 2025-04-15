@@ -12,7 +12,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isSprintActive, setIsSprintActive] = useState(false);
-
+  
   useEffect(() => {
     if (sprint) {
       setIsEditing(true);
@@ -73,9 +73,10 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
     return holidays.includes(formattedDate);
   };
   
+  const isInputDisabled = isEditing && (isSprintActive || new Date(sprint.start_date) < new Date());
   const validateForm = () => {
-    if (!startDate || !endDate || !velocity) {
-      setError("All fields are required.");
+    if ((!isInputDisabled && (!startDate || !endDate)) || !velocity) {
+      setError("All required fields must be filled.");
       return false;
     }
   
@@ -83,45 +84,41 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
     const selectedStartDate = new Date(startDate);
     const selectedEndDate = new Date(endDate);
   
-    // Check if start date is valid (not in the past)
-    const isStartDateValid =
-      selectedStartDate.getFullYear() > today.getFullYear() ||
-      (selectedStartDate.getFullYear() === today.getFullYear() &&
-        selectedStartDate.getMonth() > today.getMonth()) ||
-      (selectedStartDate.getFullYear() === today.getFullYear() &&
-        selectedStartDate.getMonth() === today.getMonth() &&
-        selectedStartDate.getDate() >= today.getDate());
+    if (!isInputDisabled) {
+      const isStartDateValid =
+        selectedStartDate.getFullYear() > today.getFullYear() ||
+        (selectedStartDate.getFullYear() === today.getFullYear() &&
+          selectedStartDate.getMonth() > today.getMonth()) ||
+        (selectedStartDate.getFullYear() === today.getFullYear() &&
+          selectedStartDate.getMonth() === today.getMonth() &&
+          selectedStartDate.getDate() >= today.getDate());
   
-    if (!isStartDateValid) {
-      setError("Start date cannot be in the past.");
-      return false;
+      if (!isStartDateValid) {
+        setError("Start date cannot be in the past.");
+        return false;
+      }
+  
+      if (isWeekend(selectedStartDate) || isHoliday(selectedStartDate)) {
+        setError("Start date cannot be on a weekend or holiday.");
+        return false;
+      }
+  
+      if (isWeekend(selectedEndDate) || isHoliday(selectedEndDate)) {
+        setError("End date cannot be on a weekend or holiday.");
+        return false;
+      }
+  
+      if (selectedStartDate >= selectedEndDate) {
+        setError("End date must be after the start date.");
+        return false;
+      }
     }
   
-    // Check if start or end date is a weekend
-    if (isWeekend(selectedStartDate) || isWeekend(selectedEndDate)) {
-      setError("Start and end dates cannot be on a weekend.");
-      return false;
-    }
-  
-    // Check if start or end date is a holiday
-    if (isHoliday(selectedStartDate) || isHoliday(selectedEndDate)) {
-      setError("Start and end dates cannot be on a holiday.");
-      return false;
-    }
-  
-    // Check if end date is after start date
-    if (selectedStartDate >= selectedEndDate) {
-      setError("End date must be after the start date.");
-      return false;
-    }
-  
-    // Check if velocity is a valid number
     if (isNaN(velocity) || velocity <= 0) {
       setError("Velocity must be a positive number.");
       return false;
     }
   
-    // Ensure velocity has no more than 2 decimal places
     const decimalPlaces = (velocity.toString().split(".")[1] || []).length;
     if (decimalPlaces > 2) {
       setError("Velocity must have no more than 2 decimal places.");
@@ -131,7 +128,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
     setError("");
     return true;
   };
-  
+    
   
 
   const handleSubmit = async (e) => {
@@ -206,7 +203,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
             onChange={(e) => setStartDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]}
             required
-            disabled={isEditing && (isSprintActive || new Date(sprint.start_date) < new Date())}
+            disabled={isInputDisabled}
           />
         </div>
         <div className={"block--element"}>
@@ -218,7 +215,7 @@ const AddSprintForm = ({ projectId, projectName, onSprintAdded, sprint }) => {
             onChange={(e) => setEndDate(e.target.value)}
             min={startDate}
             required
-            disabled={isEditing && (isSprintActive || new Date(sprint.start_date) < new Date())}
+            disabled={isInputDisabled}
           />
         </div>
         <div className={"block--element"}>

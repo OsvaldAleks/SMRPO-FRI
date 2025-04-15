@@ -175,6 +175,25 @@ const ProjectDetails = () => {
     navigate(`/story/${storyId}`);
   };
 
+  const getCurrentSprintId = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+  
+    for (const sprint of sprints) {
+      const start = new Date(sprint.start_date);
+      const end = new Date(sprint.end_date);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+  
+      if (today >= start && today <= end) {
+        return sprint.id;
+      }
+    }
+    return null;
+  };
+  
+  
+
   if (!projectName) {
     return <div>Project name is missing in the URL.</div>;
   }
@@ -340,16 +359,19 @@ const ProjectDetails = () => {
               </div>
               <div className="project-list">
                 {sprints.length > 0 ? (
-                  sprints.map((sprint, index) => (
-                    <Card
-                      key={sprint.id}
-                      title={'Sprint #' + (index + 1)}
-                      onClick={() => handleSprintClick(sprint.id)}
-                      colorScheme="card--secondary"
-                      extraText={["Start Date: ", "End Date: "]}
-                      extraContent={[formatDate(sprint.start_date), formatDate(sprint.end_date)]}
-                    />
-                  ))
+                  sprints.map((sprint, index) => {
+                    const isCurrentSprint = sprint.id === getCurrentSprintId();
+                    return (
+                      <Card
+                        key={sprint.id}
+                        title={'Sprint #' + (index + 1)}
+                        onClick={() => handleSprintClick(sprint.id)}
+                        colorScheme={isCurrentSprint ? "card--secondary" : "card--secondary-light"}
+                        extraText={["Start Date: ", "End Date: "]}
+                        extraContent={[formatDate(sprint.start_date), formatDate(sprint.end_date)]}
+                      />
+                    );
+                  })
                 ) : (
                   <p>No sprints found for this project.</p>
                 )}

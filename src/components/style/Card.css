@@ -115,6 +115,19 @@
   border: 0;
 }
 
+.card--secondary-light,
+.card--secondary-light p,
+.card--secondary-light h1,
+.card--secondary-light h2,
+.card--secondary-light .card--description{
+  background-color: #fff;
+  color: var(--color-secondary);
+  border: 0;
+}
+.card--secondary-light{
+  border: 1px var(--color-secondary) solid;
+}
+
 .card--accent {
   background-color: var(--color-accent);
   color: #fff;
