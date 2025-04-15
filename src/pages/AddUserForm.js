@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { registerUser } from "../api";
+import React, { useState,useEffect } from "react";
+import { registerUser, updateUserInfo, updateUserPassword } from "../api";
 import { useNavigate } from "react-router-dom";
 import zxcvbn from "zxcvbn";
 import Button from "../components/Button";
@@ -16,7 +16,9 @@ const top100VulnerablePasswords = [
   "jessica12345", "zxcvbnm12345", "qwerty123456", "maggie123456", "computer1234",
 ];
 
-const AddUserForm = () => {
+const AddUserForm = ({ account, exit = () => {}  }) => {
+  const isEditMode = !!account;
+  
   const [user, setUser] = useState({
     name: "",
     surname: "",
@@ -38,6 +40,21 @@ const AddUserForm = () => {
   const isPasswordVulnerable = (password) => {
     return top100VulnerablePasswords.includes(password.toLowerCase());
   };
+
+  useEffect(() => {
+    if (isEditMode) {
+      console.log("Editing user:", account);
+      setUser({
+        name: account.name || "",
+        surname: account.surname || "",
+        email: account.email || "",
+        username: account.username || "",
+        password: "",
+        system_rights: account.system_rights === "Admin",
+      });
+    }
+  }, [account]);
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -92,13 +109,14 @@ const AddUserForm = () => {
     setPasswordError("");
 
     // Validation checks
-    if (!user.name || !user.surname || !user.email || !user.username || !user.password) {
+    if (!user.name || !user.surname || !user.email || !user.username || (!isEditMode && !user.password)) {
       setError("All fields are required");
       return;
     }
 
-    if (passwordError) {
-      return;
+    if (!isEditMode || user.password) {
+      validatePassword(user.password);
+      if (passwordError) return;
     }
 
     const userData = {
@@ -106,10 +124,22 @@ const AddUserForm = () => {
       system_rights: user.system_rights ? "Admin" : "User",
     };
 
-    try {
-      const response = await registerUser(userData);
+    if (isEditMode && user.password.trim() === "") {
+      delete userData.password;
+    }
 
-      if (response.user) {
+    try {
+      let response;
+      if (isEditMode) {
+        response = await updateUserInfo(account.id, userData);
+        if (user.password && user.password.trim() !== "") {
+          await updateUserPassword(account.id, user.password);
+        }  
+      }
+      else {
+      response = await registerUser(userData);
+      }
+      if (!response.error) {
         setSuccess(response.message); // Set success feedback
 
         // Reset form state and password-related states
@@ -126,19 +156,26 @@ const AddUserForm = () => {
         setPasswordStrength(0); // Reset password strength
         setPasswordStrengthLabel(""); // Clear password strength label
         setPasswordError(""); // Clear any password error message
+
+        if (isEditMode) {
+          exit();
+        }
       } else {
         setError(response.message || response.error); // Set error feedback if any
         setSuccess(""); // Clear success message if error occurs
         console.log(response);
       }
     } catch (err) {
-      setError("An error occurred while registering the user");
+      setError(err.message || "An error occurred while processing your request.");
       setSuccess(""); // Clear success message in case of error
     }
   };
 
   const goBackHandler = () => {
-    navigate(-1);
+    if (isEditMode)
+      exit();
+    else
+     navigate(-1);
   };
 
   return (
@@ -235,9 +272,20 @@ const AddUserForm = () => {
             Register as Admin
           </span>
         </div>
-        <Button className="btn--block" variant="primery" type="submit">
-          Add User
-        </Button>
+        {isEditMode ? (
+        <div style={{ margin: "0.5rem", display: "flex", gap: "0" }}>
+            <Button className="btn--half" variant="accent" type="button" onClick={goBackHandler}>
+              Cancel
+            </Button>
+            <Button className="btn--half" variant="primery" type="submit">
+              Update
+            </Button>
+          </div>
+        ):(
+          <Button className="btn--half" variant="primery" type="submit">
+            Add User
+          </Button>
+        )}
       </form>
     </div>
   );

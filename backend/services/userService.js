@@ -151,35 +151,39 @@ process.on("SIGTERM", async () => {
 });
 
 
-// Update user information (name, surname, username)
 async function updateUserInfo(userId, userData) {
   try {
-    const { name, surname, username } = userData;
+    const { name, surname, username, email, system_rights } = userData;
 
-    // Validate required fields
     if (!name || !surname || !username) {
       throw new Error("Name, surname, and username are required.");
     }
 
-    const normalizedUsername = username.toLowerCase(); // Convert input to lowercase
+    const normalizedUsername = username.toLowerCase();
 
-    // Check if username is already taken by another user (case-insensitive)
     const usernameQuery = await db.collection("users")
-      .where("username_lowercase", "==", normalizedUsername) // Query against lowercase field
+      .where("username_lowercase", "==", normalizedUsername)
       .get();
 
-    // Check if the found username belongs to a different user
     if (!usernameQuery.empty && usernameQuery.docs[0].id !== userId) {
       throw new Error("Username already exists.");
     }
 
-    // Update user in Firestore with both original and lowercase username
-    await db.collection("users").doc(userId).update({
+    const updateFields = {
       name,
       surname,
-      username, // Store original case
-      username_lowercase: normalizedUsername, // Store lowercase version for queries
-    });
+      username,
+      username_lowercase: normalizedUsername,
+    };
+
+    if (email) {
+      updateFields.email = email;
+      await auth.updateUser(userId, { email }); // <- update in Firebase Auth
+    }
+
+    if (system_rights) updateFields.system_rights = system_rights;
+
+    await db.collection("users").doc(userId).update(updateFields);
 
     return {
       success: true,

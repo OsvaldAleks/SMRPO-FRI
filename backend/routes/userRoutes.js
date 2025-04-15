@@ -61,18 +61,28 @@ router.put("/:userId/status", async (req, res) => {
   }
 });
 
-// Update user information
 router.put("/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
-    const { name, surname, username } = req.body;
+    const { name, surname, username, email, system_rights } = req.body;
 
     // Verify required fields
     if (!name || !surname || !username) {
       return res.status(400).json({ error: "Name, surname, and username are required." });
     }
 
-    const result = await updateUserInfo(userId, { name, surname, username });
+    // Dynamically build the update object
+    const updateData = { name, surname, username };
+
+    if (email !== undefined) {
+      updateData.email = email;
+    }
+
+    if (system_rights !== undefined) {
+      updateData.system_rights = system_rights;
+    }
+
+    const result = await updateUserInfo(userId, updateData);
 
     if (result.success) {
       res.status(200).json({ message: result.message });
