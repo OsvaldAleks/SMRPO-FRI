@@ -623,6 +623,26 @@ export const updateUserPassword = async (userId, newPassword) => {
   }
 };
 
+// Update user information
+export const deleteUser = async (userId) => {
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to delete user");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw new Error(error.message || "Network error");
+  }
+};
+
 export const updateSubtask = async (storyId, updatedData) => {
   try {
     const response = await fetch(`${API_URL}/userStories/${storyId}/updateSubtask`, {

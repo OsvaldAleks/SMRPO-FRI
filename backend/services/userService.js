@@ -1,5 +1,15 @@
 const { db, auth } = require("../firebase"); // Import Firestore and Firebase Auth
 
+function isUserDeleted(userData) {
+  return (
+    !userData.email &&
+    !userData.name &&
+    !userData.surname &&
+    !userData.system_rights
+  );
+}
+
+
 async function addUser(userData) {
   try {
     const { email, password, name, surname, username, system_rights, status } = userData;
@@ -13,7 +23,7 @@ async function addUser(userData) {
 
     // Check if username already exists (case-insensitive)
     const usernameQuery = await db.collection("users")
-      .where("username", "==", normalizedUsername) // Query in lowercase
+      .where("username_lowercase", "==", normalizedUsername) // Query in lowercase
       .get();
 
     if (!usernameQuery.empty) {
@@ -65,8 +75,9 @@ async function getUser(userId) {
     const doc = await userRef.get();
 
     if (!doc.exists) {
-      return null;
-    } else {
+      const userData = doc.data();
+      return userData;
+      } else {
       return doc.data();
     }
   } catch (error) {
@@ -83,11 +94,15 @@ async function getUsers() {
     return [];
   }
 
+  if (snapshot.empty) return [];
+
   const users = [];
   snapshot.forEach((doc) => {
     const userData = doc.data();
-    userData.id = doc.id;
-    users.push(userData);
+    if (!isUserDeleted(userData)) {
+      userData.id = doc.id;
+      users.push(userData);
+    }
   });
 
   return users;
@@ -103,6 +118,7 @@ async function updateUserStatus(userId, status) {
     }
 
     const userData = userDoc.data();
+    if (isUserDeleted(userData)) throw new Error("Cannot update status of deleted user");
 
     if (status === "offline") {
       await userRef.update({
@@ -129,7 +145,10 @@ async function setAllUsersOffline() {
 
     const batch = db.batch();
     snapshot.forEach((doc) => {
-      batch.update(doc.ref, { status: "offline" });
+      const userData = doc.data();
+      if (!isUserDeleted(userData)) {
+        batch.update(doc.ref, { status: "offline" });
+      }
     });
 
     await batch.commit();
@@ -153,6 +172,18 @@ process.on("SIGTERM", async () => {
 
 async function updateUserInfo(userId, userData) {
   try {
+    const userRef = db.collection("users").doc(userId);
+    const existingUserDoc = await userRef.get();
+
+    if (!existingUserDoc.exists) {
+      throw new Error("User not found.");
+    }
+
+    const existingUserData = existingUserDoc.data();
+    if (isUserDeleted(existingUserData)) {
+      throw new Error("Cannot update deleted user.");
+    }
+
     const { name, surname, username, email, system_rights } = userData;
 
     if (!name || !surname || !username) {
@@ -201,6 +232,13 @@ async function updateUserInfo(userId, userData) {
 // Update user password
 async function updateUserPassword(userId, newPassword) {
   try {
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists || isUserDeleted(userDoc.data())) {
+      throw new Error("Cannot update password for deleted user.");
+    }
+
     await auth.updateUser(userId, {
       password: newPassword,
     });
@@ -218,12 +256,55 @@ async function updateUserPassword(userId, newPassword) {
   }
 }
 
+async function deleteUser(userId) {
+  try {
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return {
+        success: false,
+        message: "User not found.",
+      };
+    }
+
+    // Prepare the soft-delete payload
+    const updateFields = {
+      name: "",
+      surname: "",
+      email: "",
+      system_rights: "",
+      status: "",
+      normalizedUsername: "",
+      last_online: null,
+      previous_online: null
+    };
+
+    // Update Firestore user data (soft delete)
+    await userRef.update(updateFields);
+
+    // Fully delete the user from Firebase Authentication
+    await auth.deleteUser(userId);
+
+    return {
+      success: true,
+      message: "User successfully deleted (soft delete in Firestore, full delete in Auth).",
+    };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return {
+      success: false,
+      message: error.message || "Failed to delete user.",
+    };
+  }
+}
 
 module.exports = {
   getUser,
   getUsers,
   addUser,
   updateUserStatus,
-  updateUserInfo,  // Add this
-  updateUserPassword,  // Add this
+  updateUserInfo,
+  updateUserPassword,
+  deleteUser
 };

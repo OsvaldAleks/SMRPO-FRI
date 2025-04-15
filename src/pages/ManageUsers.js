@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button';
-import { getUsers } from "../api";
+import { getUsers, deleteUser } from "../api";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import AddUserForm from '../pages/AddUserForm';
 
@@ -29,10 +29,6 @@ const ManageUsers = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
-
-  const handleDelete = () => {
-
-  }
 
   return (
     <>
@@ -88,8 +84,9 @@ const ManageUsers = () => {
                     ></FaEdit></td>
                     <td><FaTrash
                       className="p--alert"
-                      onClick = {() => {
-                        handleDelete(user);
+                      onClick = {async () => {
+                        await deleteUser(user.id);
+                        fetchUsers();
                       }}
                     /></td>
                   </tr>

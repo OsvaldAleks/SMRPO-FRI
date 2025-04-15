@@ -1,5 +1,5 @@
 const express = require("express");
-const { getUsers, getUser, addUser } = require("../services/userService");
+const { getUsers, getUser, addUser, deleteUser } = require("../services/userService");
 const { updateUserStatus, updateUserInfo, updateUserPassword } = require("../services/userService");
 
 const router = express.Router();
@@ -115,6 +115,22 @@ router.put("/:userId/password", async (req, res) => {
   } catch (error) {
     console.error("Error updating password:", error);
     res.status(500).json({ error: "An unexpected error occurred while updating password." });
+  }
+});
+// Delete a user
+router.delete("/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const result = await deleteUser(userId);
+
+    if (result.success) {
+      res.status(200).json({ message: result.message });
+    } else {
+      res.status(400).json({ error: result.message });
+    }
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "An unexpected error occurred while deleting the user." });
   }
 });
 
