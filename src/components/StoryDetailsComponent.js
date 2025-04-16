@@ -291,27 +291,27 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     try {
       console.log("Attempting to claim subtask at index:", taskIndex);
       console.log("User ID:", user.uid);
-  
+
       const currentSubtask = subtasks[taskIndex];
       const isUnclaiming = currentSubtask.developerId && currentSubtask.developerId === user.uid;
       const isCompleted = currentSubtask.isDone;
-  
+
       // First handle the claim/unclaim
       await claimSubtask(story.id, user.uid, taskIndex);
       console.log("Subtask claim request sent successfully.");
-  
+
       // If unclaiming a completed task, mark it as undone
       if (isUnclaiming && isCompleted) {
         console.log("Unclaiming completed subtask - marking as undone");
         await handleMarkSubtaskAsDone(taskIndex);
       }
-  
+
       // For all other cases, just update normally
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       setDropdownIndex(null);
       console.log("Updated story fetched:", updatedStory);
-  
+
       story.status = updatedStory.status;
       if (typeof onUpdate === "function") {
         console.log("Triggering onUpdate callback.");
@@ -409,23 +409,23 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
       setConfirmDeleteModal({ show: false, subtaskIndex: null });
       return;
     }
-  
+
     try {
       await deleteSubtask(story.id, index);
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       story.status = updatedStory.status;
-  
+
       if (typeof onUpdate === 'function') {
         onUpdate(updatedStory);
       }
-  
+
       setConfirmDeleteModal({ show: false, subtaskIndex: null });
-  
+
       // Optionalno: preverimo še Product backlog status
       const activeSubtasks = updatedStory.subtasks?.filter(st => !st.deleted) || [];
       const hasClaimed = activeSubtasks.some(st => !!st.developerId);
-  
+
       if (activeSubtasks.length === 0 || !hasClaimed) {
         const refreshed = await updateUserStoryStatus(story.id, "Product backlog");
         const refreshedStory = await getUserStory(story.id);
@@ -434,14 +434,14 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
           onUpdate(refreshedStory);
         }
       }
-  
+
     } catch (err) {
       console.error(err.message || err);
       setErrorMessage((err.message || "Unknown error"));
     } finally {
       setConfirmDeleteModal({ show: false, subtaskIndex: null });
     }
-  };  
+  };
 
   const handleCancelDelete = () => {
     setConfirmDeleteModal({ show: false, subtaskIndex: null });
@@ -511,7 +511,16 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
             </div>
           </div>
           <p><strong>Description:</strong></p>
-          <p style={{ maxWidth: "400px", wordWrap: "break-word", overflow: "hidden", textOverflow: "ellipsis", textAlign: "justify" }}>
+          <p
+            style={{
+              maxWidth: "600px",
+              margin: "0 auto",
+              textAlign: "center",
+              wordWrap: "break-word",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          > 
             {story.description}</p>
           <p><strong>Priority:</strong> {story.priority}</p>
           <p><strong>Business Value:</strong> {story.businessValue}</p>
@@ -579,10 +588,10 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
             <>
               <h3>Tasks</h3>
               {errorMessage && (
-                    <div className="p--alert">
-                      {errorMessage}
-                    </div>
-                  )}
+                <div className="p--alert">
+                  {errorMessage}
+                </div>
+              )}
               <div className="responsive-table-container3">
                 <table className="responsive-table">
                   <thead>
