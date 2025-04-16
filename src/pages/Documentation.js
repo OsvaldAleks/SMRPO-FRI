@@ -2,7 +2,7 @@ import { useAuth } from "../context/AuthContext";
 import './style/Documentation.css';
 import './style/Dashboard.css'
 import Button from "../components/Button";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaFileImport, FaFileExport } from "react-icons/fa";
 
 const Documentation = () => {
   const { user } = useAuth();
@@ -19,6 +19,7 @@ const Documentation = () => {
 
             <details>
             <summary>Add a new user</summary>
+            <p><em>You need to be a system administrator to create a new user.</em></p>
             <ol>
               <li>Click on the <strong>Manage Users</strong> tab in the navigation bar.</li>
               <li>Click on the <strong>Add User</strong> button.</li>
@@ -35,6 +36,49 @@ const Documentation = () => {
             </ol>
             </details>
 
+            <details>
+            <summary>Edit a user's account</summary>
+            <p><em>You need to be a system administrator to edit another user's account.</em></p>
+            <ol>
+              <li>Click on the <strong>Manage Users</strong> tab in the navigation bar.</li>
+              <li>Click the <FaEdit/> button next to the user's entry.</li>
+              <li>Update any of the following fields:</li>
+              <ul>
+                <li>Username</li>
+                <li>Email</li>
+                <li>First Name</li>
+                <li>Last Name</li>
+                <li>Password</li>
+                <li>System Rights</li>
+              </ul>
+              <li>Click <strong>Update</strong> to apply the changes.</li>
+            </ol>
+          </details>
+
+          <details>
+            <summary>Delete a user's account</summary>
+            <p><em>You need to be a system administrator to edit another user's account.</em></p>
+            <ol>
+              <li>Click on the <strong>Manage Users</strong> tab in the navigation bar.</li>
+              <li>Click the <FaTrash className="p--alert"/> button next to the user's entry.</li>
+            </ol>
+          </details>
+
+          <details>
+            <summary>Edit your own account information</summary>
+            <ol>
+              <li>Click on <strong>Edit Account</strong> in the navigation bar.</li>
+              <li>Click <strong>EDIT PERSONAL INFORMATION</strong></li>
+              <li>Update any of the following fields:</li>
+              <ul>
+                <li>Username</li>
+                <li>First Name</li>
+                <li>Last Name</li>
+              </ul>
+              <li>Click <strong>Save Changes</strong> to confirm the updates.</li>
+              <li>To update your password insert your old password and new password then click <strong>Change password</strong></li>
+            </ol>
+          </details>
 
           </details>
 
@@ -75,8 +119,33 @@ const Documentation = () => {
             </ol>
           </details>
 
+          <details>
+            <summary>Edit user documentation</summary>
+            <ol>
+              <li>Within a Project, click on the <strong>DOC</strong> icon in the top right.</li>
+              <li>Click <FaEdit></FaEdit> to edit the documentation.</li>
+              <li>Make changes to the markdown</li>
+              <li>Click <strong>SAVE</strong> to save your changes.</li>
+            </ol>
           </details>
 
+          <details>
+            <summary>Export user documentation</summary>
+            <ol>
+              <li>Within a Project, click on the <strong>DOC</strong> icon in the top right.</li>
+              <li>Click <FaFileExport className="doc-icon export" /> to export the documentation.</li>
+            </ol>
+          </details>
+
+          <details>
+            <summary>Import user documentation</summary>
+            <ol>
+              <li>Within a Project, click on the <strong>DOC</strong> icon in the top right.</li>
+              <li>Click <FaFileImport className="doc-icon import" /> to export the documentation.</li>
+            </ol>
+          </details>
+
+       </details>
 
 
 
@@ -181,9 +250,11 @@ const Documentation = () => {
             <p><em>You need to be a <strong>Product Manager</strong> to accept or reject a User Story.</em></p>
             <p><em>The story must be in a past sprint.</em></p>
             <p><em>The story must have the <strong>Done</strong> status.</em></p>
-            <p>Select a story with status <strong>Done</strong></p>
-            <p>Click on the <strong>Accept</strong> or <strong>Reject</strong> button.</p>
-            <p>Confirm selection by pressing <strong>Confirm Accept</strong> or  <strong>Confirm Reject</strong></p>
+            <ol>
+            <li>Select a story with status <strong>Done</strong></li>
+            <li>Click on the <strong>Accept</strong> or <strong>Reject</strong> button.</li>
+            <li>Confirm selection by pressing <strong>Confirm Accept</strong> or  <strong>Confirm Reject</strong></li>
+            </ol>
           </details>
 
 
