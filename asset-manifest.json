@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/SMRPO-FRI/static/css/main.618dabc8.css",
-    "main.js": "/SMRPO-FRI/static/js/main.530027a8.js",
+    "main.css": "/SMRPO-FRI/static/css/main.e6677739.css",
+    "main.js": "/SMRPO-FRI/static/js/main.eacbfc84.js",
     "static/js/453.6b820fa2.chunk.js": "/SMRPO-FRI/static/js/453.6b820fa2.chunk.js",
     "index.html": "/SMRPO-FRI/index.html",
-    "main.618dabc8.css.map": "/SMRPO-FRI/static/css/main.618dabc8.css.map",
-    "main.530027a8.js.map": "/SMRPO-FRI/static/js/main.530027a8.js.map",
+    "main.e6677739.css.map": "/SMRPO-FRI/static/css/main.e6677739.css.map",
+    "main.eacbfc84.js.map": "/SMRPO-FRI/static/js/main.eacbfc84.js.map",
     "453.6b820fa2.chunk.js.map": "/SMRPO-FRI/static/js/453.6b820fa2.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.618dabc8.css",
-    "static/js/main.530027a8.js"
+    "static/css/main.e6677739.css",
+    "static/js/main.eacbfc84.js"
   ]
 }
