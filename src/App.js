@@ -19,6 +19,7 @@ import UserStoryForm from "./pages/UserStoryForm";
 import UserStoryDetails from "./pages/UserStoryDetails";
 import UserStatusHandler from "./utils/UserStatusHandler"; // Import the new component
 import Documentation from "./pages/Documentation";
+import WorkTimePage from "./pages/WorkTimePage";
 import "./App.css";
 import { HashRouter } from "react-router-dom";
 
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/userStoryForm" element={<PrivateRoute><UserStoryForm /></PrivateRoute>} />
                 <Route path="/project/:projectName/sprint/:sprintId" element={<PrivateRoute><SprintDetails /></PrivateRoute>} />
                 <Route path="/projects/:projectId/documentation" element={<ProjectDocumentation />} />
+                <Route path="/workTimePage" element={<WorkTimePage />} />
               </Routes>
             </div>
           </main>

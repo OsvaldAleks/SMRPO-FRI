@@ -774,3 +774,18 @@ export const updateProjectDocumentation = async (projectId, documentation) => {
   const data = await res.json();
   return data;
 };
+
+
+export const getUserStoriesForUser = async (userId) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/user/${userId}/worktimes`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch user stories with work times');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching user stories with work times:', error);
+    throw error;
+  }
+};

@@ -67,6 +67,7 @@ const Navbar = () => {
             items={[
               { label: "My Projects", path: "/userProjects", items: myProjectsItems },
               ...(user.system_rights === "Admin" ? [{ label: "Manage Users", path: "/manageUsers" }] : []),
+              { label: "Manage work time", path: "/workTimePage" },
             ]}
             variant="inline"
           />
