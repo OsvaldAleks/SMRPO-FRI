@@ -789,3 +789,19 @@ export const getUserStoriesForUser = async (userId) => {
     throw error;
   }
 };
+
+export const getWallPosts = async (projectId) => {
+  const res = await fetch(`${API_URL}/projects/${projectId}/wall`);
+  if (!res.ok) throw new Error("Failed to load wall posts");
+  return res.json();
+};
+
+export const addWallPost = async (projectId, postData) => {
+  const res = await fetch(`${API_URL}/projects/${projectId}/wall`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(postData),
+  });
+  if (!res.ok) throw new Error("Failed to add wall post");
+  return res.json();
+};

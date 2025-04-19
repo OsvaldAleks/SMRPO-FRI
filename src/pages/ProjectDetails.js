@@ -37,7 +37,7 @@ const ProjectDetails = () => {
     return () => {
       setIsEditing(false);
     };
-  }, [projectName]);  
+  }, [projectName]);
 
   useEffect(() => {
     setProject(null);
@@ -72,16 +72,16 @@ const ProjectDetails = () => {
 
   const fetchUserStatuses = async () => {
     if (!project) return;
-    
-    try {      
+
+    try {
       const users = [
         ...(project.devs || []),
         ...(project.scrumMasters || []),
         ...(project.productManagers || []),
       ];
-  
+
       const statusUpdates = {};
-      
+
       await Promise.all(users.map(async (usr) => {
         try {
           const statusData = await getUserStatus(usr.id);
@@ -91,14 +91,14 @@ const ProjectDetails = () => {
           statusUpdates[usr.id] = false;
         }
       }));
-  
+
       setUserStatuses(prev => ({ ...prev, ...statusUpdates }));
     } catch (error) {
       console.error("Failed to fetch user statuses:", error);
     } finally {
     }
   };
-  
+
 
   useEffect(() => {
     fetchUserStatuses();
@@ -197,21 +197,21 @@ const ProjectDetails = () => {
   const getCurrentSprintId = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-  
+
     for (const sprint of sprints) {
       const start = new Date(sprint.start_date);
       const end = new Date(sprint.end_date);
       start.setHours(0, 0, 0, 0);
       end.setHours(0, 0, 0, 0);
-  
+
       if (today >= start && today <= end) {
         return sprint.id;
       }
     }
     return null;
   };
-  
-  
+
+
 
   if (!projectName) {
     return <div>Project name is missing in the URL.</div>;
@@ -247,18 +247,18 @@ const ProjectDetails = () => {
 
   const handleChange = async (updatedProject) => {
     const oldProject = project; // Save current state for rollback
-    
+
     try {
       // Optimistic update
       setProject(updatedProject);
-      
+
       // Refresh data from server
       if (user?.uid) {
         await fetchProject(user.uid);
       }
-      
+
       setIsEditing(false);
-      
+
       // Navigate if name changed
       if (updatedProject.name !== projectName) {
         navigate(`/project/${encodeURIComponent(updatedProject.name)}`);
@@ -281,20 +281,22 @@ const ProjectDetails = () => {
         : (
           <>
             <div className="center--box">
-              <div className="card--header" style={{ position: "relative", textAlign: "center" }}>
-                {/* Naslov projekta */}
-                <h1>{project.name}</h1>
+              <div className="card--header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: 15, paddingLeft: 15}}>
 
-                {/* Desni gumbi: DOC + Edit */}
-                <div style={{
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                  paddingRight: 15
-                }}>
+                {/* Levi gumb: Wall */}
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate(`/projects/${project.id}/wall`)}
+                  style={{ padding: '0.6rem 1.5rem', fontSize: '1.4rem' }}
+                >
+                  Wall
+                </Button>
+
+                {/* Sredina: Naslov projekta */}
+                <h1 style={{ margin: 0, flex: 1, textAlign: "center" }}>{project.name}</h1>
+
+                {/* Desni gumbi: Doc + Edit */}
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                   <Button
                     variant="secondary"
                     onClick={() => navigate(`/projects/${project.id}/documentation`)}
@@ -311,6 +313,7 @@ const ProjectDetails = () => {
                   )}
                 </div>
               </div>
+
 
               {/*Stara verzija
               <div className="card--header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

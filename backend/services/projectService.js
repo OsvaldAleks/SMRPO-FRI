@@ -259,4 +259,26 @@ async function updateProjectDocumentation(projectId, documentation) {
   return { success: true };
 }
 
-module.exports = { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation };
+async function getWallPosts(projectId) {
+  const snapshot = await db.collection("projectWallPosts")
+    .where("projectId", "==", projectId)
+    .orderBy("timestamp", "asc")
+    .get();
+
+  return snapshot.docs.map(doc => doc.data());
+}
+
+async function addWallPost(projectId, userId, username, content) {
+  const newPost = {
+    projectId,
+    userId,
+    username,
+    content,
+    timestamp: new Date().toISOString(),
+  };
+
+  await db.collection("projectWallPosts").add(newPost);
+  return newPost;
+}
+
+module.exports = { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation, getWallPosts, addWallPost };

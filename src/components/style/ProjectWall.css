@@ -1,0 +1,60 @@
+.project-wall-container {
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.wall--list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.wall--message {
+    text-align: left;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    margin-bottom: 1rem;
+    align-self: flex-start;
+    background-color: #f9f9f9;
+}
+
+.wall--message.current-user {
+    background-color: #e0f0ff;
+    align-self: flex-end;
+}
+
+.wall--message strong {
+    font-weight: bold;
+}
+
+.wall--message span {
+    font-size: 1.2rem;
+    color: #666;
+    margin-left: 0.5rem;
+}
+
+.wall--message p {
+    font-size: 1.4rem;
+    margin-top: 0.5rem;
+}
+
+.wall--input-container {
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.wall--input {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.2rem;
+    text-align: left;
+    resize: vertical;
+    border-radius: 0.5rem;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    box-sizing: border-box;
+}
