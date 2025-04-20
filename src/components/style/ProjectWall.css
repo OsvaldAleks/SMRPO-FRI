@@ -58,3 +58,38 @@
     font-family: inherit;
     box-sizing: border-box;
 }
+
+.wall--message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wall--comment-toggle {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    cursor: pointer;
+}
+
+.wall--comment-box {
+    margin-top: 0.5rem;
+    margin-left: 2rem;
+}
+
+.wall--comment-box textarea {
+    width: 100%;
+    border-radius: 0.3rem;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    margin-bottom: 0.5rem;
+    font-family: inherit;
+}
+
+.wall--comment {
+    margin-left: 2rem;
+    background-color: #eef2f5;
+    padding: 0.5rem;
+    border-radius: 0.4rem;
+    margin-top: 0.4rem;
+}

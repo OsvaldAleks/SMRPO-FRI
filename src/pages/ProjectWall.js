@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getWallPosts, addWallPost, getUser } from "../api";
+import { getWallPosts, addWallPost, getUser, addWallComment } from "../api";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import "../components/style/ProjectWall.css";
@@ -11,6 +11,8 @@ const ProjectWall = () => {
     const [posts, setPosts] = useState([]);
     const [newPost, setNewPost] = useState("");
     const [username, setUsername] = useState("");
+    const [showCommentBox, setShowCommentBox] = useState({});
+    const [commentInputs, setCommentInputs] = useState({});
 
     useEffect(() => {
         const fetchUsername = async () => {
@@ -27,15 +29,16 @@ const ProjectWall = () => {
         fetchUsername();
     }, [user]);
 
+    const fetchPosts = async () => {
+        try {
+            const data = await getWallPosts(projectId);
+            setPosts(data);
+        } catch (err) {
+            console.error("Error loading wall posts:", err);
+        }
+    };
+
     useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const data = await getWallPosts(projectId);
-                setPosts(data);
-            } catch (err) {
-                console.error("Error loading wall posts:", err);
-            }
-        };
         fetchPosts();
     }, [projectId]);
 
@@ -57,6 +60,24 @@ const ProjectWall = () => {
         }
     };
 
+    const handleAddComment = async (postId) => {
+        const commentContent = commentInputs[postId];
+        if (!commentContent || !commentContent.trim()) return;
+    
+        try {
+            const res = await addWallComment(postId, {
+                userId: user.uid,
+                username,
+                content: commentContent.trim(),
+            });
+    
+            setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+            fetchPosts();
+        } catch (error) {
+            console.error("Error adding comment:", error);
+        }
+    };
+
     return (
         <div className="project-wall-container">
             <h2>Project Wall</h2>
@@ -64,6 +85,7 @@ const ProjectWall = () => {
             <div className="wall--list">
                 {posts.map((post, idx) => {
                     const isCurrentUser = post.userId === user?.uid;
+
                     const timestamp = new Date(post.timestamp);
                     const formattedDate = timestamp.toLocaleString(undefined, {
                         year: "numeric",
@@ -75,17 +97,73 @@ const ProjectWall = () => {
 
                     return (
                         <div
-                            key={idx}
+                            key={post.id || idx}
                             className={`wall--message ${isCurrentUser ? "current-user" : ""}`}
                         >
-                            <strong>{post.username}</strong>
-                            <span>({formattedDate})</span>
+                            {/* Header z uporabnikom, časom in komentar ikonco */}
+                            <div className="wall--message-header">
+                                <div>
+                                    <strong>{post.username}</strong>
+                                    <span>({formattedDate})</span>
+                                </div>
+                                <button
+                                    className="wall--comment-toggle"
+                                    onClick={() =>
+                                        setShowCommentBox((prev) => ({
+                                            ...prev,
+                                            [post.id]: !prev[post.id],
+                                        }))
+                                    }
+                                >
+                                    💬
+                                </button>
+                            </div>
+
+                            {/* Vsebina objave */}
                             <p>{post.content}</p>
+
+                            {/* Prikaz komentarjev */}
+                            {post.comments &&
+                                post.comments.map((comment, cIdx) => (
+                                    <div key={cIdx} className="wall--comment">
+                                        <strong>{comment.username}</strong>
+                                        <span>
+                                            (
+                                            {new Date(comment.timestamp).toLocaleTimeString([], {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                            })}
+                                            )
+                                        </span>
+                                        <p>{comment.content}</p>
+                                    </div>
+                                ))}
+
+                            {/* Vnos komentarja */}
+                            {showCommentBox[post.id] && (
+                                <div className="wall--comment-box">
+                                    <textarea
+                                        rows="2"
+                                        placeholder="Write a comment..."
+                                        value={commentInputs[post.id] || ""}
+                                        onChange={(e) =>
+                                            setCommentInputs({
+                                                ...commentInputs,
+                                                [post.id]: e.target.value,
+                                            })
+                                        }
+                                    />
+                                    <Button onClick={() => handleAddComment(post.id, idx)}>
+                                        Comment
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
             </div>
 
+            {/* Glavni vnos za objavo */}
             <div className="wall--input-container">
                 <textarea
                     className="wall--input"
@@ -99,6 +177,7 @@ const ProjectWall = () => {
                 </Button>
             </div>
         </div>
+
     );
 };
 

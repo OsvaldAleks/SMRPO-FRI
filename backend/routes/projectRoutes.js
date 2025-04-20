@@ -1,5 +1,5 @@
 const express = require("express");
-const { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation, getWallPosts, addWallPost } = require("../services/projectService");
+const { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation, getWallPosts, addWallPost, addWallComment } = require("../services/projectService");
 
 const router = express.Router();
 
@@ -90,6 +90,16 @@ router.post("/:projectId/wall", async (req, res) => {
     res.status(201).json({ message: "Post added", post });
   } catch (err) {
     console.error("Error in POST /wall:", err); // 👈
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/wall/:postId/comment", async (req, res) => {
+  try {
+    const comment = await addWallComment(req.params.postId, req.body);
+    res.status(201).json({ message: "Comment added", comment });
+  } catch (err) {
+    console.error("Error adding comment:", err);
     res.status(500).json({ error: err.message });
   }
 });

@@ -1,5 +1,7 @@
 const { db } = require("../firebase");
 const userService = require('./userService');
+const admin = require("firebase-admin");
+
 
 function validateProjectInput(name, description, devs, scrumMasters, productManagers) {
   if (!name || !description) {
@@ -85,7 +87,7 @@ async function updateProject(projectId, name, description, devs, scrumMasters, p
   const removedDevs = previousDevs.filter(dev => !devs.includes(dev));
   const removedScrumMasters = previousScrumMasters.filter(sm => !scrumMasters.includes(sm));
   const removedProductManagers = previousProductManagers.filter(pm => !productManagers.includes(pm));
-  
+
   const allRemovedUsers = [...new Set([
     ...removedDevs,
     ...removedScrumMasters,
@@ -179,15 +181,15 @@ async function getUserProjects(userId) {
 
     let userRole = '';
 
-   if (scrumMasters.includes(userId)) {
+    if (scrumMasters.includes(userId)) {
       userRole = 'scrumMasters';
-  } else if (devs.includes(userId)) {
+    } else if (devs.includes(userId)) {
       userRole = 'devs';
-  } else if (productManagers.includes(userId)) {
-     userRole = 'productManagers';
-  } else if (owner === userId) {
-    userRole = 'owner';
-  }
+    } else if (productManagers.includes(userId)) {
+      userRole = 'productManagers';
+    } else if (owner === userId) {
+      userRole = 'owner';
+    }
 
     // If the user has a role (owner, dev, product manager, or scrum master), add the project to the list
     if (userRole !== '') {
@@ -265,7 +267,7 @@ async function getWallPosts(projectId) {
     .orderBy("timestamp", "asc")
     .get();
 
-  return snapshot.docs.map(doc => doc.data());
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 async function addWallPost(projectId, userId, username, content) {
@@ -275,10 +277,32 @@ async function addWallPost(projectId, userId, username, content) {
     username,
     content,
     timestamp: new Date().toISOString(),
+    comments: [] // inicializiraj prazno polje za komentarje
   };
 
-  await db.collection("projectWallPosts").add(newPost);
-  return newPost;
+  const docRef = await db.collection("projectWallPosts").add(newPost);
+  return { id: docRef.id, ...newPost };
 }
 
-module.exports = { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation, getWallPosts, addWallPost };
+async function addWallComment(postId, { userId, username, content }) {
+  if (!postId || !content || !userId || !username) {
+    throw new Error("Missing required fields for comment");
+  }
+
+  const comment = {
+    userId,
+    username,
+    content,
+    timestamp: new Date().toISOString(),
+  };
+
+  const postRef = db.collection("projectWallPosts").doc(postId);
+
+  await postRef.update({
+    comments: admin.firestore.FieldValue.arrayUnion(comment),
+  });
+
+  return comment;
+}
+
+module.exports = { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation, getWallPosts, addWallPost, addWallComment };
