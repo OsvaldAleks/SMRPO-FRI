@@ -191,7 +191,11 @@ const SprintDetails = () => {
 
   // Handle story click
   const handleStoryClick = (story) => {
-    setSelectedStory((prevStory) => (prevStory?.id === story.id ? null : story));
+    const active = isSprintActive();
+  
+    setSelectedStory((prevStory) =>
+      prevStory?.id === story.id ? null : { ...story, isActive: active }
+    );
   };
 
   // Handle checkbox change for adding stories to sprint
@@ -249,9 +253,9 @@ const SprintDetails = () => {
     console.log("All Subtasks:", allSubtasks);
     return {
       unclaimed: allSubtasks.filter(subtask => subtask.devName==null && !subtask.isDone),
-      claimed: allSubtasks.filter(subtask => subtask.devName!=null && !subtask.isDone),
+      claimed: allSubtasks.filter(subtask => subtask.devName!=null && !subtask.isDone && subtask.workdate == null),
+      active: allSubtasks.filter(subtask => subtask.workdate!=null),
       completed: allSubtasks.filter(subtask => subtask.isDone)
-      // Active column will remain empty for now
     }
   }
 
