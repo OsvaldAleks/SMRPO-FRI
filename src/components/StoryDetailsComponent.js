@@ -99,6 +99,11 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
       console.error('Error in handleConfirmStartRecording:', error);
       setErrorMessage(error.message);
     }
+
+    if (typeof onUpdate === 'function') {
+      onUpdate(story);
+    }
+
   };
 
   const handleStopRecording = async () => {
@@ -114,6 +119,10 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     } catch (error) {
       console.error('Failed to stop recording:', error);
       setErrorMessage(error.message);
+    }
+
+    if(typeof onUpdate === 'function') {
+      onUpdate(story);
     }
   };
 
@@ -665,7 +674,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
             </>
           )}
 
-          {(userRole === "scrumMasters" || userRole === "devs") && story.sprintId.length != 0 && (
+          {(userRole === "scrumMasters" || userRole === "devs") && story.sprintId.length != 0 && story.isActive && (
             <div style={{ marginTop: "1rem" }}>
               {!showSubtaskForm ? (
                 <>
