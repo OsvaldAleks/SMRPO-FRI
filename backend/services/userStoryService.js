@@ -664,6 +664,84 @@ async function stopTimeRecording(storyId, subtaskIndex, userId) {
   }
 }
 
+// Get all stories with subtasks that the user has worked on
+async function getUserStoriesWithWorkTimes(userId) {
+  try {
+    const storiesSnapshot = await db.collection('userStories')
+      .where('subtasks', '!=', [])
+      .get();
+
+    if (storiesSnapshot.empty) {
+      return [];
+    }
+
+    const stories = [];
+    storiesSnapshot.forEach(doc => {
+      const storyData = doc.data();
+      // Preserve all subtask fields, just filter by worktimes
+      const subtasksWithWork = storyData.subtasks
+        .map((subtask, index) => ({
+          ...subtask, // Include ALL subtask fields
+          originalIndex: index
+        }))
+        .filter(subtask => 
+          subtask.worktimes && 
+          subtask.worktimes.some(wt => wt.userid === userId)
+        );
+
+      if (subtasksWithWork.length > 0) {
+        stories.push({
+          id: doc.id,
+          ...storyData,
+          subtasks: subtasksWithWork
+        });
+      }
+    });
+
+    return stories;
+  } catch (error) {
+    console.error('Error getting user stories with work times:', error);
+    throw error;
+  }
+}
+
+// Update a specific work time entry
+async function updateWorkTime(storyId, subtaskIndex, workTimeIndex, updates) {
+  const storyRef = db.collection('userStories').doc(storyId);
+  const storyDoc = await storyRef.get();
+
+  if (!storyDoc.exists) {
+    throw new Error('User story not found');
+  }
+
+  const storyData = storyDoc.data();
+  const subtasks = storyData.subtasks || [];
+
+  if (subtaskIndex < 0 || subtaskIndex >= subtasks.length) {
+    throw new Error('Invalid subtask index');
+  }
+
+  const subtask = subtasks[subtaskIndex];
+  if (!subtask.worktimes || workTimeIndex < 0 || workTimeIndex >= subtask.worktimes.length) {
+    throw new Error('Invalid work time index');
+  }
+
+  // Create a new array with the updated worktime
+  const updatedWorktimes = subtask.worktimes.map((wt, idx) => 
+    idx === workTimeIndex ? { ...wt, ...updates } : wt
+  );
+
+  // Create a new subtasks array with the updated subtask
+  const updatedSubtasks = subtasks.map((st, idx) => 
+    idx === subtaskIndex ? { ...st, worktimes: updatedWorktimes } : st
+  );
+
+  // Update the entire subtasks array to maintain structure
+  await storyRef.update({ subtasks: updatedSubtasks });
+  
+  return { success: true };
+}
+
 module.exports = { 
   createUserStory, 
   getUserStory,
@@ -681,7 +759,9 @@ module.exports = {
   deleteSubtask,
   updateSubtask,
   startTimeRecording,
-  stopTimeRecording
+  stopTimeRecording,
+  getUserStoriesWithWorkTimes,
+  updateWorkTime
 };
 
 

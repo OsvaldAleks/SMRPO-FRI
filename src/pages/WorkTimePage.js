@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUserStoriesForUser, updateSubtask } from '../api';
+import { getUserStoriesWithWorkTimes, updateWorkTime } from '../api';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
+import './style/worktimes.css';
 
-const WorkTimePage = () => {
+const WorkTimesPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [userStories, setUserStories] = useState([]);
@@ -18,7 +19,7 @@ const WorkTimePage = () => {
       try {
         setLoading(true);
         if (user?.uid) {
-          const stories = await getUserStoriesForUser(user.uid);
+          const stories = await getUserStoriesWithWorkTimes(user.uid);
           setUserStories(stories);
         }
       } catch (err) {
@@ -31,9 +32,15 @@ const WorkTimePage = () => {
     fetchWorkTimes();
   }, [user?.uid]);
 
-  const handleEditStart = (storyId, subtaskIndex, currentTime) => {
-    setEditing(`${storyId}-${subtaskIndex}`);
-    setEditValue(currentTime);
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${minutes}m`;
+  };
+
+  const handleEditStart = (storyId, subtaskIndex, workTimeIndex, currentHours) => {
+    setEditing(`${storyId}-${subtaskIndex}-${workTimeIndex}`);
+    setEditValue(currentHours);
   };
 
   const handleEditCancel = () => {
@@ -41,20 +48,25 @@ const WorkTimePage = () => {
     setEditValue('');
   };
 
-  const handleEditSave = async (storyId, subtaskIndex) => {
+  const handleEditSave = async (storyId, subtaskIndex, workTimeIndex) => {
     try {
       const hours = parseFloat(editValue);
       if (isNaN(hours) || hours < 0) {
         throw new Error('Please enter a valid positive number');
       }
-
-      await updateSubtask(storyId, {
-        subtaskIndex,
-        timeEstimate: hours
+  
+      // Convert hours to seconds for storage
+      const seconds = Math.round(hours * 3600);
+      
+      await updateWorkTime(storyId, subtaskIndex, workTimeIndex, {
+        duration: seconds,
+        // Preserve existing fields
+        userid: user.uid,
+        timestamp: new Date().toISOString() // Update timestamp
       });
-
+  
       // Refresh data
-      const stories = await getUserStoriesForUser(user.uid);
+      const stories = await getUserStoriesWithWorkTimes(user.uid);
       setUserStories(stories);
       setEditing(null);
     } catch (err) {
@@ -82,48 +94,80 @@ const WorkTimePage = () => {
               <thead>
                 <tr>
                   <th>Subtask</th>
-                  <th>Time Worked (hours)</th>
-                  <th>Actions</th>
+                  <th>Time Entries</th>
+                  <th>Total Time</th>
                 </tr>
               </thead>
               <tbody>
-                {story.subtasks
-                  .filter(subtask => subtask.worktimes && subtask.worktimes.length > 0)
-                  .map((subtask, index) => {
-                    const totalHours = subtask.worktimes.reduce((sum, wt) => sum + (wt.duration / 3600), 0);
-                    const isEditing = editing === `${story.id}-${index}`;
-                    
-                    return (
-                      <tr key={index}>
-                        <td>{subtask.description}</td>
-                        <td>
-                          {isEditing ? (
-                            <input
-                              type="number"
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              step="0.25"
-                              min="0"
-                            />
-                          ) : (
-                            totalHours.toFixed(2)
-                          )}
-                        </td>
-                        <td>
-                          {isEditing ? (
-                            <>
-                              <Button onClick={() => handleEditSave(story.id, index)}>Save</Button>
-                              <Button variant="secondary" onClick={handleEditCancel}>Cancel</Button>
-                            </>
-                          ) : (
-                            <Button onClick={() => handleEditStart(story.id, index, totalHours.toFixed(2))}>
-                              Edit
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                {story.subtasks.map((subtask, subtaskIndex) => {
+                  const totalSeconds = subtask.worktimes
+                    .filter(wt => wt.userid === user.uid)
+                    .reduce((sum, wt) => sum + wt.duration, 0);
+                  
+                  return (
+                    <tr key={subtaskIndex}>
+                      <td>{subtask.description}</td>
+                      <td>
+                        <ul style={{ listStyle: 'none', padding: 0 }}>
+                          {subtask.worktimes
+                            .filter(wt => wt.userid === user.uid)
+                            .map((worktime, workTimeIndex) => {
+                              const editKey = `${story.id}-${subtask.originalIndex}-${workTimeIndex}`;
+                              const isEditing = editing === editKey;
+                              const hours = (worktime.duration / 3600).toFixed(2);
+                              
+                              return (
+                                <li key={workTimeIndex} style={{ marginBottom: '10px' }}>
+                                  {isEditing ? (
+                                    <>
+                                      <input
+                                        type="number"
+                                        value={editValue}
+                                        onChange={(e) => setEditValue(e.target.value)}
+                                        step="0.25"
+                                        min="0"
+                                        style={{ width: '80px', marginRight: '10px' }}
+                                      />
+                                      <Button 
+                                        onClick={() => handleEditSave(story.id, subtask.originalIndex, workTimeIndex)}
+                                        size="small"
+                                      >
+                                        Save
+                                      </Button>
+                                      <Button 
+                                        variant="secondary" 
+                                        onClick={handleEditCancel}
+                                        size="small"
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      {hours} hours
+                                      <Button 
+                                        onClick={() => handleEditStart(
+                                          story.id, 
+                                          subtask.originalIndex, 
+                                          workTimeIndex, 
+                                          hours
+                                        )}
+                                        size="small"
+                                        style={{ marginLeft: '10px' }}
+                                      >
+                                        Edit
+                                      </Button>
+                                    </>
+                                  )}
+                                </li>
+                              );
+                            })}
+                        </ul>
+                      </td>
+                      <td>{formatTime(totalSeconds)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -133,4 +177,4 @@ const WorkTimePage = () => {
   );
 };
 
-export default WorkTimePage;
+export default WorkTimesPage;

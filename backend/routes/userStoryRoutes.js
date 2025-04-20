@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory, updateUserStory, deleteSubtask, updateSubtask, startTimeRecording, stopTimeRecording } = require("../services/userStoryService");
+const { createUserStory, getUserStory, assignUserStoryToSprint, updateUserStoryStatus, getUserStoriesForProject, updateStoryPoints, addSubtaskToUserStory, claimSubtask, completeSubtask, evaluateUserStory, deleteUserStory, updateUserStory, deleteSubtask, updateSubtask, startTimeRecording, stopTimeRecording, getUserStoriesWithWorkTimes, updateWorkTime } = require("../services/userStoryService");
 
 const router = express.Router();
 
@@ -259,6 +259,30 @@ router.put('/:storyId/subtasks/:subtaskId/stop-recording', async (req, res) => {
       success: false,
       message: 'Internal server error'
     });
+  }
+});
+
+router.get('/user/:userId/worktimes', async (req, res) => {
+  try {
+    const stories = await getUserStoriesWithWorkTimes(req.params.userId);
+    console
+    res.json(stories);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/:storyId/subtasks/:subtaskIndex/worktimes/:workTimeIndex', async (req, res) => {
+  try {
+    const result = await updateWorkTime(
+      req.params.storyId,
+      parseInt(req.params.subtaskIndex),
+      parseInt(req.params.workTimeIndex),
+      req.body
+    );
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

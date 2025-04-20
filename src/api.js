@@ -775,21 +775,6 @@ export const updateProjectDocumentation = async (projectId, documentation) => {
   return data;
 };
 
-
-export const getUserStoriesForUser = async (userId) => {
-  try {
-    const response = await fetch(`${API_URL}/userStories/user/${userId}/worktimes`);
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch user stories with work times');
-    }
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching user stories with work times:', error);
-    throw error;
-  }
-};
-
 export const getWallPosts = async (projectId) => {
   const res = await fetch(`${API_URL}/projects/${projectId}/wall`);
   if (!res.ok) throw new Error("Failed to load wall posts");
@@ -814,4 +799,41 @@ export const addWallComment = async (postId, commentData) => {
   });
   if (!res.ok) throw new Error("Failed to add wall comment");
   return res.json();
+};
+
+
+// Get all stories with subtasks that the user has worked on
+export const getUserStoriesWithWorkTimes = async (userId) => {
+  //console.log(userId);
+  try {
+    const response = await fetch(`${API_URL}/userStories/user/${userId}/worktimes`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch user work times');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching user work times:', error);
+    throw error;
+  }
+};
+
+// Update work time for a specific subtask
+export const updateWorkTime = async (storyId, subtaskIndex, workTimeIndex, updates) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/subtasks/${subtaskIndex}/worktimes/${workTimeIndex}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update work time');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error updating work time:', error);
+    throw error;
+  }
 };
