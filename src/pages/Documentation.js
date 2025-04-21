@@ -145,6 +145,15 @@ const Documentation = () => {
             </ol>
           </details>
 
+          <details>
+            <summary>Post on the project wall</summary>
+            <ol>
+              <li>Within a Project, click on the <strong>WALL</strong> icon in the top left.</li>
+              <li>Write your post in the input field.</li>
+              <li>Click <strong>POST</strong> to submit.</li>
+            </ol>
+          </details>
+
        </details>
 
 
@@ -300,6 +309,27 @@ const Documentation = () => {
              <li>In the Story overview under the Subtasks rubric mark a task as completed, by selecting the <strong>checkmark</strong> in the Done column.</li>
            </ol>
          </details>
+         <details>
+           <summary>Log time on a task</summary>
+           <p><em>You need to be a developer in order to log your time on a taks.</em></p>
+           <p><em>The task must be currently claimed by you for you to be able to log time on it.</em></p>
+           <ol>
+             <li>In the Story overview click the <strong>RECORD TIME</strong> button.</li>
+             <li>Select the task for which you wish to log your time.</li>
+             <li>Click the <strong>STOP RECORDING</strong> button to end the logging.</li>
+           </ol>
+         </details>
+         <details>
+           <summary>Edit logged time</summary>
+           <p><em>You need to have logged time on a task, to edit the logged time.</em></p>
+           <ol>
+             <li>In the navbar click the <strong>Manage work times</strong> tab.</li>
+             <li>Select the task for which you wish to log your time.</li>
+             <li>Click the <strong>EDIT</strong> button and change the number.</li>
+             <li>Click the <strong>SAVE</strong> button to save changes.</li>
+           </ol>
+         </details>
+
 
         </details>
         </>
