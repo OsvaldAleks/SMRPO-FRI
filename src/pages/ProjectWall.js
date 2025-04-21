@@ -63,15 +63,17 @@ const ProjectWall = () => {
     const handleAddComment = async (postId) => {
         const commentContent = commentInputs[postId];
         if (!commentContent || !commentContent.trim()) return;
-    
+
         try {
             const res = await addWallComment(postId, {
                 userId: user.uid,
                 username,
                 content: commentContent.trim(),
             });
-    
+
+            // Po uspešni oddaji:
             setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+            setShowCommentBox((prev) => ({ ...prev, [postId]: false })); // Zapri vnos
             fetchPosts();
         } catch (error) {
             console.error("Error adding comment:", error);
@@ -79,106 +81,127 @@ const ProjectWall = () => {
     };
 
     return (
-        <div className="project-wall-container">
-            <h2>Project Wall</h2>
+        <div className="center--box">
+            <div className="project-wall-container">
+                <h1 className="page-title">Project Wall</h1>
 
-            <div className="wall--list">
-                {posts.map((post, idx) => {
-                    const isCurrentUser = post.userId === user?.uid;
+                <div className="wall--list">
+                    {posts.map((post, idx) => {
+                        const isCurrentUser = post.userId === user?.uid;
 
-                    const timestamp = new Date(post.timestamp);
-                    const formattedDate = timestamp.toLocaleString(undefined, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    });
+                        const timestamp = new Date(post.timestamp);
+                        const formattedDate = timestamp.toLocaleString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                        });
 
-                    return (
-                        <div
-                            key={post.id || idx}
-                            className={`wall--message ${isCurrentUser ? "current-user" : ""}`}
-                        >
-                            {/* Header z uporabnikom, časom in komentar ikonco */}
-                            <div className="wall--message-header">
-                                <div>
-                                    <strong>{post.username}</strong>
-                                    <span>({formattedDate})</span>
-                                </div>
-                                <button
-                                    className="wall--comment-toggle"
-                                    onClick={() =>
-                                        setShowCommentBox((prev) => ({
-                                            ...prev,
-                                            [post.id]: !prev[post.id],
-                                        }))
-                                    }
-                                >
-                                    💬
-                                </button>
-                            </div>
-
-                            {/* Vsebina objave */}
-                            <p>{post.content}</p>
-
-                            {/* Prikaz komentarjev */}
-                            {post.comments &&
-                                post.comments.map((comment, cIdx) => (
-                                    <div key={cIdx} className="wall--comment">
-                                        <strong>{comment.username}</strong>
-                                        <span>
-                                            (
-                                            {new Date(comment.timestamp).toLocaleTimeString([], {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                            })}
-                                            )
-                                        </span>
-                                        <p>{comment.content}</p>
+                        return (
+                            <div
+                                key={post.id || idx}
+                                className={`wall--message ${isCurrentUser ? "current-user" : ""}`}
+                            >
+                                {/* Header */}
+                                <div className="wall--message-header">
+                                    <div>
+                                        <strong>{post.username}</strong>
+                                        <span>({formattedDate})</span>
                                     </div>
-                                ))}
-
-                            {/* Vnos komentarja */}
-                            {showCommentBox[post.id] && (
-                                <div className="wall--comment-box">
-                                    <textarea
-                                        rows="2"
-                                        placeholder="Write a comment..."
-                                        value={commentInputs[post.id] || ""}
-                                        onChange={(e) =>
-                                            setCommentInputs({
-                                                ...commentInputs,
-                                                [post.id]: e.target.value,
-                                            })
+                                    <button
+                                        className="wall--comment-toggle"
+                                        onClick={() =>
+                                            setShowCommentBox((prev) => ({
+                                                ...prev,
+                                                [post.id]: !prev[post.id],
+                                            }))
                                         }
-                                    />
-                                    <Button onClick={() => handleAddComment(post.id, idx)}>
-                                        Comment
-                                    </Button>
+                                    >
+                                        💬
+                                    </button>
                                 </div>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
 
-            {/* Glavni vnos za objavo */}
-            <div className="wall--input-container">
-                <textarea
-                    className="wall--input"
-                    rows="4"
-                    placeholder="Write a message..."
-                    value={newPost}
-                    onChange={(e) => setNewPost(e.target.value)}
-                />
-                <Button onClick={handleSubmit} style={{ marginTop: "0.5rem" }}>
-                    Post
-                </Button>
+                                {/* Post content */}
+                                <p>{post.content}</p>
+
+                                {/* Comments */}
+                                {post.comments &&
+                                    post.comments.map((comment, cIdx) => {
+                                        const isOwnComment = comment.userId === user?.uid;
+                                        return (
+                                            <div
+                                                key={cIdx}
+                                                className={`wall--comment ${isOwnComment ? "current-user" : ""}`}
+                                            >
+                                                <strong>{comment.username}</strong>
+                                                <span>
+                                                    (
+                                                    {new Date(comment.timestamp).toLocaleString(undefined, {
+                                                        year: "numeric",
+                                                        month: "short",
+                                                        day: "numeric",
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })}
+                                                    )
+                                                </span>
+                                                <p>{comment.content}</p>
+                                            </div>
+                                        );
+                                    })}
+
+                                {/* Comment input */}
+                                {showCommentBox[post.id] && (
+                                    <div className="wall--comment-box">
+                                        <textarea
+                                            rows="2"
+                                            placeholder="Write a comment..."
+                                            value={commentInputs[post.id] || ""}
+                                            onChange={(e) =>
+                                                setCommentInputs({
+                                                    ...commentInputs,
+                                                    [post.id]: e.target.value,
+                                                })
+                                            }
+                                        />
+                                        <div className="comment-buttons">
+                                            <Button onClick={() => handleAddComment(post.id)}>Comment</Button>
+                                            <Button
+                                                variant="secondary"
+                                                onClick={() =>
+                                                    setShowCommentBox((prev) => ({
+                                                        ...prev,
+                                                        [post.id]: false,
+                                                    }))
+                                                }
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* New post input */}
+                <div className="wall--input-container">
+                    <textarea
+                        className="wall--input"
+                        rows="4"
+                        placeholder="Write a message..."
+                        value={newPost}
+                        onChange={(e) => setNewPost(e.target.value)}
+                    />
+                    <Button onClick={handleSubmit} style={{ marginTop: "0.5rem" }}>
+                        Post
+                    </Button>
+                </div>
             </div>
         </div>
-
     );
-};
+}
 
 export default ProjectWall;

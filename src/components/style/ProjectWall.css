@@ -20,11 +20,15 @@
     margin-bottom: 1rem;
     align-self: flex-start;
     background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    /* svetlo siva obroba za objave drugih */
 }
 
 .wall--message.current-user {
     background-color: #e0f0ff;
     align-self: flex-end;
+    border: 1px solid #8ecbff;
+    /* svetlo modra obroba za naše objave */
 }
 
 .wall--message strong {
@@ -92,4 +96,24 @@
     padding: 0.5rem;
     border-radius: 0.4rem;
     margin-top: 0.4rem;
+    border: 1px solid #ccc;
+    /* privzeta svetlo siva obroba */
+}
+
+.wall--comment.current-user {
+    background-color: #e0f0ff;
+    border: 1px solid #8ecbff;
+    /* svetlo modra obroba za naše komentarje */
+}
+
+.comment-buttons {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 0.4rem;
+}
+
+.wall--comment-box {
+    text-align: center;
 }
