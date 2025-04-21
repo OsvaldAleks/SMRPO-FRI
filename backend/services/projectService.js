@@ -289,7 +289,10 @@ async function addWallComment(postId, { userId, username, content }) {
     throw new Error("Missing required fields for comment");
   }
 
+  const generateCommentId = () => `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+
   const comment = {
+    id: generateCommentId(),
     userId,
     username,
     content,
@@ -305,4 +308,39 @@ async function addWallComment(postId, { userId, username, content }) {
   return comment;
 }
 
-module.exports = { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation, getWallPosts, addWallPost, addWallComment };
+async function deleteWallPost(postId) {
+  try {
+    const postRef = db.collection("projectWallPosts").doc(postId);
+    const postSnap = await postRef.get();
+
+    if (!postSnap.exists) {
+      return false;
+    }
+
+    await postRef.delete();
+    return true;
+  } catch (err) {
+    console.error("Error deleting wall post:", err);
+    throw err;
+  }
+}
+
+async function deleteWallComment(postId, commentId) {
+  const postRef = db.collection("projectWallPosts").doc(postId);
+  const postSnap = await postRef.get();
+
+  if (!postSnap.exists) {
+    throw new Error("Post not found");
+  }
+
+  const postData = postSnap.data();
+  const updatedComments = (postData.comments || []).filter((comment, idx) => {
+    // commentId je lahko ID ali indeks (če ID ni na voljo, uporabi indeks)
+    return comment.id !== commentId && idx.toString() !== commentId;
+  });
+
+  await postRef.update({ comments: updatedComments });
+  return true;
+}
+
+module.exports = { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation, getWallPosts, addWallPost, addWallComment, deleteWallPost, deleteWallComment };

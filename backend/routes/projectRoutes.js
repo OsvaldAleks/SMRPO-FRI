@@ -1,5 +1,5 @@
 const express = require("express");
-const { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation, getWallPosts, addWallPost, addWallComment } = require("../services/projectService");
+const { createProject, getUserProjects, getProject, updateProject, getProjectDocumentation, updateProjectDocumentation, getWallPosts, addWallPost, addWallComment, deleteWallPost, deleteWallComment } = require("../services/projectService");
 
 const router = express.Router();
 
@@ -100,6 +100,32 @@ router.post("/wall/:postId/comment", async (req, res) => {
     res.status(201).json({ message: "Comment added", comment });
   } catch (err) {
     console.error("Error adding comment:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/wall/:postId', async (req, res) => {
+  const { postId } = req.params;
+
+  try {
+    const success = await deleteWallPost(postId);
+    if (!success) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    console.error("Error deleting wall post:", error);
+    res.status(500).json({ message: "Failed to delete post" });
+  }
+});
+
+router.delete("/wall/:postId/comment/:commentId", async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    await deleteWallComment(postId, commentId);
+    res.status(200).json({ message: "Comment deleted" });
+  } catch (err) {
+    console.error("Error deleting comment:", err);
     res.status(500).json({ error: err.message });
   }
 });

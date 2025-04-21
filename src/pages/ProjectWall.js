@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getWallPosts, addWallPost, getUser, addWallComment } from "../api";
+import { getWallPosts, addWallPost, getUser, addWallComment, deleteWallComment, deleteWallPost } from "../api";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 import "../components/style/ProjectWall.css";
+import { FaTrash } from "react-icons/fa";
 
 const ProjectWall = () => {
     const { projectId } = useParams();
@@ -13,6 +14,9 @@ const ProjectWall = () => {
     const [username, setUsername] = useState("");
     const [showCommentBox, setShowCommentBox] = useState({});
     const [commentInputs, setCommentInputs] = useState({});
+    const userRole = user?.projectRoles?.[projectId];
+    const isScrumMaster = userRole === "scrumMaster";
+
 
     useEffect(() => {
         const fetchUsername = async () => {
@@ -81,123 +85,160 @@ const ProjectWall = () => {
     };
 
     return (
-        <div className="center--box">
-            <div className="project-wall-container">
-                <h1 className="page-title">Project Wall</h1>
+        <div className="project-wall-page">
+            <div className="center--box">
+                <div className="project-wall-container">
+                    <h1 className="page-title">Project Wall</h1>
 
-                <div className="wall--list">
-                    {posts.map((post, idx) => {
-                        const isCurrentUser = post.userId === user?.uid;
+                    <div className="wall--list">
+                        {posts.map((post, idx) => {
+                            const isCurrentUser = post.userId === user?.uid;
+                            const timestamp = new Date(post.timestamp);
+                            const formattedDate = timestamp.toLocaleString(undefined, {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            });
 
-                        const timestamp = new Date(post.timestamp);
-                        const formattedDate = timestamp.toLocaleString(undefined, {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                        });
+                            return (
+                                <div key={post.id || idx} className={`wall--message ${isCurrentUser ? "current-user" : ""}`}>
+                                    <div className="wall--message-header">
+                                        <div>
+                                            <strong>{post.username}</strong>
+                                            <span>({formattedDate})</span>
+                                        </div>
 
-                        return (
-                            <div
-                                key={post.id || idx}
-                                className={`wall--message ${isCurrentUser ? "current-user" : ""}`}
-                            >
-                                {/* Header */}
-                                <div className="wall--message-header">
-                                    <div>
-                                        <strong>{post.username}</strong>
-                                        <span>({formattedDate})</span>
-                                    </div>
-                                    <button
-                                        className="wall--comment-toggle"
-                                        onClick={() =>
-                                            setShowCommentBox((prev) => ({
-                                                ...prev,
-                                                [post.id]: !prev[post.id],
-                                            }))
-                                        }
-                                    >
-                                        💬
-                                    </button>
-                                </div>
-
-                                {/* Post content */}
-                                <p>{post.content}</p>
-
-                                {/* Comments */}
-                                {post.comments &&
-                                    post.comments.map((comment, cIdx) => {
-                                        const isOwnComment = comment.userId === user?.uid;
-                                        return (
-                                            <div
-                                                key={cIdx}
-                                                className={`wall--comment ${isOwnComment ? "current-user" : ""}`}
-                                            >
-                                                <strong>{comment.username}</strong>
-                                                <span>
-                                                    (
-                                                    {new Date(comment.timestamp).toLocaleString(undefined, {
-                                                        year: "numeric",
-                                                        month: "short",
-                                                        day: "numeric",
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                    })}
-                                                    )
-                                                </span>
-                                                <p>{comment.content}</p>
-                                            </div>
-                                        );
-                                    })}
-
-                                {/* Comment input */}
-                                {showCommentBox[post.id] && (
-                                    <div className="wall--comment-box">
-                                        <textarea
-                                            rows="2"
-                                            placeholder="Write a comment..."
-                                            value={commentInputs[post.id] || ""}
-                                            onChange={(e) =>
-                                                setCommentInputs({
-                                                    ...commentInputs,
-                                                    [post.id]: e.target.value,
-                                                })
-                                            }
-                                        />
-                                        <div className="comment-buttons">
-                                            <Button onClick={() => handleAddComment(post.id)}>Comment</Button>
-                                            <Button
-                                                variant="secondary"
+                                        <div className="wall--message-actions">
+                                            <button
+                                                className="wall--comment-toggle"
                                                 onClick={() =>
                                                     setShowCommentBox((prev) => ({
                                                         ...prev,
-                                                        [post.id]: false,
+                                                        [post.id]: !prev[post.id],
                                                     }))
                                                 }
+                                                title="Add Comment"
                                             >
-                                                Cancel
-                                            </Button>
+                                                💬
+                                            </button>
+
+                                            {(user?.system_rights === 'Admin' || isScrumMaster) && (
+                                                <FaTrash
+                                                    className="p--alert"
+                                                    onClick={async () => {
+                                                        if (window.confirm("Are you sure you want to delete this post and its comments?")) {
+                                                            try {
+                                                                await deleteWallPost(post.id);
+                                                                fetchPosts();
+                                                            } catch (err) {
+                                                                console.error("Failed to delete post:", err);
+                                                            }
+                                                        }
+                                                    }}
+                                                    title="Delete Post"
+                                                />
+                                            )}
                                         </div>
                                     </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
 
-                {/* New post input */}
-                <div className="wall--input-container">
-                    <textarea
-                        className="wall--input"
-                        rows="4"
-                        placeholder="Write a message..."
-                        value={newPost}
-                        onChange={(e) => setNewPost(e.target.value)}
-                    />
-                    <Button onClick={handleSubmit} style={{ marginTop: "0.5rem" }}>
-                        Post
-                    </Button>
+                                    <p>{post.content}</p>
+
+                                    {/* Comments */}
+                                    {post.comments &&
+                                        post.comments.map((comment, cIdx) => {
+                                            const isOwnComment = comment.userId === user?.uid;
+                                            const commentDate = new Date(comment.timestamp).toLocaleString(undefined, {
+                                                year: "numeric",
+                                                month: "short",
+                                                day: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                            });
+
+                                            return (
+                                                <div
+                                                    key={comment.id || cIdx}
+                                                    className={`wall--comment ${isOwnComment ? "current-user" : ""}`}
+                                                >
+                                                    <div className="wall--comment-header">
+                                                        <div>
+                                                            <strong>{comment.username}</strong>
+                                                            <span>({commentDate})</span>
+                                                        </div>
+
+                                                        {(user?.system_rights === 'Admin' || isScrumMaster) && (
+                                                            <FaTrash
+                                                                className="p--alert"
+                                                                onClick={async () => {
+                                                                    if (window.confirm("Delete this comment?")) {
+                                                                        try {
+                                                                            await deleteWallComment(post.id, comment.id);
+                                                                            fetchPosts();
+                                                                        } catch (err) {
+                                                                            console.error("Failed to delete comment:", err);
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                title="Delete Comment"
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    <p>{comment.content}</p>
+                                                </div>
+                                            );
+                                        })}
+
+                                    {/* Comment input */}
+                                    {showCommentBox[post.id] && (
+                                        <div className="wall--comment-box">
+                                            <textarea
+                                                rows="2"
+                                                placeholder="Write a comment..."
+                                                value={commentInputs[post.id] || ""}
+                                                onChange={(e) =>
+                                                    setCommentInputs({
+                                                        ...commentInputs,
+                                                        [post.id]: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                            <div className="comment-buttons">
+                                                <Button onClick={() => handleAddComment(post.id)}>Comment</Button>
+                                                <Button
+                                                    variant="secondary"
+                                                    onClick={() =>
+                                                        setShowCommentBox((prev) => ({
+                                                            ...prev,
+                                                            [post.id]: false,
+                                                        }))
+                                                    }
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+
+                    </div>
+
+                    {/* New post input */}
+                    <div className="wall--input-container">
+                        <textarea
+                            className="wall--input"
+                            rows="4"
+                            placeholder="Write a message..."
+                            value={newPost}
+                            onChange={(e) => setNewPost(e.target.value)}
+                        />
+                        <Button onClick={handleSubmit} style={{ marginTop: "0.5rem" }}>
+                            Post
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

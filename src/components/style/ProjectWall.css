@@ -1,34 +1,33 @@
 .project-wall-container {
-    max-width: 1000px;
-    width: 100%;
+    width: 80vw;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 1rem;
+    box-sizing: border-box;
 }
 
 .wall--list {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     width: 100%;
+    padding: 0 2rem; /* razmik levo/desno */
+    box-sizing: border-box;
 }
 
 .wall--message {
-    text-align: left;
+    width: 100%;
     padding: 1rem;
     border-radius: 0.5rem;
-    width: 100%;
     margin-bottom: 1rem;
-    align-self: flex-start;
     background-color: #f9f9f9;
     border: 1px solid #ccc;
-    /* svetlo siva obroba za objave drugih */
+    box-sizing: border-box;
 }
 
 .wall--message.current-user {
     background-color: #e0f0ff;
-    align-self: flex-end;
     border: 1px solid #8ecbff;
-    /* svetlo modra obroba za naše objave */
 }
 
 .wall--message strong {
@@ -49,6 +48,8 @@
 .wall--input-container {
     margin-top: 1rem;
     width: 100%;
+    padding: 0 2rem;
+    box-sizing: border-box;
 }
 
 .wall--input {
@@ -78,7 +79,10 @@
 
 .wall--comment-box {
     margin-top: 0.5rem;
-    margin-left: 2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    box-sizing: border-box;
+    text-align: center;
 }
 
 .wall--comment-box textarea {
@@ -88,22 +92,23 @@
     border: 1px solid #ccc;
     margin-bottom: 0.5rem;
     font-family: inherit;
+    box-sizing: border-box;
 }
 
 .wall--comment {
     margin-left: 2rem;
+    margin-right: 2rem;
     background-color: #eef2f5;
     padding: 0.5rem;
     border-radius: 0.4rem;
     margin-top: 0.4rem;
     border: 1px solid #ccc;
-    /* privzeta svetlo siva obroba */
+    box-sizing: border-box;
 }
 
 .wall--comment.current-user {
     background-color: #e0f0ff;
     border: 1px solid #8ecbff;
-    /* svetlo modra obroba za naše komentarje */
 }
 
 .comment-buttons {
@@ -114,6 +119,75 @@
     margin-top: 0.4rem;
 }
 
-.wall--comment-box {
-    text-align: center;
+.wall--message-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.wall--comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.center--box {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.project-wall-page .center--box {
+    max-width: 1200px;
+}
+
+@media (max-width: 768px) {
+    .project-wall-container {
+        padding: 0.5rem;
+    }
+
+    .wall--list {
+        padding: 0 1rem;
+    }
+
+    .wall--message,
+    .wall--input,
+    .wall--comment-box textarea {
+        font-size: 1rem;
+    }
+
+    .wall--comment {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    .wall--message span {
+        font-size: 1rem;
+    }
+
+    .comment-buttons {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .wall--message-header,
+    .wall--comment-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .wall--message-actions {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+}
+
+.wall--message p,
+.wall--comment p,
+.wall--comment-box textarea {
+    text-align: left;
 }

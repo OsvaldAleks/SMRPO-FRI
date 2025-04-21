@@ -801,6 +801,23 @@ export const addWallComment = async (postId, commentData) => {
   return res.json();
 };
 
+export const deleteWallPost = async (postId) => {
+  const res = await fetch(`${API_URL}/projects/wall/${postId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("Failed to delete post");
+  return res.json();
+};
+
+export const deleteWallComment = async (postId, commentId) => {
+  const res = await fetch(`${API_URL}/projects/wall/${postId}/comment/${commentId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("Failed to delete comment");
+  return res.json();
+};
 
 // Get all stories with subtasks that the user has worked on
 export const getUserStoriesWithWorkTimes = async (userId) => {
