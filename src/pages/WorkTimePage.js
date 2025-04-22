@@ -144,7 +144,7 @@ const WorkTimesPage = () => {
                   const predictedTimeKey = `${story.id}-${subtask.originalIndex}`;
                   const isEditingPredicted = editingPredictedTime === predictedTimeKey;
                   const predictedTimeDisplay = subtask.predictedFinishTime !== null && subtask.predictedFinishTime !== undefined 
-                    ? `${subtask.predictedFinishTime}h` 
+                    ? formatTime(subtask.predictedFinishTime * 3600) 
                     : 'Unavailable';
                   
                   return (
@@ -172,7 +172,7 @@ const WorkTimesPage = () => {
                                         style={{ width: '80px' }}
                                       />
                                     ) : (
-                                      <span>{hours} hours</span>
+                                      <span>{formatTime(worktime.duration)}</span>
                                     )}
                                   </div>
                                   <div className="worktime-actions">
