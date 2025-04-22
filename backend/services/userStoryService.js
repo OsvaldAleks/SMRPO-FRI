@@ -742,6 +742,30 @@ async function updateWorkTime(storyId, subtaskIndex, workTimeIndex, updates) {
   return { success: true };
 }
 
+async function updatePredictedTime(storyId, subtaskIndex, predictedTime) {
+  const storyRef = db.collection('userStories').doc(storyId);
+  const storyDoc = await storyRef.get();
+
+  if (!storyDoc.exists) {
+    throw new Error('User story not found');
+  }
+
+  const storyData = storyDoc.data();
+  const subtasks = storyData.subtasks || [];
+
+  if (subtaskIndex < 0 || subtaskIndex >= subtasks.length) {
+    throw new Error('Invalid subtask index');
+  }
+
+  // Create a new array with the updated subtask
+  const updatedSubtasks = subtasks.map((subtask, index) => 
+    index === subtaskIndex ? { ...subtask, predictedFinishTime: predictedTime } : subtask
+  );
+
+  await storyRef.update({ subtasks: updatedSubtasks });
+  return { success: true };
+}
+
 module.exports = { 
   createUserStory, 
   getUserStory,
@@ -761,7 +785,8 @@ module.exports = {
   startTimeRecording,
   stopTimeRecording,
   getUserStoriesWithWorkTimes,
-  updateWorkTime
+  updateWorkTime,
+  updatePredictedTime
 };
 
 

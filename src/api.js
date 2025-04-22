@@ -854,3 +854,22 @@ export const updateWorkTime = async (storyId, subtaskIndex, workTimeIndex, updat
     throw error;
   }
 };
+
+export const updatePredictedTime = async (storyId, subtaskIndex, predictedTime) => {
+  try {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/subtasks/${subtaskIndex}/predictedTime`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ predictedTime })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update predicted time');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error updating predicted time:', error);
+    throw error;
+  }
+};

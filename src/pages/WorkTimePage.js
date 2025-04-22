@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUserStoriesWithWorkTimes, updateWorkTime } from '../api';
+import { getUserStoriesWithWorkTimes, updateWorkTime, updatePredictedTime } from '../api';
 import { useNavigate } from 'react-router-dom';
 import { ProjectsContext } from "../context/ProjectsContext";
 import Input from '../components/Input';
@@ -16,6 +16,37 @@ const WorkTimesPage = () => {
   const [editing, setEditing] = useState(null);
   const [editValue, setEditValue] = useState('');
   const { projects } = useContext(ProjectsContext);
+  
+  const [editingPredictedTime, setEditingPredictedTime] = useState(null);
+  const [predictedTimeValue, setPredictedTimeValue] = useState('');
+
+  const handlePredictedTimeEditStart = (storyId, subtaskIndex, currentValue) => {
+    setEditingPredictedTime(`${storyId}-${subtaskIndex}`);
+    setPredictedTimeValue(currentValue || '');
+  };
+
+  const handlePredictedTimeEditCancel = () => {
+    setEditingPredictedTime(null);
+    setPredictedTimeValue('');
+  };
+
+  const handlePredictedTimeSave = async (storyId, subtaskIndex) => {
+    try {
+      const hours = predictedTimeValue ? parseFloat(predictedTimeValue) : null;
+      if (hours !== null && (isNaN(hours) || hours < 0)) {
+        throw new Error('Please enter a valid positive number');
+      }
+
+      await updatePredictedTime(storyId, subtaskIndex, hours);
+
+      // Refresh data
+      const stories = await getUserStoriesWithWorkTimes(user.uid);
+      setUserStories(stories);
+      setEditingPredictedTime(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   useEffect(() => {
     const fetchWorkTimes = async () => {
@@ -101,6 +132,7 @@ const WorkTimesPage = () => {
                   <th>Subtask</th>
                   <th>Time Entries</th>
                   <th>Total Time</th>
+                  <th>Predicted Finish Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -108,6 +140,12 @@ const WorkTimesPage = () => {
                   const totalSeconds = subtask.worktimes
                     .filter(wt => wt.userid === user.uid)
                     .reduce((sum, wt) => sum + wt.duration, 0);
+                  
+                  const predictedTimeKey = `${story.id}-${subtask.originalIndex}`;
+                  const isEditingPredicted = editingPredictedTime === predictedTimeKey;
+                  const predictedTimeDisplay = subtask.predictedFinishTime !== null && subtask.predictedFinishTime !== undefined 
+                    ? `${subtask.predictedFinishTime}h` 
+                    : 'Unavailable';
                   
                   return (
                     <tr key={subtaskIndex}>
@@ -166,6 +204,44 @@ const WorkTimesPage = () => {
                         </ul>
                       </td>
                       <td>{formatTime(totalSeconds)}</td>
+                      <td>
+                        {isEditingPredicted ? (
+                          <div className="predicted-time-edit">
+                            <Input
+                              type="number"
+                              value={predictedTimeValue}
+                              onChange={(e) => setPredictedTimeValue(e.target.value)}
+                              step="0.25"
+                              min="0"
+                              style={{ width: '80px' }}
+                              placeholder="Hours"
+                            />
+                            <FaCheck
+                              onClick={() => handlePredictedTimeSave(story.id, subtask.originalIndex)}
+                              className="worktime-icon save-icon"
+                              title="Save"
+                            />
+                            <FaTimes
+                              onClick={handlePredictedTimeEditCancel}
+                              className="worktime-icon cancel-icon"
+                              title="Cancel"
+                            />
+                          </div>
+                        ) : (
+                          <div className="predicted-time-display">
+                            <span>{predictedTimeDisplay}</span>
+                            <FaEdit
+                              onClick={() => handlePredictedTimeEditStart(
+                                story.id,
+                                subtask.originalIndex,
+                                subtask.predictedFinishTime
+                              )}
+                              className="worktime-icon edit-icon"
+                              title="Edit"
+                            />
+                          </div>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
