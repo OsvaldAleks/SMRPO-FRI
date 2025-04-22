@@ -893,6 +893,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
           margin: 15px 0;
           max-height: 200px;
           overflow-y: auto;
+          overflow-x: hidden;
         }
         
         .subtask-option {

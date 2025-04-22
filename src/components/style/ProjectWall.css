@@ -132,13 +132,6 @@
     align-items: center;
 }
 
-.center--box {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem;
-    box-sizing: border-box;
-}
-
 .project-wall-page .center--box {
     max-width: 1200px;
 }

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserStoriesWithWorkTimes, updateWorkTime } from '../api';
 import { useNavigate } from 'react-router-dom';
-import Button from '../components/Button';
+import { ProjectsContext } from "../context/ProjectsContext";
+import Input from '../components/Input';
+import { FaEdit, FaCheck, FaTimes } from 'react-icons/fa';
 import './style/worktimes.css';
 
 const WorkTimesPage = () => {
@@ -13,6 +15,7 @@ const WorkTimesPage = () => {
   const [error, setError] = useState(null);
   const [editing, setEditing] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const { projects } = useContext(ProjectsContext);
 
   useEffect(() => {
     const fetchWorkTimes = async () => {
@@ -47,7 +50,11 @@ const WorkTimesPage = () => {
     setEditing(null);
     setEditValue('');
   };
-
+  const getProjectTitle = (projectId) => {
+    const project = projects.find((p) => p.projectId === projectId);
+    return project ? project.projectName : 'Unknown Project';
+  };
+  
   const handleEditSave = async (storyId, subtaskIndex, workTimeIndex) => {
     try {
       const hours = parseFloat(editValue);
@@ -78,16 +85,14 @@ const WorkTimesPage = () => {
   if (error) return <div className="center--box">Error: {error}</div>;
 
   return (
-    <div className="center--box">
+    <div className="center--box worktimes">
       <h1>My Work Times</h1>
-      <Button onClick={() => navigate(-1)}>Back</Button>
-
       {userStories.length === 0 ? (
         <p>No work times recorded yet</p>
       ) : (
         userStories.map(story => (
-          <div key={story.id} className="card" style={{ marginBottom: '20px' }}>
-            <h2>{story.name}</h2>
+          <div key={story.id} style={{ marginBottom: '20px' }}>
+            <h2><span className="project-title">{getProjectTitle(story.projectId)}</span> &mdash; {story.name}</h2>
             <p>{story.description}</p>
             
             <table className="responsive-table">
@@ -117,50 +122,46 @@ const WorkTimesPage = () => {
                               const hours = (worktime.duration / 3600).toFixed(2);
                               
                               return (
-                                <li key={workTimeIndex} style={{ marginBottom: '10px' }}>
-                                  {isEditing ? (
-                                    <>
-                                      <input
+                                <li key={workTimeIndex}>
+                                  <div className="worktime-left">
+                                    {isEditing ? (
+                                      <Input
                                         type="number"
                                         value={editValue}
                                         onChange={(e) => setEditValue(e.target.value)}
                                         step="0.25"
                                         min="0"
-                                        style={{ width: '80px', marginRight: '10px' }}
+                                        style={{ width: '80px' }}
                                       />
-                                      <Button 
-                                        onClick={() => handleEditSave(story.id, subtask.originalIndex, workTimeIndex)}
-                                        size="small"
-                                      >
-                                        Save
-                                      </Button>
-                                      <Button 
-                                        variant="secondary" 
-                                        onClick={handleEditCancel}
-                                        size="small"
-                                      >
-                                        Cancel
-                                      </Button>
-                                    </>
-                                  ) : (
-                                    <>
-                                      {hours} hours
-                                      <Button 
-                                        onClick={() => handleEditStart(
-                                          story.id, 
-                                          subtask.originalIndex, 
-                                          workTimeIndex, 
-                                          hours
-                                        )}
-                                        size="small"
-                                        style={{ marginLeft: '10px' }}
-                                      >
-                                        Edit
-                                      </Button>
-                                    </>
-                                  )}
-                                </li>
-                              );
+                                    ) : (
+                                      <span>{hours} hours</span>
+                                    )}
+                                  </div>
+                                  <div className="worktime-actions">
+                                    {isEditing ? (
+                                      <>
+                                        <FaCheck
+                                          onClick={() => handleEditSave(story.id, subtask.originalIndex, workTimeIndex)}
+                                          className="worktime-icon save-icon"
+                                          title="Save"
+                                        />
+                                        <FaTimes
+                                          onClick={handleEditCancel}
+                                          className="worktime-icon cancel-icon"
+                                          title="Cancel"
+                                        />
+                                      </>
+                                    ) : (
+                                      <FaEdit
+                                        onClick={() =>
+                                          handleEditStart(story.id, subtask.originalIndex, workTimeIndex, hours)
+                                        }
+                                        className="worktime-icon edit-icon"
+                                        title="Edit"
+                                      />
+                                    )}
+                                  </div>
+                                </li>                              );
                             })}
                         </ul>
                       </td>
