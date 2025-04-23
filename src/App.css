@@ -1,14 +1,15 @@
-body{
+body {
   background-color: #f0f5f7;
 }
-.center--container{
+
+.center--container {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   margin-top: 70px;
 }
 
-.center--box{
+.center--box {
   background-color: #fff;
   border-radius: var(--border-radius);
   min-width: 350px;
@@ -16,13 +17,13 @@ body{
   margin: 3rem 1rem 4rem 1rem;
   padding-bottom: 2rem;
   box-shadow: 0px 4px 8px rgba(63, 65, 70, 0.204);
- }
+}
 
- .center--box p{
+.center--box p {
   margin: 1rem;
- }
+}
 
- .card--header {
+.card--header {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,84 +47,90 @@ body{
   cursor: pointer;
   font-size: 1.5rem;
 }
-.card--header .icons svg:hover{
-  color:var(--color-primary);
+
+.card--header .icons svg:hover {
+  color: var(--color-primary);
 }
 
-.card--header .icons .p--alert:hover{
-  color:#936e6e;
+.card--header .icons .p--alert:hover {
+  color: #936e6e;
 }
 
- .block--element{
+.block--element {
   display: block;
   width: 100%;
   text-align: left;
   box-sizing: border-box;
- } 
- .block--element h2{
+}
+
+.block--element h2 {
   text-align: center !important;
- }
+}
 
- div.block--element{
+div.block--element {
   padding: 0 2rem 2rem 2rem;
- }
+}
 
- label{
+label {
   margin: 1rem;
   color: var(--color-heading);
- }
+}
 
 
-.wide--box{
+.wide--box {
   width: 500px;
   position: relative;
   margin-top: 3rem;
- } 
+}
 
- .dashboard-wrapper .center--box{
+.dashboard-wrapper .center--box {
   padding-top: 1rem;
- }
+}
+
 .dashboard-wrapper h1,
-.dashboard-wrapper h2{
+.dashboard-wrapper h2 {
   width: 100%;
   text-align: center;
 }
 
 
- .dashboard--box{
+.dashboard--box {
   max-width: 1200px;
   position: relative;
- }
- 
- /* form */
- .form--title{
-margin-bottom: 2rem;
-display: flex;
-position: relative;
-justify-content: center;
- }
- .grid--form {
+}
+
+/* form */
+.form--title {
+  margin-bottom: 2rem;
+  display: flex;
+  position: relative;
+  justify-content: center;
+}
+
+.grid--form {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 1rem;
   position: relative;
   margin: 2rem 0 5rem 0;
-    padding-bottom: 3rem
+  padding-bottom: 3rem
 }
 
-.grid--form--leftdiv{
+.grid--form--leftdiv {
   margin-right: 1rem;
-position: absolute;
-  left:20px;
+  position: absolute;
+  left: 20px;
 }
-.grid--form--rightdiv{
-  margin-left: 2rem; 
+
+.grid--form--rightdiv {
+  margin-left: 2rem;
   position: absolute;
   right: 20px;
 }
+
 /* notification */
-.p--note{
+.p--note {
   font-size: 1.2rem;
   text-align: left;
   color: var(--color-accent);
@@ -131,20 +138,23 @@ position: absolute;
   margin-bottom: 0;
 }
 
-.p--alert{
+.p--alert {
   color: var(--color-accent);
   padding: 0;
   margin: 0;
 }
 
 .responsive-table {
-  width: 100%; /* Ensures table expands to fill the parent container */
-  max-width: 100%; /* Ensures it doesn't overflow the parent */
+  width: 100%;
+  /* Ensures table expands to fill the parent container */
+  max-width: 100%;
+  /* Ensures it doesn't overflow the parent */
   border-collapse: collapse;
-  table-layout: auto; /* Ensures columns are adjusted based on content */
+  table-layout: auto;
+  /* Ensures columns are adjusted based on content */
 }
 
-.responsive-table td:first-child, 
+.responsive-table td:first-child,
 .responsive-table th:first-child {
   text-align: center;
   vertical-align: middle;
@@ -171,14 +181,17 @@ position: absolute;
 }
 
 .responsive-table-container {
-  width: 100%; /* Ensure container uses full width */
-  overflow-x: auto; /* Allow horizontal scrolling */
+  width: 100%;
+  /* Ensure container uses full width */
+  overflow-x: auto;
+  /* Allow horizontal scrolling */
   margin: 0.5rem 0 0 0;
 }
 
 @media (max-width: 768px) {
   .responsive-table-container {
-    overflow-x: scroll; /* Enable horizontal scrolling on smaller screens */
+    overflow-x: scroll;
+    /* Enable horizontal scrolling on smaller screens */
   }
 
   .responsive-table th,
@@ -210,6 +223,7 @@ position: absolute;
   justify-content: center;
   border-radius: 50%;
 }
+
 /* Match .input styles for .textarea */
 .textarea {
   border-radius: var(--border-radius);
@@ -218,10 +232,14 @@ position: absolute;
   color: var(--color-headings);
   font-size: 1.5rem;
   outline: 0;
-  width: 100%; /* Ensure it takes the full width of its container */
-  resize: none; /* Prevent resizing */
-  font-family: inherit; /* Match the font family of the input */
-  box-sizing: border-box; /* Ensure padding and border are included in the width */
+  width: 100%;
+  /* Ensure it takes the full width of its container */
+  resize: none;
+  /* Prevent resizing */
+  font-family: inherit;
+  /* Match the font family of the input */
+  box-sizing: border-box;
+  /* Ensure padding and border are included in the width */
 }
 
 /* Placeholder styling */
@@ -233,12 +251,31 @@ position: absolute;
 /* Media query for larger screens */
 @media screen and (min-width: 1024px) {
   .textarea {
-      font-size: 1.5rem;
+    font-size: 1.5rem;
   }
 }
+
 /* Media query for larger screens */
 @media screen and (min-width: 1024px) {
   .textarea {
-      font-size: 1.5rem;
+    font-size: 1.5rem;
   }
+}
+
+/* Hotfix za širino tabele v Sprint details */
+.responsive-table td,
+.responsive-table th {
+  width: 33.33%;
+  vertical-align: top;
+}
+
+.responsive-table {
+  table-layout: fixed;
+}
+
+.responsive-table-container-wide {
+  width: 100%;
+  max-width: 950px;
+  margin: 0 auto;
+  overflow-x: auto;
 }
