@@ -132,7 +132,8 @@ const WorkTimesPage = () => {
                   <th>Subtask</th>
                   <th>Time Entries</th>
                   <th>Total Time</th>
-                  <th>Predicted Finish Time</th>
+                  <th>ETA</th>
+                  <th>Original estimation</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,7 +146,7 @@ const WorkTimesPage = () => {
                   const isEditingPredicted = editingPredictedTime === predictedTimeKey;
                   const predictedTimeDisplay = subtask.predictedFinishTime !== null && subtask.predictedFinishTime !== undefined 
                     ? formatTime(subtask.predictedFinishTime * 3600) 
-                    : 'Unavailable';
+                    : '/';
                   
                   return (
                     <tr key={subtaskIndex}>
@@ -241,6 +242,11 @@ const WorkTimesPage = () => {
                             />
                           </div>
                         )}
+                      </td>
+                      <td>
+                        {subtask.timeEstimate !== null && subtask.timeEstimate !== undefined
+                          ? `${subtask.timeEstimate}h`
+                          : '/'}
                       </td>
                     </tr>
                   );

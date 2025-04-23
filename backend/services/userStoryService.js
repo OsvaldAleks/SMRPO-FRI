@@ -640,12 +640,36 @@ async function stopTimeRecording(storyId, subtaskIndex, userId) {
     const endTime = new Date();
     const duration = Math.floor((endTime - startTime) / 1000);
 
-    // Create a NEW array with the updated subtask
+    const worktimes = existingSubtask.worktimes || [];
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+    let updated = false;
+    const updatedWorktimes = worktimes.map(entry => {
+      const entryDate = new Date(entry.timestamp || 0).toISOString().split('T')[0];
+      if (entry.userid === userId && entryDate === today) {
+        updated = true;
+        return {
+          ...entry,
+          duration: (entry.duration || 0) + duration,
+          timestamp: entry.timestamp || new Date().toISOString() // optional: update timestamp
+        };
+      }
+      return entry;
+    });
+
+    if (!updated) {
+      updatedWorktimes.push({
+        userid: userId,
+        duration,
+        timestamp: new Date().toISOString()
+      });
+    }
+
     const updatedSubtasks = [...subtasks];
     updatedSubtasks[subtaskIndex] = {
       ...existingSubtask,
       workdate: null,
-      worktimes: [...(existingSubtask.worktimes || []), {duration: duration, userid: userId}]
+      worktimes: updatedWorktimes
     };
 
     await storyRef.update({ subtasks: updatedSubtasks });
@@ -663,6 +687,7 @@ async function stopTimeRecording(storyId, subtaskIndex, userId) {
     };
   }
 }
+
 
 // Get all stories with subtasks that the user has worked on
 async function getUserStoriesWithWorkTimes(userId) {

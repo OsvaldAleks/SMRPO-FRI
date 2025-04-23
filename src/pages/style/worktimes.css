@@ -13,15 +13,21 @@
 
 .worktimes table.responsive-table th,
 .worktimes table.responsive-table td {
+  border-left: 5px solid var(--color-primary) !important;
+  border-right: 5px solid var(--color-primary) !important;
   padding: 8px;
   vertical-align: middle;
 }
 
-.worktimes table.responsive-table td:nth-child(2),
-.worktimes table.responsive-table th:nth-child(2) {
-  border-left: 5px solid var(--color-primary) !important;
-  border-right: 5px solid var(--color-primary) !important;
+.worktimes table.responsive-table td:first-child,
+.worktimes table.responsive-table th:first-child{
+  border-left: 0 solid var(--color-primary) !important;
 }
+.worktimes table.responsive-table td:last-child,
+.worktimes table.responsive-table th:last-child {
+  border-right: 0 solid var(--color-primary) !important;
+} 
+
 .worktimes table.responsive-table th {
   background-color: #f5f5f5;
   text-align: left;

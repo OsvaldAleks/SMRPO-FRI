@@ -268,7 +268,7 @@ async function deleteUser(userId) {
       };
     }
 
-    // Prepare the soft-delete payload
+    // Soft-delete user in Firestore
     const updateFields = {
       name: "",
       surname: "",
@@ -279,17 +279,53 @@ async function deleteUser(userId) {
       last_online: null,
       previous_online: null
     };
-
-    // Update Firestore user data (soft delete)
     await userRef.update(updateFields);
 
-    // Fully delete the user from Firebase Authentication
+    // Unclaim user's subtasks in all user stories
+    const storiesSnapshot = await db.collection("userStories").get();
+
+    const batch = db.batch();
+
+    storiesSnapshot.forEach((doc) => {
+      const storyData = doc.data();
+      const subtasks = storyData.subtasks || [];
+
+      let updated = false;
+      const updatedSubtasks = subtasks.map((subtask) => {
+        if (subtask.developerId === userId) {
+          updated = true;
+          return {
+            ...subtask,
+            developerId: null,
+            devName: null,
+            isDone: subtask.isDone ?? false,
+          };
+        }
+        return { ...subtask, isDone: subtask.isDone ?? false };
+      });
+
+      if (updated) {
+        const activeSubtasks = updatedSubtasks.filter(task => !task.deleted);
+        const anyClaimed = activeSubtasks.some(task => task.developerId);
+        const newStatus = anyClaimed ? "In progress" : "Product backlog";
+
+        batch.set(doc.ref, {
+          subtasks: updatedSubtasks,
+          status: newStatus,
+        }, { merge: true });
+      }
+    });
+
+    await batch.commit();
+
+    // Fully delete user from Firebase Auth
     await auth.deleteUser(userId);
 
     return {
       success: true,
-      message: "User successfully deleted (soft delete in Firestore, full delete in Auth).",
+      message: "User successfully deleted, subtasks unclaimed, and Auth entry removed.",
     };
+
   } catch (error) {
     console.error("Error deleting user:", error);
     return {
@@ -298,6 +334,7 @@ async function deleteUser(userId) {
     };
   }
 }
+
 
 module.exports = {
   getUser,

@@ -2,7 +2,7 @@ import { useAuth } from "../context/AuthContext";
 import './style/Documentation.css';
 import './style/Dashboard.css'
 import Button from "../components/Button";
-import { FaEdit, FaTrash, FaFileImport, FaFileExport } from "react-icons/fa";
+import { FaEdit, FaTrash, FaFileImport, FaFileExport, FaCheck } from "react-icons/fa";
 
 const Documentation = () => {
   const { user } = useAuth();
@@ -154,9 +154,26 @@ const Documentation = () => {
             </ol>
           </details>
 
+          <details>
+            <summary>Comment on a project wall post</summary>
+            <ol>
+              <li>Within a Project, click on the <strong>WALL</strong> icon in the top left.</li>
+              <li>Click on 💬 on the post you wish to comment.</li>
+              <li>Write comment in inout box.</li>
+              <li>Click <strong>COMMENT</strong> to submit.</li>
+            </ol>
+          </details>
+
+          <details>
+            <summary>Delete a project wall post</summary>
+            <p><em>You need to be a SCRUM master to delete a post.</em></p>
+            <ol>
+              <li>Within a Project, click on the <strong>WALL</strong> icon in the top left.</li>
+              <li>Click on <FaTrash></FaTrash>on the post you wish to delete.</li>
+            </ol>
+          </details>
+
        </details>
-
-
 
           <details>
             <summary style={{fontSize: "1.2em", fontWeight: "bold"}}>Sprints</summary>
@@ -325,8 +342,8 @@ const Documentation = () => {
            <ol>
              <li>In the navbar click the <strong>Manage work times</strong> tab.</li>
              <li>Select the task for which you wish to log your time.</li>
-             <li>Click the <strong>EDIT</strong> button and change the number.</li>
-             <li>Click the <strong>SAVE</strong> button to save changes.</li>
+             <li>Click the <FaEdit/> button and change the number.</li>
+             <li>Click the <FaCheck/> button to save changes.</li>
            </ol>
          </details>
 
