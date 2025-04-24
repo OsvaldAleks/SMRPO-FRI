@@ -316,7 +316,7 @@ async function claimSubtask(storyId, userId, taskIndex) {
 }
 
 
-async function completeSubtask(storyId, subtaskIndex) {
+const completeSubtask = async (storyId, subtaskIndex, worktime) => {
   try {
     const storyRef = db.collection("userStories").doc(storyId);
     const storyDoc = await storyRef.get();
@@ -332,16 +332,44 @@ async function completeSubtask(storyId, subtaskIndex) {
       return { success: false, message: "Invalid subtask index" };
     }
 
-    // Toggle the completion status of the targeted subtask
-    subtasks[subtaskIndex].isDone = !(subtasks[subtaskIndex].isDone || false);
+    const subtask = subtasks[subtaskIndex];
+    const wasDone = subtask.isDone || false;
+    subtask.isDone = !wasDone;
 
-    // Filter only active (not soft-deleted) subtasks
+    if (!wasDone) {
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0]; // "YYYY-MM-DD"
+      const userid = subtask.developerId;
+
+      // Initialize worktimes if it doesn't exist
+      subtask.worktimes = subtask.worktimes || [];
+
+      // Find existing worktime for today
+      const existingIndex = subtask.worktimes.findIndex(wt => {
+        const wtDate = new Date(wt.timestamp).toISOString().split('T')[0];
+        return (wt.userid === userid || wt.userId === userid) && wtDate === todayStr;
+      });
+
+      if (existingIndex >= 0) {
+        // Update existing entry
+        subtask.worktimes[existingIndex].duration += worktime;
+        subtask.worktimes[existingIndex].estimatedTime = 0;
+        subtask.worktimes[existingIndex].timestamp = now.toISOString();
+      } else {
+        // Add new entry
+        subtask.worktimes.push({
+          duration: worktime,
+          estimatedTime: 0,
+          timestamp: now.toISOString(),
+          userid: userid, // consistent field name
+        });
+      }
+    }
+
+    // Rest of your code remains the same...
     const activeSubtasks = subtasks.filter(task => !task.deleted);
-
-    // Check if all active subtasks are completed
     const allCompleted = activeSubtasks.length > 0 && activeSubtasks.every(task => task.isDone);
 
-    // Determine new status
     let newStatus = story.status;
     if (allCompleted) {
       newStatus = "Done";
@@ -355,14 +383,13 @@ async function completeSubtask(storyId, subtaskIndex) {
       success: true,
       message: "Subtask updated",
       subtasks,
-      status: newStatus
+      status: newStatus,
     };
   } catch (error) {
     console.error("Error updating subtask:", error);
     return { success: false, message: "Internal server error" };
   }
-}
-
+};
 async function evaluateUserStory(storyId, isAccepted, comment, productManagerId) {
   // 1) Preverimo, ali imamo vse podatke
   if (!storyId) {
@@ -767,29 +794,61 @@ async function updateWorkTime(storyId, subtaskIndex, workTimeIndex, updates) {
   return { success: true };
 }
 
-async function updatePredictedTime(storyId, subtaskIndex, predictedTime) {
+async function updatePredictedTime(storyId, subtaskIndex, wtIndex, predictedTime) {
+  console.log(`[updatePredictedTime] Called with:
+    storyId: ${storyId},
+    subtaskIndex: ${subtaskIndex},
+    wtIndex: ${wtIndex},
+    predictedTime: ${predictedTime}`);
+
   const storyRef = db.collection('userStories').doc(storyId);
   const storyDoc = await storyRef.get();
 
   if (!storyDoc.exists) {
+    console.error(`[updatePredictedTime] Story not found for ID: ${storyId}`);
     throw new Error('User story not found');
   }
 
   const storyData = storyDoc.data();
   const subtasks = storyData.subtasks || [];
+  console.log(`[updatePredictedTime] Retrieved subtasks count: ${subtasks.length}`);
 
-  if (subtaskIndex < 0 || subtaskIndex >= subtasks.length) {
-    throw new Error('Invalid subtask index');
+  if (
+    subtaskIndex < 0 || subtaskIndex >= subtasks.length ||
+    !Array.isArray(subtasks[subtaskIndex].worktimes) ||
+    wtIndex < 0 || wtIndex >= subtasks[subtaskIndex].worktimes.length
+  ) {
+    console.error(`[updatePredictedTime] Invalid subtask or worktime index:
+      subtaskIndex: ${subtaskIndex},
+      wtIndex: ${wtIndex},
+      subtaskExists: ${!!subtasks[subtaskIndex]},
+      worktimesLength: ${subtasks[subtaskIndex]?.worktimes?.length}`);
+    throw new Error('Invalid subtask or worktime index');
   }
 
-  // Create a new array with the updated subtask
-  const updatedSubtasks = subtasks.map((subtask, index) => 
-    index === subtaskIndex ? { ...subtask, predictedFinishTime: predictedTime } : subtask
+  const originalWT = subtasks[subtaskIndex].worktimes[wtIndex];
+  console.log(`[updatePredictedTime] Original worktime entry:`, originalWT);
+
+  // Deep copy the worktimes and update only the relevant one
+  const updatedWorktimes = subtasks[subtaskIndex].worktimes.map((wt, i) =>
+    i === wtIndex ? { ...wt, estimatedTime: predictedTime } : wt
   );
 
+  const updatedWT = updatedWorktimes[wtIndex];
+  console.log(`[updatePredictedTime] Updated worktime entry:`, updatedWT);
+
+  // Replace the updated worktimes in the specific subtask
+  const updatedSubtasks = subtasks.map((subtask, i) =>
+    i === subtaskIndex ? { ...subtask, worktimes: updatedWorktimes } : subtask
+  );
+
+  console.log(`[updatePredictedTime] Subtasks ready for update`);
   await storyRef.update({ subtasks: updatedSubtasks });
+  console.log(`[updatePredictedTime] Successfully updated story ${storyId}`);
+  
   return { success: true };
 }
+
 
 module.exports = { 
   createUserStory, 

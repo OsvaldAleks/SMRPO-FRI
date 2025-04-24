@@ -250,7 +250,6 @@ const SprintDetails = () => {
         storyId: story.id
       }))
     );
-    console.log("All Subtasks:", allSubtasks);
     return {
       unclaimed: allSubtasks.filter(subtask => subtask.devName==null && !subtask.isDone),
       claimed: allSubtasks.filter(subtask => subtask.devName!=null && !subtask.isDone && subtask.workdate == null),

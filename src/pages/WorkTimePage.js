@@ -16,44 +16,37 @@ const WorkTimesPage = () => {
   const [editing, setEditing] = useState(null);
   const [editValue, setEditValue] = useState('');
   const { projects } = useContext(ProjectsContext);
-  
-  const [editingPredictedTime, setEditingPredictedTime] = useState(null);
-  const [predictedTimeValue, setPredictedTimeValue] = useState('');
+  const [editingEta, setEditingEta] = useState(null);
+  const [etaEditValue, setEtaEditValue] = useState('');  
 
-  const handlePredictedTimeEditStart = (storyId, subtaskIndex, currentValue) => {
-    setEditingPredictedTime(`${storyId}-${subtaskIndex}`);
-    setPredictedTimeValue(currentValue || '');
-  };
-
-  const handlePredictedTimeEditCancel = () => {
-    setEditingPredictedTime(null);
-    setPredictedTimeValue('');
-  };
-
-  const handlePredictedTimeSave = async (storyId, subtaskIndex) => {
+  const handleEstimatedTimeChange = async (storyId, subIndex, wtIndex, newETA) => {
     try {
-      const hours = predictedTimeValue ? parseFloat(predictedTimeValue) : null;
-      if (hours !== null && (isNaN(hours) || hours < 0)) {
-        throw new Error('Please enter a valid positive number');
+      const parsedETA = parseFloat(newETA);
+      if (isNaN(parsedETA) || parsedETA < 0) {
+        throw new Error('Please enter a valid positive number for ETA');
       }
-
-      await updatePredictedTime(storyId, subtaskIndex, hours);
-
-      // Refresh data
-      const stories = await getUserStoriesWithWorkTimes(user.uid);
-      setUserStories(stories);
-      setEditingPredictedTime(null);
+  
+      // Call your backend API
+      await updatePredictedTime(storyId, subIndex, wtIndex, newETA)
+  
+      if (user?.uid) {
+        const updatedStories = await getUserStoriesWithWorkTimes(user.uid);
+        setUserStories(updatedStories);
+      }
+  
+      setEditingEta(null);
     } catch (err) {
       setError(err.message);
     }
   };
-
+  
   useEffect(() => {
     const fetchWorkTimes = async () => {
       try {
         setLoading(true);
         if (user?.uid) {
           const stories = await getUserStoriesWithWorkTimes(user.uid);
+          console.log('Fetched stories:', stories);
           setUserStories(stories);
         }
       } catch (err) {
@@ -81,6 +74,7 @@ const WorkTimesPage = () => {
     setEditing(null);
     setEditValue('');
   };
+
   const getProjectTitle = (projectId) => {
     const project = projects.find((p) => p.projectId === projectId);
     return project ? project.projectName : 'Unknown Project';
@@ -131,9 +125,7 @@ const WorkTimesPage = () => {
                 <tr>
                   <th>Subtask</th>
                   <th>Time Entries</th>
-                  <th>Total Time</th>
                   <th>ETA</th>
-                  <th>Original estimation</th>
                 </tr>
               </thead>
               <tbody>
@@ -141,13 +133,7 @@ const WorkTimesPage = () => {
                   const totalSeconds = subtask.worktimes
                     .filter(wt => wt.userid === user.uid)
                     .reduce((sum, wt) => sum + wt.duration, 0);
-                  
-                  const predictedTimeKey = `${story.id}-${subtask.originalIndex}`;
-                  const isEditingPredicted = editingPredictedTime === predictedTimeKey;
-                  const predictedTimeDisplay = subtask.predictedFinishTime !== null && subtask.predictedFinishTime !== undefined 
-                    ? formatTime(subtask.predictedFinishTime * 3600) 
-                    : '/';
-                  
+
                   return (
                     <tr key={subtaskIndex}>
                       <td>{subtask.description}</td>
@@ -155,10 +141,19 @@ const WorkTimesPage = () => {
                         <ul style={{ listStyle: 'none', padding: 0 }}>
                           {subtask.worktimes
                             .filter(wt => wt.userid === user.uid)
-                            .map((worktime, workTimeIndex) => {
+                            .map((worktime, workTimeIndex, arr) => {
                               const editKey = `${story.id}-${subtask.originalIndex}-${workTimeIndex}`;
                               const isEditing = editing === editKey;
                               const hours = (worktime.duration / 3600).toFixed(2);
+
+                              const fallbackETA = worktime.estimatedTime ?? (() => {
+                                for (let i = workTimeIndex - 1; i >= 0; i--) {
+                                  if (arr[i].estimatedTime !== undefined) {
+                                    return arr[i].estimatedTime;
+                                  }
+                                }
+                                return subtask.timeEstimate ?? '';
+                              })();
                               
                               return (
                                 <li key={workTimeIndex}>
@@ -190,7 +185,7 @@ const WorkTimesPage = () => {
                                           title="Cancel"
                                         />
                                       </>
-                                    ) : (
+                                    ) : (!subtask.isDone && (
                                       <FaEdit
                                         onClick={() =>
                                           handleEditStart(story.id, subtask.originalIndex, workTimeIndex, hours)
@@ -198,55 +193,88 @@ const WorkTimesPage = () => {
                                         className="worktime-icon edit-icon"
                                         title="Edit"
                                       />
-                                    )}
+                                    ))}
                                   </div>
-                                </li>                              );
+                                </li>
+                              );
                             })}
                         </ul>
                       </td>
-                      <td>{formatTime(totalSeconds)}</td>
                       <td>
-                        {isEditingPredicted ? (
-                          <div className="predicted-time-edit">
-                            <Input
-                              type="number"
-                              value={predictedTimeValue}
-                              onChange={(e) => setPredictedTimeValue(e.target.value)}
-                              step="0.25"
-                              min="0"
-                              style={{ width: '80px' }}
-                              placeholder="Hours"
-                            />
-                            <FaCheck
-                              onClick={() => handlePredictedTimeSave(story.id, subtask.originalIndex)}
-                              className="worktime-icon save-icon"
-                              title="Save"
-                            />
-                            <FaTimes
-                              onClick={handlePredictedTimeEditCancel}
-                              className="worktime-icon cancel-icon"
-                              title="Cancel"
-                            />
-                          </div>
-                        ) : (
-                          <div className="predicted-time-display">
-                            <span>{predictedTimeDisplay}</span>
-                            <FaEdit
-                              onClick={() => handlePredictedTimeEditStart(
-                                story.id,
-                                subtask.originalIndex,
-                                subtask.predictedFinishTime
-                              )}
-                              className="worktime-icon edit-icon"
-                              title="Edit"
-                            />
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        {subtask.timeEstimate !== null && subtask.timeEstimate !== undefined
-                          ? `${subtask.timeEstimate}h`
-                          : '/'}
+                        <ul style={{ listStyle: 'none', padding: 0 }}>
+                          {subtask.worktimes
+                            .filter(wt => wt.userid == user.uid)
+                            .map((worktime, workTimeIndex, arr) => {
+                              const etaEditKey = `eta-${story.id}-${subtask.originalIndex}-${workTimeIndex}`;
+                              const isEditingThisEta = editingEta === etaEditKey;
+
+                              const fallbackETA =
+                                worktime.estimatedTime ??
+                                (() => {
+                                  // Look for previous ETA
+                                  for (let i = workTimeIndex - 1; i >= 0; i--) {
+                                    if (arr[i].estimatedTime !== undefined) {
+                                      return arr[i].estimatedTime;
+                                    }
+                                  }
+                                  return subtask.timeEstimate ?? '';
+                                })();
+
+                              return (
+                                <li key={workTimeIndex} className="worktime-eta-row">
+                                  <div className="worktime-actions">
+                                  {isEditingThisEta ? (
+                                    <>
+                                      <Input
+                                        type="number"
+                                        value={etaEditValue}
+                                        onChange={(e) => setEtaEditValue(e.target.value)}
+                                        step="0.25"
+                                        min="0"
+                                        style={{ width: '60px' }}
+                                      />
+                                      <FaCheck
+                                        onClick={() => {
+                                          handleEstimatedTimeChange(
+                                            story.id,
+                                            subtask.originalIndex,
+                                            workTimeIndex,
+                                            etaEditValue
+                                          );
+                                          setEditingEta(null);
+                                        }}
+                                        className="worktime-icon save-icon"
+                                        title="Save"
+                                      />
+                                      <FaTimes
+                                        onClick={() => {
+                                          setEditingEta(null);
+                                          setEtaEditValue('');
+                                        }}
+                                        className="worktime-icon cancel-icon"
+                                        title="Cancel"
+                                      />
+                                    </>
+                                    ) : (
+                                      <>
+                                      <span>{fallbackETA}h</span>
+                                      {!subtask.isDone && (
+                                      <FaEdit
+                                        onClick={() => {
+                                          setEditingEta(etaEditKey);
+                                          setEtaEditValue(fallbackETA);
+                                        }}
+                                        className="worktime-icon edit-icon"
+                                        title="Edit ETA"
+                                      />
+                                       )}
+                                    </>
+                                    )}
+                                  </div>
+                                </li>
+                              );
+                            })}
+                        </ul>
                       </td>
                     </tr>
                   );

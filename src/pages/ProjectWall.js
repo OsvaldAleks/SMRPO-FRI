@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import {ProjectsContext} from "../context/ProjectsContext";
 import { useParams } from "react-router-dom";
 import { getWallPosts, addWallPost, getUser, addWallComment, deleteWallComment, deleteWallPost } from "../api";
 import { useAuth } from "../context/AuthContext";
@@ -14,10 +15,10 @@ const ProjectWall = () => {
     const [username, setUsername] = useState("");
     const [showCommentBox, setShowCommentBox] = useState({});
     const [commentInputs, setCommentInputs] = useState({});
-    const userRole = user?.projectRoles?.[projectId];
-    const isScrumMaster = userRole === "scrumMaster";
+    const { projects } = useContext(ProjectsContext);
 
-
+    const project = projects.find(p => p.projectId === projectId);
+    const isScrumMaster = project?.userRole === "scrumMasters";
     useEffect(() => {
         const fetchUsername = async () => {
             if (user?.uid) {
@@ -243,6 +244,6 @@ const ProjectWall = () => {
             </div>
         </div>
     );
-}
+};
 
 export default ProjectWall;

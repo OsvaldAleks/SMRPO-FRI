@@ -26,6 +26,9 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
   const [recordingSubtaskId, setRecordingSubtaskId] = useState(null);
   const [showTimeRecordingModal, setShowTimeRecordingModal] = useState(false);
   const [selectedSubtaskForRecording, setSelectedSubtaskForRecording] = useState(null);
+  const [showWorktimeModal, setShowWorktimeModal] = useState(false);
+  const [worktime, setWorktime] = useState(""); // Store the worktime input value
+  const [currentSubtaskIndex, setCurrentSubtaskIndex] = useState(null); // Store the subtask index
 
   const [currentRecordingTime, setCurrentRecordingTime] = useState(0);
   const [timerInterval, setTimerInterval] = useState(null);
@@ -79,11 +82,9 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     }
 
     try {
-      console.log('Attempting to start recording for subtask index:', selectedSubtaskForRecording);
       const result = await startTimeRecording(story.id, selectedSubtaskForRecording);
 
       if (result.success) {
-        console.log('Recording started successfully');
         setRecordingSubtaskId(selectedSubtaskForRecording);
         setShowTimeRecordingModal(false);
         setSelectedSubtaskForRecording(null);
@@ -126,6 +127,38 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     }
   };
 
+  const handleSubmitWorktime = async (subtaskIndex) => {
+    try {
+      const worktimeInHours = parseFloat(worktime);
+      if (isNaN(worktimeInHours) || worktimeInHours <= 0) {
+        throw new Error("Invalid worktime entered");
+      }
+  
+      const worktimeInSeconds = worktimeInHours * 3600;
+  
+      const result = await markSubtaskAsDone(story.id, subtaskIndex, worktimeInSeconds);
+  
+      if (result.success) {
+        // Re-fetch the updated story
+        const updatedStory = await getUserStory(story.id);
+  
+        // Update the component state
+        setSubtasks(updatedStory.subtasks || []);
+        setStoryPointValue(updatedStory.storyPoints || "");
+        if (onUpdateStory) onUpdateStory(updatedStory); // if parent wants to know
+  
+        // Close modal and reset input
+        setShowWorktimeModal(false);
+        setWorktime("");
+      } else {
+        throw new Error(result.message || "Failed to submit worktime");
+      }
+    } catch (err) {
+      console.error("Error submitting worktime:", err);
+      setErrorMessage(err.message);
+    }
+  };
+      
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -142,7 +175,6 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
   useEffect(() => {
     setStoryPointValue(story.storyPoints || "");
     setOriginalStoryPointValue(story.storyPoints || "");
-    console.log(userRole)
     setCanEditStory((userRole === "scrumMasters" || userRole === "productManagers") && (story.sprintId).length == 0)
     fetchLatestStory();
   }, [story]);
@@ -208,42 +240,6 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     subtaskIndex: null,
   });
 
-  const handleDeleteSubtask = async (index) => {
-
-    try {
-      await deleteSubtask(story.id, index);
-      setDropdownIndex(null);
-
-      const updatedStory = await getUserStory(story.id);
-      setSubtasks(updatedStory.subtasks || []);
-      story.status = updatedStory.status;
-
-      // Pokličeš onUpdate, da se celoten kontekst osveži
-      if (typeof onUpdate === 'function') {
-        onUpdate(updatedStory);
-      }
-
-      // preveri, če ni več aktivnih claimed subtaskov
-      const activeSubtasks = updatedStory.subtasks?.filter(st => !st.deleted) || [];
-      const hasClaimed = activeSubtasks.some(st => !!st.developerId);
-
-      if (activeSubtasks.length === 0 || !hasClaimed) {
-        const statusUpdate = await updateUserStoryStatus(story.id, "Product backlog");
-
-        // Osveži še enkrat, ker status se je spremenil
-        const refreshed = await getUserStory(story.id);
-        setSubtasks(refreshed.subtasks || []);
-        if (typeof onUpdate === 'function') {
-          onUpdate(refreshed);
-        }
-      }
-
-    } catch (err) {
-      console.error(err.message || err);
-      setErrorMessage((err.message || "Unknown error"));
-    }
-  };
-
   const handleSaveSubtask = async () => {
     if (!subtaskDescription || !subtaskTime) {
       setErrorMessage("Please fill out description and time estimate.");
@@ -298,32 +294,24 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
 
   const handleClaim = async (taskIndex) => {
     try {
-      console.log("Attempting to claim subtask at index:", taskIndex);
-      console.log("User ID:", user.uid);
-
       const currentSubtask = subtasks[taskIndex];
       const isUnclaiming = currentSubtask.developerId && currentSubtask.developerId === user.uid;
       const isCompleted = currentSubtask.isDone;
 
       // First handle the claim/unclaim
       await claimSubtask(story.id, user.uid, taskIndex);
-      console.log("Subtask claim request sent successfully.");
 
       // If unclaiming a completed task, mark it as undone
       if (isUnclaiming && isCompleted) {
-        console.log("Unclaiming completed subtask - marking as undone");
         await handleMarkSubtaskAsDone(taskIndex);
       }
-
       // For all other cases, just update normally
       const updatedStory = await getUserStory(story.id);
       setSubtasks(updatedStory.subtasks || []);
       setDropdownIndex(null);
-      console.log("Updated story fetched:", updatedStory);
 
       story.status = updatedStory.status;
       if (typeof onUpdate === "function") {
-        console.log("Triggering onUpdate callback.");
         onUpdate(story);
       }
     } catch (err) {
@@ -333,25 +321,34 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
   };
 
   const handleMarkSubtaskAsDone = async (subtaskIndex) => {
+    const subtask = subtasks[subtaskIndex];
+    const isDone = subtask.isDone;
+  
     try {
-      const result = await markSubtaskAsDone(story.id, subtaskIndex);
-
-      if (!result.success) {
-        throw new Error(result.message || "Could not update subtask");
-      }
-
-      const updatedStory = await getUserStory(story.id);
-      setSubtasks(updatedStory.subtasks || []);
-      story.status = updatedStory.status;
-
-      if (typeof onUpdate === 'function') {
-        onUpdate(updatedStory);
+      if (isDone) {
+        const result = await markSubtaskAsDone(story.id, subtaskIndex);
+  
+        if (!result.success) {
+          throw new Error(result.message || "Could not update subtask");
+        }
+  
+        const updatedStory = await getUserStory(story.id);
+        setSubtasks(updatedStory.subtasks || []);
+        story.status = updatedStory.status;
+    
+        if (typeof onUpdate === 'function') {
+          onUpdate(updatedStory);
+        }
+      } else {
+        setCurrentSubtaskIndex(subtaskIndex);
+        setShowWorktimeModal(true);
       }
     } catch (err) {
       console.error("Failed to mark subtask as done:", err);
       setErrorMessage(err.message);
     }
   };
+  
 
   const confirmStoryAsDone = async () => {
     try {
@@ -497,6 +494,31 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+const totalWorkSeconds = subtasks.reduce((sum, sub) => {
+  if (sub.deleted) return sum;
+  return sum + (sub.worktimes?.reduce((acc, wt) => acc + (wt.duration || 0), 0) || 0);
+}, 0);
+const totalWorkHours = Number(totalWorkSeconds / 3600);
+
+const totalEta = subtasks.reduce((sum, sub) => {
+  if (sub.deleted) return sum;
+  
+  let latestETA = sub.timeEstimate || 0;
+  if (sub.worktimes && sub.worktimes.length > 0) {
+    for (let i = sub.worktimes.length - 1; i >= 0; i--) {
+      const worktime = sub.worktimes[i];
+      if (worktime?.estimatedTime != null && !isNaN(worktime.estimatedTime)) {
+        latestETA = worktime.estimatedTime;
+        break;
+      }
+    }
+  }
+  return sum + Number(latestETA);
+}, 0);
+
+// Combine total work time and latest ETA time for the final total (in hours)
+const totalWorkAndEtaHours = (Number(totalWorkHours) + Number(totalEta)).toFixed(2);
+
   return (
     <>
       {!editView ? (
@@ -591,7 +613,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                 ))}
               </tbody>
             </table>
-          </div>
+          </div>className
 
           {story.sprintId && story.sprintId.length > 0 && (
             <>
@@ -614,11 +636,31 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                     </tr>
                   </thead>
                   <tbody>
-                    {(subtasks.filter(st => !st.deleted)).length > 0 ? (
-                      subtasks
-                        .map((sub, idx) => ({ sub, idx }))
-                        .filter(({ sub }) => !sub.deleted)
-                        .map(({ sub, idx }) => (
+                  {(subtasks.filter(st => !st.deleted)).length > 0 ? (
+                    subtasks
+                      .map((sub, idx) => ({ sub, idx }))
+                      .filter(({ sub }) => !sub.deleted)
+                      .map(({ sub, idx }) => {
+                        // Calculate total work done across all worktimes
+                        const totalWorkSeconds = sub.worktimes
+                          ? sub.worktimes.reduce((sum, wt) => sum + (wt.duration || 0), 0)
+                          : 0;
+                        const totalWorkHours = (totalWorkSeconds / 3600).toFixed(2); // Convert to hours
+
+                        // Loop through worktimes and find the latest one with a valid ETA
+                        let latestETA = sub.timeEstimate;  // Start with subtask's timeEstimate
+                        for (let i = sub.worktimes?.length - 1; i >= 0; i--) {
+                          if (sub.worktimes[i]?.estimatedTime != null && !isNaN(sub.worktimes[i].estimatedTime)) {
+                            latestETA = sub.worktimes[i].estimatedTime;
+                            break;
+                          }
+                        }
+
+                        const totalWorkHoursNum = Number(totalWorkHours);
+                        const latestETANum = Number(latestETA || 0);
+                        const totalSum = totalWorkHoursNum + latestETANum;
+                
+                          return (
                           <tr key={idx} className={recordingSubtaskId === sub.id ? 'recording-subtask' : ''}>
                             <td>
                               <input
@@ -629,7 +671,9 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                               />
                             </td>
                             <td>{sub.description}</td>
-                            <td>{sub.timeEstimate}</td>
+                            <td>
+                              {totalWorkHoursNum.toFixed(2)} / {totalSum.toFixed(2)} h
+                            </td>
                             <td style={{ fontWeight: sub.devName ? 'bold' : 'normal', color: sub.suggestedDevName && !sub.devName ? 'gray' : 'inherit' }}>
                               {sub.devName || sub.suggestedDevName || "N/A"}
                             </td>
@@ -662,7 +706,7 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                               </td>
                             )}
                           </tr>
-                        ))
+                        )})
                     ) : (
                       <tr>
                         <td colSpan={(userRole === "devs" || userRole === "scrumMasters") ? "6" : "5"}>No subtasks yet.</td>
@@ -671,6 +715,9 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                   </tbody>
                 </table>
               </div>
+              <span style={{ fontSize: "14px", color: "gray" }}>
+                Total: {totalWorkHours.toFixed(2)}/{totalWorkAndEtaHours} h
+              </span>
             </>
           )}
 
@@ -797,7 +844,6 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
                         className={`subtask-option ${selectedSubtaskForRecording === originalIndex ? 'selected' : ''}`}
                         onClick={() => {
                           setSelectedSubtaskForRecording(originalIndex); // Use original index
-                          console.log("Selected subtask original index:", originalIndex);
                         }}
                       >
                         {subtask.description}
@@ -860,6 +906,34 @@ const StoryDetailsComponent = ({ story, userRole, onUpdate, onUpdateStory, proje
               </Button>
               <Button className="btn btn--primery" onClick={handleConfirmDelete}>
                 Delete task
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showWorktimeModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title" style={{ textAlign: 'center' }}>Enter Worktime</h3>
+            <p className="modal-text" style={{ textAlign: 'center' }}>
+              Please enter the worktime for this subtask:
+            </p>
+            <Input
+              type="number"
+              value={worktime}
+              onChange={(e) => setWorktime(e.target.value)}
+              placeholder="Enter worktime in hours"
+              style={{ display: 'block', margin: '10px auto', padding: '5px' }}
+            />
+            <div className="modal-buttons">
+              <Button variant="secondary" onClick={() => setShowWorktimeModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="btn btn--primary"
+                onClick={() => handleSubmitWorktime(currentSubtaskIndex)}
+              >
+                Submit Worktime
               </Button>
             </div>
           </div>

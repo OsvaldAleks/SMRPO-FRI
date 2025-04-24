@@ -451,10 +451,11 @@ export const claimSubtask = async (storyId, userId, subtaskIndex) => {
   }
 };
 
-export const markSubtaskAsDone = async (storyId, subtaskIndex) => {
+export const markSubtaskAsDone = async (storyId, subtaskIndex, worktime=null) => {
   try {
     const subtaskData = {
       subtaskIndex,
+      worktime,
     };
     const response = await fetch(`${API_URL}/userStories/${storyId}/completeSubtask`, {
       method: "PUT",
@@ -855,9 +856,9 @@ export const updateWorkTime = async (storyId, subtaskIndex, workTimeIndex, updat
   }
 };
 
-export const updatePredictedTime = async (storyId, subtaskIndex, predictedTime) => {
+export const updatePredictedTime = async (storyId, subtaskIndex, worktimeIndex, predictedTime) => {
   try {
-    const response = await fetch(`${API_URL}/userStories/${storyId}/subtasks/${subtaskIndex}/predictedTime`, {
+    const response = await fetch(`${API_URL}/userStories/${storyId}/subtasks/${subtaskIndex}/predictedTime/${worktimeIndex}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ predictedTime })

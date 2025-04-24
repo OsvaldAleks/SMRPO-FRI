@@ -127,10 +127,11 @@ router.put("/:storyId/claimSubtask", async (req, res) => {
 router.put("/:storyId/completeSubtask", async (req, res) => {
   try {
     const { storyId } = req.params;
-    const { subtaskIndex } = req.body;
+    const { subtaskIndex, worktime } = req.body;
 
     const response = await completeSubtask(storyId,
       subtaskIndex,
+      worktime
     );
 
     res.status(200).json(response);
@@ -286,11 +287,12 @@ router.put('/:storyId/subtasks/:subtaskIndex/worktimes/:workTimeIndex', async (r
   }
 });
 
-router.put('/:storyId/subtasks/:subtaskIndex/predictedTime', async (req, res) => {
+router.put('/:storyId/subtasks/:subtaskIndex/predictedTime/:worktimeIndex', async (req, res) => {
   try {
     const result = await updatePredictedTime(
       req.params.storyId,
       parseInt(req.params.subtaskIndex),
+      parseInt(req.params.worktimeIndex),
       req.body.predictedTime
     );
     res.json(result);
