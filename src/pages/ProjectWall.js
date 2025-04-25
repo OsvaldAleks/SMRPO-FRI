@@ -144,7 +144,7 @@ const ProjectWall = () => {
                                         </div>
                                     </div>
 
-                                    <p>{post.content}</p>
+                                    <p style={{ whiteSpace: 'pre-wrap' }}>{post.content}</p>
 
                                     {/* Comments */}
                                     {post.comments &&
@@ -186,7 +186,7 @@ const ProjectWall = () => {
                                                             />
                                                         )}
                                                     </div>
-                                                    <p>{comment.content}</p>
+                                                    <p style={{ whiteSpace: 'pre-wrap' }}>{comment.content}</p>
                                                 </div>
                                             );
                                         })}
