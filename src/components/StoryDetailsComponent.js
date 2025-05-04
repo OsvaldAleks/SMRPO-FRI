@@ -672,7 +672,7 @@ const totalWorkAndEtaHours = (Number(totalWorkHours) + Number(totalEta)).toFixed
                             </td>
                             <td>{sub.description}</td>
                             <td>
-                              {totalWorkHoursNum.toFixed(2)} / {totalSum.toFixed(2)} h
+                              {totalWorkHoursNum.toFixed(2)}h ({latestETANum.toFixed(2)}h)
                             </td>
                             <td style={{ fontWeight: sub.devName ? 'bold' : 'normal', color: sub.suggestedDevName && !sub.devName ? 'gray' : 'inherit' }}>
                               {sub.devName || sub.suggestedDevName || "N/A"}
@@ -716,7 +716,7 @@ const totalWorkAndEtaHours = (Number(totalWorkHours) + Number(totalEta)).toFixed
                 </table>
               </div>
               <span style={{ fontSize: "14px", color: "gray" }}>
-                Total: {totalWorkHours.toFixed(2)}/{totalWorkAndEtaHours} h
+                Total: {totalWorkHours.toFixed(2)}h (+{totalEta.toFixed(2)}h)
               </span>
             </>
           )}
