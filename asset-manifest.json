@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/SMRPO-FRI/static/css/main.7a7a2855.css",
-    "main.js": "/SMRPO-FRI/static/js/main.b946b88f.js",
+    "main.js": "/SMRPO-FRI/static/js/main.3eece061.js",
     "static/js/453.6b820fa2.chunk.js": "/SMRPO-FRI/static/js/453.6b820fa2.chunk.js",
     "index.html": "/SMRPO-FRI/index.html",
     "main.7a7a2855.css.map": "/SMRPO-FRI/static/css/main.7a7a2855.css.map",
-    "main.b946b88f.js.map": "/SMRPO-FRI/static/js/main.b946b88f.js.map",
+    "main.3eece061.js.map": "/SMRPO-FRI/static/js/main.3eece061.js.map",
     "453.6b820fa2.chunk.js.map": "/SMRPO-FRI/static/js/453.6b820fa2.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.7a7a2855.css",
-    "static/js/main.b946b88f.js"
+    "static/js/main.3eece061.js"
   ]
 }
